@@ -10,7 +10,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { cache } from "react";
 
-import type { Session } from "./types";
+import type { AdminName, Session } from "./types";
 
 const API_URL = process.env.API_INTERNAL_URL ?? "http://127.0.0.1:8000";
 
@@ -51,4 +51,10 @@ export async function requireAdmin(): Promise<Session & { user: NonNullable<Sess
     redirect("/login");
   }
   return session as Session & { user: NonNullable<Session["user"]> };
+}
+
+/** id → display name for every admin, to show "by Anna" next to history entries. */
+export async function adminNames(): Promise<Map<string, string>> {
+  const { data } = await apiGet<AdminName[]>("/admin/users");
+  return new Map((data ?? []).map((user) => [user.id, user.display_name]));
 }

@@ -151,3 +151,12 @@ def test_two_admins_have_distinct_attribution(client, admin, db):
 
     logins = client.get(AUDIT, params={"action": "auth.login"}).json()["items"]
     assert sorted(e["actor_name"] for e in logins) == ["Anna", "Bertil"]
+
+
+def test_admin_names_list_hides_private_fields(client, admin, db):
+    make_admin(db, username="bertil", email="bertil@example.com")
+    sign_in(client, admin)
+    r = client.get("/api/v1/admin/users")
+    assert r.status_code == 200
+    assert [u["display_name"] for u in r.json()] == ["Anna", "Bertil"]
+    assert set(r.json()[0]) == {"id", "display_name"}  # no email or hashes

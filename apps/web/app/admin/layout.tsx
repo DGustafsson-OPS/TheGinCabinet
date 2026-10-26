@@ -6,6 +6,7 @@
 import type { Metadata } from "next";
 
 import AdminSidebar from "@/components/AdminSidebar";
+import AdminProvider from "@/components/admin/AdminProvider";
 import { getSession } from "@/lib/server-api";
 
 import styles from "./admin.module.css";
@@ -22,11 +23,13 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   }
 
   return (
-    <div className={styles.shell}>
-      <AdminSidebar displayName={session.user.display_name} csrfToken={session.csrf_token} />
-      <main id="main" className={styles.workspace}>
-        {children}
-      </main>
-    </div>
+    <AdminProvider csrfToken={session.csrf_token}>
+      <div className={styles.shell}>
+        <AdminSidebar displayName={session.user.display_name} csrfToken={session.csrf_token} />
+        <main id="main" className={styles.workspace}>
+          {children}
+        </main>
+      </div>
+    </AdminProvider>
   );
 }

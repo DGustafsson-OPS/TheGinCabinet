@@ -15,6 +15,7 @@ from app.api.routes import (
     admin_dashboard,
     admin_data,
     admin_inventory,
+    admin_users,
     auth,
     health,
 )
@@ -46,6 +47,7 @@ def create_app() -> FastAPI:
     app.include_router(admin_catalogue.router, prefix=API_PREFIX)
     app.include_router(admin_inventory.router, prefix=API_PREFIX)
     app.include_router(admin_data.router, prefix=API_PREFIX)
+    app.include_router(admin_users.router, prefix=API_PREFIX)
     return app
 
 

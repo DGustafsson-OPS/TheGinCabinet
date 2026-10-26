@@ -1,0 +1,47 @@
+// Small display helpers shared by admin pages.
+
+/** "1299.00" + "SEK" → "SEK 1,299.00". Decimal strings from the API stay exact until here. */
+export function formatMoney(amount: string | null | undefined, currency: string | null): string {
+  if (amount == null || !currency) return "–";
+  try {
+    return new Intl.NumberFormat("en-GB", { style: "currency", currency }).format(Number(amount));
+  } catch {
+    return `${currency} ${amount}`; // unknown currency code: show it plainly
+  }
+}
+
+/** "2026-10-05" → "5 Oct 2026". */
+export function formatDate(iso: string | null | undefined): string {
+  if (!iso) return "–";
+  const [year, month, day] = iso.slice(0, 10).split("-").map(Number);
+  return new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeZone: "UTC" }).format(
+    new Date(Date.UTC(year, month - 1, day)),
+  );
+}
+
+/** A timestamp with time, shown in UTC (spec §7 stores UTC). */
+export function formatDateTime(iso: string): string {
+  return (
+    new Intl.DateTimeFormat("en-GB", {
+      dateStyle: "medium",
+      timeStyle: "short",
+      timeZone: "UTC",
+    }).format(new Date(iso)) + " UTC"
+  );
+}
+
+/** "london_dry" → "London dry". */
+export function humanize(value: string): string {
+  const text = value.replaceAll("_", " ");
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
+/** Read one value from Next.js searchParams (which may hold a string or a list). */
+export function param(value: string | string[] | undefined): string | undefined {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+/** Today's date as YYYY-MM-DD, for date inputs. */
+export function today(): string {
+  return new Date().toISOString().slice(0, 10);
+}

@@ -37,9 +37,16 @@ apps/web/
 │   │   └── page.tsx          ← "/" home page
 │   ├── login/                ← "/login": page + the two-step LoginForm
 │   ├── admin/                ← "/admin": sidebar layout + dashboard
+│   │   ├── gins/             ← list, new, [id] edit (with conflict screen)
+│   │   ├── distilleries/     ← list + add
+│   │   ├── bottles/          ← list, new, [id] with actions and history
+│   │   ├── purchases/        ← list, new (multi-line form), [id]
+│   │   └── wishlist/         ← list + add, [id]/convert to a purchase
 │   ├── health/route.ts       ← "/health" for Docker/Coolify
 │   └── not-found.tsx         ← any unknown URL
 ├── components/               ← reusable pieces (headers, sidebar, buttons)
+│   └── admin/                ← AdminProvider (CSRF + toasts), ConfirmButton,
+│                               ConflictPanel, SearchBox, FilterSelect, PurchaseForm…
 ├── lib/
 │   ├── server-api.ts         ← server-only API calls + requireAdmin()
 │   ├── api-client.ts         ← browser API calls (adds the CSRF header)
@@ -69,6 +76,16 @@ Browser ──/admin──────▶ Next.js server component ──(cookie
 The browser only ever talks to one site, so the session cookie and the CSRF
 check just work. `next.config.ts` sets up the `/api` forwarding. Its target
 (`API_INTERNAL_URL`) is fixed when `npm run build` runs.
+
+### Forms that change data
+
+Admin forms are client components. They get the CSRF token and a `toast()`
+function from `AdminProvider` through `useAdmin()`, call the API, then run
+`router.refresh()` so the server parts of the page fetch fresh data.
+
+Edit forms send **only the fields you changed**, plus the record's `version`.
+If someone else saved in the meantime, the API answers `409` and
+`ConflictPanel` shows both versions with two deliberate choices (spec §6).
 
 ### Who may see /admin?
 

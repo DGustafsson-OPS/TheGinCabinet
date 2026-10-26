@@ -20,10 +20,11 @@ const SECTIONS: { title: string; items: NavItem[] }[] = [
   {
     title: "Inventory",
     items: [
-      { href: "/admin/gins", label: "Gins", ready: false },
-      { href: "/admin/bottles", label: "Bottles", ready: false },
-      { href: "/admin/purchases", label: "Purchases", ready: false },
-      { href: "/admin/wishlist", label: "Wishlist", ready: false },
+      { href: "/admin/gins", label: "Gins", ready: true },
+      { href: "/admin/distilleries", label: "Distilleries", ready: true },
+      { href: "/admin/bottles", label: "Bottles", ready: true },
+      { href: "/admin/purchases", label: "Purchases", ready: true },
+      { href: "/admin/wishlist", label: "Wishlist", ready: true },
     ],
   },
   {
@@ -77,7 +78,12 @@ export default function AdminSidebar({ displayName, csrfToken }: Props) {
                       <Link
                         href={item.href}
                         className={styles.link}
-                        aria-current={pathname === item.href ? "page" : undefined}
+                        aria-current={
+                          pathname === item.href ||
+                          (item.href !== "/admin" && pathname.startsWith(item.href + "/"))
+                            ? "page"
+                            : undefined
+                        }
                         onClick={() => setOpen(false)}
                       >
                         {item.label}

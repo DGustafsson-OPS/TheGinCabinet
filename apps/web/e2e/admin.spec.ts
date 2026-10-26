@@ -1,34 +1,11 @@
-// End-to-end tests for Phase 1 (sign-in, admin shell) and the Phase 2 dashboard.
+// End-to-end tests for Phase 1 (sign-in, admin shell) and the dashboard.
 // They need a running API + website and a test admin; see e2e/README.md.
-import { type APIRequestContext, expect, request, test } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
+import { HAS_CREDENTIALS, PASSWORD, SECRET, USERNAME, signInThroughUi, signedInApi } from "./helpers";
 import { totp } from "./totp";
 
-const USERNAME = process.env.E2E_USERNAME ?? "e2e-admin";
-const PASSWORD = process.env.E2E_PASSWORD ?? "";
-const SECRET = process.env.E2E_TOTP_SECRET ?? "";
-
-test.skip(!PASSWORD || !SECRET, "Set E2E_PASSWORD and E2E_TOTP_SECRET (see e2e/README.md)");
-
-/** An API client signed in as the test admin, for preparing data quickly. */
-async function signedInApi(baseURL: string): Promise<{ api: APIRequestContext; csrf: string }> {
-  // The Origin header mimics a browser, so the API's CSRF origin check passes.
-  const api = await request.newContext({ baseURL, extraHTTPHeaders: { Origin: baseURL } });
-  expect((await api.post("/api/v1/auth/login", { data: { username: USERNAME, password: PASSWORD } })).ok()).toBe(true);
-  const session = await api.post("/api/v1/auth/mfa/verify", { data: { code: totp(SECRET) } });
-  expect(session.ok()).toBe(true);
-  return { api, csrf: (await session.json()).csrf_token };
-}
-
-async function signInThroughUi(page: import("@playwright/test").Page) {
-  await page.goto("/login");
-  await page.getByLabel("Username").fill(USERNAME);
-  await page.getByLabel("Password").fill(PASSWORD);
-  await page.getByRole("button", { name: "Continue" }).click();
-  await page.getByLabel("Authentication code").fill(totp(SECRET));
-  await page.getByRole("button", { name: "Sign in" }).click();
-  await expect(page).toHaveURL(/\/admin$/);
-}
+test.skip(!HAS_CREDENTIALS, "Set E2E_PASSWORD and E2E_TOTP_SECRET (see e2e/README.md)");
 
 test("home page has a hero and a working skip link", async ({ page }) => {
   await page.goto("/");
@@ -55,10 +32,9 @@ test("a wrong password shows a clear error", async ({ page }) => {
 test("two-step sign-in, dashboard numbers, mobile menu and sign-out", async ({ page, baseURL }) => {
   // Prepare: add a gin and a purchase through the API.
   const { api, csrf } = await signedInApi(baseURL!);
-  const unique = Date.now().toString(36);
   const gin = await api.post("/api/v1/admin/gins", {
     headers: { "X-CSRF-Token": csrf },
-    data: { brand: "E2E Test", name: `Gin ${unique}`, abv: "41.5" },
+    data: { brand: "E2E Test", name: `Gin ${Date.now().toString(36)}`, abv: "41.5" },
   });
   expect(gin.status()).toBe(201);
   const purchase = await api.post("/api/v1/admin/purchases", {
