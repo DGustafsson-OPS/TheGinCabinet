@@ -19,9 +19,20 @@ Progress against the delivery phases in
 | Design tokens, header/sidebar, admin login UI | ⬜ | Next.js app in `apps/web` |
 | Admin self-service: change password, revoke sessions (A10) | ⬜ | |
 
-## Phase 2 – Inventory ⬜
-Gin catalogue, distilleries, botanicals, bottles with status history, purchases
-(N bottles per line), wishlist, CSV import/export, optimistic locking (409).
+## Phase 2 – Inventory (backend)
+
+| Item | Status | Notes |
+| --- | --- | --- |
+| Distilleries, botanicals, gin catalogue (A02) | ✅ | ABV 0–100, case-insensitive identity uniqueness, unique slugs |
+| Physical bottles with status history (A03) | ✅ | sealed → open → empty / gifted / disposed; every change in `bottle_events` |
+| Purchases creating N bottles (A04) | ✅ | Per-currency totals, optional price for gifts |
+| Wishlist + convert to purchase (A08) | ✅ | Notes kept, linked to the purchase |
+| Dashboard numbers (A01) | ✅ | Value per currency; unknown cost shown separately |
+| Optimistic locking: 409 + diff, `?force=true` (§6) | ✅ | Plus database-level `WHERE version = ?` check |
+| CSV import with preview / dedupe / reasons (§6, §11) | ✅ | Gins; `,` or `;` separated; `|` between botanicals |
+| Export (§6) | ✅ | Full JSON export + gins CSV (formula-injection safe) |
+| Admin UI screens for inventory | ⬜ | Next.js pages for A02–A04, A08 |
+| Editing purchase lines after saving | ⬜ | Lines are fixed in V1 because they already created bottles |
 
 ## Phase 3 – Editorial ⬜
 Tastings, reviews with revision history and draft→ready→published→archived,

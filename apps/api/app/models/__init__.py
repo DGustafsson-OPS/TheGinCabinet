@@ -6,7 +6,32 @@ Alembic sees every table when it compares models to the database.
 
 from app.models.audit import AuditEvent
 from app.models.auth import AuthSession, LoginAttempt, RecoveryCode
+from app.models.bottles import ALLOWED_TRANSITIONS, IN_CABINET, Bottle, BottleEvent, BottleStatus
+from app.models.catalogue import Botanical, Distillery, GinProduct, GinStyle, gin_botanicals
 from app.models.collection import Collection
+from app.models.purchases import Purchase, PurchaseLine
 from app.models.user import User
+from app.models.wishlist import WishlistItem, WishlistStatus
 
-__all__ = ["AuditEvent", "AuthSession", "Collection", "LoginAttempt", "RecoveryCode", "User"]
+__all__ = [
+    "ALLOWED_TRANSITIONS",
+    "IN_CABINET",
+    "AuditEvent",
+    "AuthSession",
+    "Botanical",
+    "Bottle",
+    "BottleEvent",
+    "BottleStatus",
+    "Collection",
+    "Distillery",
+    "GinProduct",
+    "GinStyle",
+    "LoginAttempt",
+    "Purchase",
+    "PurchaseLine",
+    "RecoveryCode",
+    "User",
+    "WishlistItem",
+    "WishlistStatus",
+    "gin_botanicals",
+]

@@ -93,3 +93,11 @@ def sign_in(client: TestClient, admin: AdminFixture) -> str:
     r = client.post("/api/v1/auth/mfa/verify", json={"code": admin.current_code()})
     assert r.status_code == 200, r.text
     return r.json()["csrf_token"]
+
+
+@pytest.fixture
+def api(client, admin) -> TestClient:
+    """A client that is fully signed in and sends the CSRF header on every request."""
+    csrf = sign_in(client, admin)
+    client.headers.update({"X-CSRF-Token": csrf})
+    return client

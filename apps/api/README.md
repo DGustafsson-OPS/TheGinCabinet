@@ -118,7 +118,28 @@ Browser                                   API
 | Audit events | `services/audit.py` | Who did what, when |
 | No sign-up endpoint | `cli.py` | Max two admins, created from the server |
 
-## 5. Admin command-line tool
+## 5. The API at a glance
+
+Full, clickable documentation is generated at `/api/v1/docs` while developing.
+
+| Area | Endpoints (all under `/api/v1`) |
+| --- | --- |
+| Sign-in | `POST auth/login`, `POST auth/mfa/verify`, `GET auth/session`, `POST auth/logout` |
+| Dashboard | `GET admin/dashboard` |
+| Catalogue | `admin/distilleries[/{id}]`, `admin/gins[/{id}]`, `GET admin/botanicals` |
+| Bottles | `admin/bottles[/{id}]`, `POST admin/bottles/{id}/status` |
+| Purchases | `admin/purchases[/{id}]` (POST creates one bottle per unit) |
+| Wishlist | `admin/wishlist[/{id}]`, `POST admin/wishlist/{id}/convert` |
+| Import / export | `POST admin/import/gins?dry_run=true`, `GET admin/export`, `GET admin/export/gins.csv` |
+| Audit log | `GET admin/audit` |
+
+**Editing safely (the 409 flow).** Every editable record has a `version`. Send
+it back with your PATCH. If someone else saved in the meantime, you get
+`409 version_conflict` with the current record and a `diff` of your changes vs
+theirs. Show both to the user; to overwrite anyway, repeat the request with
+`?force=true`.
+
+## 6. Admin command-line tool
 
 Run these on the server (e.g. Coolify's terminal for the API container):
 
@@ -131,7 +152,7 @@ python -m app.cli list-admins
 
 Each command writes an audit event.
 
-## 6. Configuration
+## 7. Configuration
 
 All settings are environment variables starting with `GC_`; see
 [`app/config.py`](app/config.py) for the full list with explanations and
@@ -143,7 +164,7 @@ the last one to `true`).
 > ⚠️ Changing `GC_SECRET_KEY` makes stored MFA secrets unreadable. Admins would
 > then need `reset-mfa`. Keep it in Coolify's secret store and back it up.
 
-## 7. Database migrations
+## 8. Database migrations
 
 When you change a model in `app/models/`, create a migration so the real
 database follows:

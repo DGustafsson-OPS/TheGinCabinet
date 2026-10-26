@@ -1,6 +1,13 @@
 """Schemas shared by many endpoints."""
 
-from pydantic import BaseModel, Field
+from decimal import Decimal
+from typing import Annotated
+
+from pydantic import BaseModel, Field, PlainSerializer
+
+# A Decimal that is always sent as a string with exactly two decimals, e.g.
+# 41.4 -> "41.40". Used for ABV and money so the API output is consistent.
+Fixed2 = Annotated[Decimal, PlainSerializer(lambda d: f"{d:.2f}", return_type=str)]
 
 
 class PageMeta(BaseModel):

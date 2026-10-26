@@ -9,7 +9,15 @@ Run it locally with::
 
 from fastapi import FastAPI
 
-from app.api.routes import admin_audit, auth, health
+from app.api.routes import (
+    admin_audit,
+    admin_catalogue,
+    admin_dashboard,
+    admin_data,
+    admin_inventory,
+    auth,
+    health,
+)
 from app.config import get_settings
 from app.errors import register_error_handlers
 
@@ -34,6 +42,10 @@ def create_app() -> FastAPI:
     app.include_router(health.router)
     app.include_router(auth.router, prefix=API_PREFIX)
     app.include_router(admin_audit.router, prefix=API_PREFIX)
+    app.include_router(admin_dashboard.router, prefix=API_PREFIX)
+    app.include_router(admin_catalogue.router, prefix=API_PREFIX)
+    app.include_router(admin_inventory.router, prefix=API_PREFIX)
+    app.include_router(admin_data.router, prefix=API_PREFIX)
     return app
 
 

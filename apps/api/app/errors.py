@@ -14,6 +14,8 @@ from typing import Any
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm.exc import StaleDataError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 
@@ -55,6 +57,27 @@ def register_error_handlers(app: FastAPI) -> None:
         return JSONResponse(
             status_code=422,
             content=_body("validation_error", "Some fields are invalid.", fields),
+        )
+
+    @app.exception_handler(StaleDataError)
+    async def handle_stale_data(_: Request, exc: StaleDataError) -> JSONResponse:
+        # Two saves landed at nearly the same moment and the database's
+        # "WHERE version = ?" check caught it (see services/versioning.py).
+        return JSONResponse(
+            status_code=409,
+            content=_body(
+                "version_conflict", "Someone else saved this record at the same time. Reload."
+            ),
+        )
+
+    @app.exception_handler(IntegrityError)
+    async def handle_integrity_error(_: Request, exc: IntegrityError) -> JSONResponse:
+        # A database rule (unique value, valid range...) rejected the data. Routes
+        # check the common cases first with friendlier messages; this is the
+        # safety net. The raw database message is not shown, as it can leak details.
+        return JSONResponse(
+            status_code=422,
+            content=_body("constraint_violation", "The data breaks a database rule."),
         )
 
     @app.exception_handler(StarletteHTTPException)
