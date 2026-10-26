@@ -16,7 +16,7 @@ Progress against its delivery phases is tracked in [`docs/roadmap.md`](docs/road
 | [`apps/web/`](apps/web/) | Next.js public site, admin UI and blog | Login, admin shell, dashboard |
 | [`packages/shared/`](packages/shared/) | Shared types and validation contracts | Not started |
 | [`infra/`](infra/) | Docker Compose and environment templates | Full stack runs |
-| [`docs/`](docs/) | Specification, roadmap, [deployment guide](docs/deployment.md) | Started |
+| [`docs/`](docs/) | Specification, roadmap, [Coolify hosting guide](docs/deployment.md) | Ready |
 
 ## Quick start (backend)
 

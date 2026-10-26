@@ -28,6 +28,11 @@ ENV NODE_ENV=production \
     PORT=3000 \
     HOSTNAME=0.0.0.0 \
     API_INTERNAL_URL=$API_INTERNAL_URL
+# curl: Coolify's generated HTTP health check runs curl (or wget) inside the
+# container, so the image must include one of them.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 # `output: "standalone"` produced a self-contained server with only the needed
 # node_modules; static assets are copied next to it.

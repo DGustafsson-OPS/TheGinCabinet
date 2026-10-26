@@ -20,6 +20,11 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PATH="/venv/bin:$PATH" \
     GC_ENVIRONMENT=production \
     GC_COOKIE_SECURE=true
+# curl: Coolify's generated HTTP health check runs curl (or wget) inside the
+# container, so the image must include one of them.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/*
 # A dedicated user without root rights runs the app.
 RUN useradd --create-home --uid 10001 gin
 WORKDIR /app
@@ -33,9 +38,18 @@ RUN mkdir -p /app/media && chown gin:gin /app/media
 USER gin
 
 EXPOSE 8000
-HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+# start-period: room for the database migrations that run at start-up (below).
+HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
     CMD python -c "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=4).status == 200 else 1)"
 
-# --proxy-headers: trust X-Forwarded-For from the reverse proxy so we see real
-# client IPs. FORWARDED_ALLOW_IPS limits which proxy addresses are trusted.
-CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port 8000 --proxy-headers --forwarded-allow-ips \"${FORWARDED_ALLOW_IPS:-127.0.0.1}\""]
+# Start-up, in order:
+# 1. Bring the database schema up to date (`alembic upgrade head`; does nothing
+#    if it already is). The new container only passes its health check, and
+#    so only receives traffic, after this has succeeded. If it fails, the
+#    container stops and Coolify keeps the old version running.
+#    Set GC_MIGRATE_ON_START=false to run migrations some other way.
+# 2. Start the API. `exec` makes uvicorn the main process so it receives the
+#    stop signal directly and shuts down cleanly.
+#    --proxy-headers: trust X-Forwarded-For from the reverse proxy so we see
+#    real client IPs. FORWARDED_ALLOW_IPS limits which proxies are trusted.
+CMD ["sh", "-c", "if [ \"${GC_MIGRATE_ON_START:-true}\" = true ]; then alembic upgrade head || exit 1; fi; exec uvicorn app.main:app --host 0.0.0.0 --port 8000 --proxy-headers --forwarded-allow-ips \"${FORWARDED_ALLOW_IPS:-127.0.0.1}\""]
