@@ -67,10 +67,13 @@ test("build a recipe in the tabbed editor, publish it, scale it as a visitor", a
   await expect(ingredients.getByText("50 ml")).toBeVisible();
   await expect(visitor.getByText("Floral notes lift the tonic.")).toBeVisible();
 
-  for (let i = 0; i < 3; i++) {
+  // Each click loads a new page; wait for it before clicking again, or the
+  // second click can land on the old link (which still says servings=3).
+  for (const servings of [2, 3, 4]) {
     await visitor.getByRole("link", { name: "One drink more" }).click();
+    await expect(visitor).toHaveURL(new RegExp(`servings=${servings}$`));
+    await expect(visitor.getByText(`${servings} drinks`)).toBeVisible();
   }
-  await expect(visitor).toHaveURL(/servings=4/);
   await expect(visitor.getByText("4 drinks")).toBeVisible();
   await expect(ingredients.getByText("200 ml")).toBeVisible(); // 50 ml × 4
   await expect(ingredients.getByText("Top up")).toBeVisible(); // no number to scale
