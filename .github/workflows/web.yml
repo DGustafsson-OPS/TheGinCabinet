@@ -82,7 +82,7 @@ jobs:
           npm ci
           npm run build
           cp -r .next/static .next/standalone/.next/ && cp -r public .next/standalone/
-          PORT=3000 HOSTNAME=127.0.0.1 nohup node .next/standalone/server.js > web.log 2>&1 &
+          GA_MEASUREMENT_ID=G-E2ETEST1 PORT=3000 HOSTNAME=127.0.0.1 nohup node .next/standalone/server.js > web.log 2>&1 &
 
       - name: Wait until both are healthy
         run: |

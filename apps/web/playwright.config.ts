@@ -12,12 +12,13 @@ export default defineConfig({
   reporter: process.env.CI ? [["list"], ["html", { open: "never" }]] : "list",
   use: {
     baseURL,
-    // Every test starts as a visitor who has already passed the age gate, so
-    // tests reach the pages they're about. e2e/age-gate.spec.ts tests the gate
-    // itself, starting without this cookie.
+    // Every test starts as a visitor who has already passed the age gate and
+    // answered the cookie banner ("no analytics"), so tests reach the pages
+    // they're about. age-gate.spec.ts and consent.spec.ts start without these.
     storageState: {
       cookies: [
         { name: "gc_age_ok", value: "1", domain: new URL(baseURL).hostname, path: "/", expires: -1, httpOnly: true, secure: false, sameSite: "Lax" },
+        { name: "gc_consent", value: "necessary", domain: new URL(baseURL).hostname, path: "/", expires: -1, httpOnly: false, secure: false, sameSite: "Lax" },
       ],
       origins: [],
     },

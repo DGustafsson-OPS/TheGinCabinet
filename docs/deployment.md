@@ -157,6 +157,7 @@ Optional, with sensible defaults (see `apps/api/app/config.py`):
 | --- | --- | --- |
 | `API_INTERNAL_URL` | `http://<api internal host>:8000` | Needed **at build time and at run time**: tick Coolify's "build variable" option *and* keep it as a normal variable. `<api internal host>` is the API application's container name on the Coolify network (shown in the API app's settings; usually its resource ID). |
 | `SITE_URL` | `https://gincabinet.example.com` | Used for canonical links, the sitemap, RSS and social-media previews. No trailing slash. |
+| `GA_MEASUREMENT_ID` | `G-XXXXXXXXXX` (optional) | Turns on Google Analytics **with a cookie-consent banner**. Leave unset for no analytics and no banner. Read at run time: changing it needs a restart, not a rebuild. See [§8](#google-analytics). |
 
 The website gets **no** database URL or secret key; it doesn't need them.
 
@@ -299,6 +300,35 @@ Repeat the test every few months, and after big changes.
 * **Disk space:** keep an eye on it in Coolify's server view. Old Docker
   images pile up; Coolify can clean them automatically.
 
+### Google Analytics
+
+The site follows the EU cookie rules: Google's script loads only after a
+visitor clicks **Accept analytics** in the banner (shown after the age gate),
+"Reject" is just as easy, and **Cookie settings** in the footer lets visitors
+change their mind. Admin pages are never tracked. The privacy page gains an
+analytics section automatically when GA is on.
+
+To set it up:
+
+1. In [Google Analytics](https://analytics.google.com), create a **GA4
+   property** and a **Web data stream** for your domain. Copy its
+   Measurement ID (`G-…`) into `GA_MEASUREMENT_ID` on the web application and
+   restart it.
+2. In GA → **Admin**, adjust these settings to match what the privacy page promises:
+   * **Data collection:** keep **Google signals off**, and leave
+     advertising/ads personalisation off.
+   * **Data retention:** set event data retention to **2 months** or **14
+     months** (the shortest that suits you).
+   * **Account settings:** accept the **Data Processing Terms** (Google
+     processes the data on your behalf).
+3. Keep **Enhanced measurement → Page changes based on browser history
+   events** on, so page views inside the site are counted.
+4. Check it: open the site in a private window, pass the age gate, choose
+   **Accept analytics**, and watch GA → **Reports → Realtime**.
+
+> The privacy page is written for this setup, but it isn't legal advice.
+> Have it checked if you're unsure, and keep it accurate if you change GA settings.
+
 ## 9. Real visitor IP and Cloudflare
 
 The API slows down password guessing per username **and** per IP address, so
@@ -345,6 +375,7 @@ Content and privacy (spec §11, §10B step 6)
 - [ ] A private gin and a draft article show **404** to a signed-out visitor
 - [ ] `https://<domain>/sitemap.xml` and `/blog/rss.xml` list only public content
 - [ ] Admin → Audit log shows your real IP on sign-in
+- [ ] (If GA is on) Nothing loads from Google before **Accept analytics**; after accepting, the visit appears in GA's Realtime report
 
 Resilience (spec §10B acceptance)
 - [ ] A database backup has reached the S3 bucket
