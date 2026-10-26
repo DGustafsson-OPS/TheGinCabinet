@@ -76,12 +76,6 @@ export default function PrivacyPage() {
         </>
       )}
 
-      <h2>The two editors</h2>
-      <p>
-        Only the two people who run the site can sign in. Their sign-in uses a strictly necessary
-        session cookie, and their actions are recorded in an internal audit log.
-      </p>
-
       <h2>Photos</h2>
       <p>
         Location data and other hidden details are removed from every photo before it is

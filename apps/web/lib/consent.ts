@@ -27,8 +27,10 @@ export type ConsentCategory = {
 };
 
 /**
- * Every cookie the site can set, by category. This list is shown on the
- * Cookie settings page, so keep it in step with the code.
+ * Every cookie the site can set for visitors, by category. This list is shown
+ * on the public Cookie settings page, so keep it in step with the code.
+ * (The admin sign-in cookie is deliberately not listed: it is never set for
+ * visitors, and the public page shouldn't describe the admin area.)
  * To add a category (e.g. "marketing"): add it here, handle it in the
  * layout, and raise CONSENT_VERSION.
  */
@@ -41,7 +43,6 @@ export const CONSENT_CATEGORIES: ConsentCategory[] = [
     cookies: [
       { name: "gc_age_ok", purpose: "Remembers that you confirmed you are 18 or older.", lifetime: "30 days", provider: "This site" },
       { name: "gc_consent", purpose: "Remembers your cookie choices (and a random ID that proves them).", lifetime: "6 months", provider: "This site" },
-      { name: "gc_session", purpose: "Keeps the site's two editors signed in. Never set for visitors.", lifetime: "Up to 12 hours", provider: "This site" },
     ],
   },
   {
