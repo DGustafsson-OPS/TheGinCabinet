@@ -34,7 +34,11 @@ apps/web/
 │   ├── layout.tsx            ← wraps every page: <html>, fonts, skip link
 │   ├── (public)/             ← public site; "(…)" folders don't appear in URLs
 │   │   ├── layout.tsx        ← forest masthead + footer
-│   │   ├── page.tsx          ← "/" home page
+│   │   ├── page.tsx          ← "/" home: numbers, latest reviews, cocktails, a featured gin
+│   │   ├── collection/       ← "/collection": search + filters (a plain GET form)
+│   │   ├── gins/[slug]/      ← one public gin: photos, botanicals, reviews, cocktails, related
+│   │   ├── distilleries/     ← list and "/distilleries/[slug]"
+│   │   ├── about/, privacy/  ← static pages
 │   │   ├── reviews/          ← "/reviews" list and "/reviews/[slug]" (public)
 │   │   └── cocktails/        ← "/cocktails" library and recipe pages with a serving stepper
 │   ├── login/                ← "/login": page + the two-step LoginForm
@@ -48,6 +52,7 @@ apps/web/
 │   │   ├── tastings/         ← private notes with flavour sliders
 │   │   ├── reviews/          ← editor, preview, revision history
 │   │   └── cocktails/        ← tabbed recipe editor
+│   ├── sitemap.ts, robots.ts ← "/sitemap.xml" (public pages only), "/robots.txt"
 │   ├── health/route.ts       ← "/health" for Docker/Coolify
 │   └── not-found.tsx         ← any unknown URL
 ├── components/               ← reusable pieces (headers, sidebar, buttons)

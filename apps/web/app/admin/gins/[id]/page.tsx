@@ -7,7 +7,8 @@ import { notFound } from "next/navigation";
 import BottleStatusBadge from "@/components/admin/BottleStatusBadge";
 import { formatDate } from "@/lib/format";
 import { apiGet, requireAdmin } from "@/lib/server-api";
-import type { Bottle, Distillery, Gin, Page } from "@/lib/types";
+import { mediaOptions } from "@/lib/media-options";
+import type { Bottle, Distillery, Gin, Media, Page } from "@/lib/types";
 
 import GinForm from "../GinForm";
 
@@ -20,10 +21,11 @@ export default async function GinPage({ params }: { params: Params }) {
   const { id } = await params;
 
   // Start all three requests at once, then wait for all of them.
-  const [gin, distilleries, bottles] = await Promise.all([
+  const [gin, distilleries, bottles, media] = await Promise.all([
     apiGet<Gin>(`/admin/gins/${id}`),
     apiGet<Page<Distillery>>("/admin/distilleries?page_size=100"),
     apiGet<Page<Bottle>>(`/admin/bottles?gin_id=${id}&page_size=100`),
+    apiGet<Page<Media>>("/admin/media?page_size=100"),
   ]);
   if (!gin.data) notFound();
 
@@ -41,7 +43,12 @@ export default async function GinPage({ params }: { params: Params }) {
 
       <div className="card">
         {/* `key` makes React start a fresh form if a different gin is opened. */}
-        <GinForm key={gin.data.id} gin={gin.data} distilleries={distilleries.data?.items ?? []} />
+        <GinForm
+          key={gin.data.id}
+          gin={gin.data}
+          distilleries={distilleries.data?.items ?? []}
+          media={mediaOptions(media.data?.items ?? [], gin.data.images)}
+        />
       </div>
 
       <section aria-labelledby="bottles-title" style={{ marginTop: "var(--space-6)" }}>

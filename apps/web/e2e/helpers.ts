@@ -51,7 +51,7 @@ export async function createGin(
   api: APIRequestContext,
   csrf: string,
   overrides: Record<string, unknown> = {},
-): Promise<{ id: string; display_name: string; version: number }> {
+): Promise<{ id: string; slug: string; display_name: string; version: number }> {
   const response = await api.post("/api/v1/admin/gins", {
     headers: { "X-CSRF-Token": csrf },
     data: { brand: "E2E", name: `Gin ${unique()}`, abv: "41.5", ...overrides },

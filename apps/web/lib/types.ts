@@ -95,6 +95,7 @@ export type Gin = GinSummary & {
   description: string | null;
   public_visible: boolean;
   botanicals: string[];
+  images: MediaSummary[];
   bottles_in_cabinet: number;
   bottles_total: number;
   version: number;
@@ -378,3 +379,48 @@ export type PublicCocktail = PublicCocktailCard & {
   published_at: string;
   updated_at: string;
 };
+
+// ---------- Public catalogue ----------
+
+export type PublicGinCard = {
+  slug: string;
+  display_name: string;
+  brand: string;
+  style: string;
+  abv: string;
+  country: string | null;
+  distillery: { slug: string; name: string; country: string | null } | null;
+  image: MediaSummary | null;
+  collection_status: "owned" | "previously_owned" | null;
+  rating: string | null;
+  review_count: number;
+};
+
+export type PublicGin = PublicGinCard & {
+  edition: string;
+  description: string | null;
+  botanicals: string[];
+  images: MediaSummary[];
+  reviews: PublicReviewCard[];
+  cocktails: PublicCocktailCard[];
+  related: PublicGinCard[];
+  updated_at: string;
+};
+
+export type Facets = { styles: string[]; countries: string[]; botanicals: string[] };
+
+export type PublicDistilleryCard = {
+  slug: string;
+  name: string;
+  country: string | null;
+  region: string | null;
+  gin_count: number;
+};
+
+export type PublicDistillery = PublicDistilleryCard & {
+  description: string | null;
+  website: string | null;
+  gins: PublicGinCard[];
+};
+
+export type PublicStats = { gins: number; reviews: number; cocktails: number; countries: number };

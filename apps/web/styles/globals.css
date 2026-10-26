@@ -346,3 +346,11 @@ input[type="radio"] {
 .preview-banner a {
   color: var(--color-brass);
 }
+
+/* Small square-ish thumbnail in admin photo lists. */
+.photo-thumb {
+  width: 64px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 6px;
+}

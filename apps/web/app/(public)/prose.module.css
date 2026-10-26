@@ -1,0 +1,25 @@
+/* Shared style for text pages (About, Privacy): a comfortable reading column. */
+.prose {
+  max-width: var(--reading-max-width);
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-4) var(--space-7);
+  font-size: 1.0625rem;
+}
+.prose h1 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: var(--font-size-h1);
+}
+.prose h2 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: var(--font-size-h2);
+  margin-top: var(--space-6);
+}
+.prose li {
+  margin-bottom: var(--space-2);
+}
+.lead {
+  font-size: 1.25rem;
+  color: var(--color-muted);
+}

@@ -59,7 +59,7 @@ Progress against the delivery phases in
 | Admin cocktail editor (A07) | ✅ | Accessible tabs (arrow keys); ingredient/step/gin rows with reorder; save keeps the open tab |
 | Public library + recipe pages (P06/P07) | ✅ | Filter chips, cards, serving stepper as plain links (works without JavaScript), Recipe JSON-LD |
 
-## Phase 5 – Public website
+## Phase 5 – Public website ✅
 
 | Item | Status | Notes |
 | --- | --- | --- |
@@ -67,7 +67,7 @@ Progress against the delivery phases in
 | Public catalogue API (P02/P03) | ✅ | Search, style/country/botanical/ABV/rating filters, sort, facets, Owned/Previously owned badge, average rating; gin page with reviews, cocktails and related gins (style + botanical overlap); never prices or counts |
 | Public distilleries API (P08) | ✅ | Only distilleries with public gins |
 | Public stats (P01) | ✅ | Public gins, reviews, cocktails, countries |
-| Public pages: home, collection, gin, distilleries, about/privacy, sitemap, robots | ⬜ | Next |
+| Public pages: home, collection, gin, distilleries, about/privacy, sitemap, robots | ✅ | Filters work without JavaScript (plain GET form); private gins 404 and stay out of the sitemap |
 
 ## Phase 6 – Launch QA ⬜
 Security review, accessibility, performance, backup/restore test, Coolify runbook.

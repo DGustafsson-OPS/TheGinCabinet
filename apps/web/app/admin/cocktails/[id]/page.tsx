@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { apiGet, requireAdmin } from "@/lib/server-api";
+import { mediaOptions } from "@/lib/media-options";
 import type { Cocktail, Gin, Media, Page } from "@/lib/types";
 
 import CocktailEditor from "./CocktailEditor";
@@ -22,10 +23,7 @@ export default async function CocktailPage({ params }: { params: Params }) {
   ]);
   if (!cocktail) notFound();
 
-  const mediaOptions = (media.data?.items ?? []).map((m) => ({
-    id: m.id, url: m.url, alt: m.alt, width: m.width, height: m.height,
-    label: m.alt ?? m.original_filename ?? m.id.slice(0, 8),
-  }));
+  const options = mediaOptions(media.data?.items ?? [], cocktail.cover_image ? [cocktail.cover_image] : []);
 
   return (
     <>
@@ -41,7 +39,7 @@ export default async function CocktailPage({ params }: { params: Params }) {
         key={cocktail.id}
         cocktail={cocktail}
         gins={(gins.data?.items ?? []).map((g) => ({ id: g.id, slug: g.slug, display_name: g.display_name }))}
-        media={mediaOptions}
+        media={options}
         knownIngredients={(ingredients.data ?? []).map((i) => i.name)}
       />
     </>

@@ -20,6 +20,7 @@ const FIELD_LABELS: Record<string, string> = {
   distillery_id: "Distillery",
   remaining_ml: "Remaining (ml)",
   acquired_on: "Date acquired",
+  image_ids: "Photos",
 };
 
 function show(value: unknown): string {

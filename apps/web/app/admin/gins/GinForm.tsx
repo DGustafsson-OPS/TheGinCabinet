@@ -5,11 +5,18 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import MediaImage from "@/components/MediaImage";
 import ConflictPanel from "@/components/admin/ConflictPanel";
 import { errorMessage, useAdmin } from "@/components/admin/AdminProvider";
 import { ApiError } from "@/lib/api-client";
 import { humanize } from "@/lib/format";
-import { type ConflictDetails, type DistillerySummary, GIN_STYLES, type Gin } from "@/lib/types";
+import {
+  type ConflictDetails,
+  type DistillerySummary,
+  GIN_STYLES,
+  type Gin,
+  type MediaSummary,
+} from "@/lib/types";
 
 // The form's own state: every value as the text you see in the inputs.
 type Values = {
@@ -22,6 +29,7 @@ type Values = {
   country: string;
   distillery_id: string;
   botanicals: string; // comma-separated in the input
+  image_ids: string[]; // photos, in order: the first is the main one
   description: string;
   public_visible: boolean;
 };
@@ -37,6 +45,7 @@ function toValues(gin?: Gin): Values {
     country: gin?.country ?? "",
     distillery_id: gin?.distillery?.id ?? "",
     botanicals: gin?.botanicals.join(", ") ?? "",
+    image_ids: gin?.images.map((image) => image.id) ?? [],
     description: gin?.description ?? "",
     public_visible: gin?.public_visible ?? false,
   };
@@ -59,12 +68,14 @@ function toPayload(values: Values): Record<string, unknown> {
       .filter(Boolean),
     description: values.description.trim() || null,
     public_visible: values.public_visible,
+    image_ids: values.image_ids,
   };
 }
 
-type Props = { gin?: Gin; distilleries: DistillerySummary[] };
+type MediaOption = MediaSummary & { label: string };
+type Props = { gin?: Gin; distilleries: DistillerySummary[]; media: MediaOption[] };
 
-export default function GinForm({ gin, distilleries }: Props) {
+export default function GinForm({ gin, distilleries, media }: Props) {
   const router = useRouter();
   const { call, toast } = useAdmin();
   const [values, setValues] = useState<Values>(() => toValues(gin));
@@ -222,6 +233,60 @@ export default function GinForm({ gin, distilleries }: Props) {
           <label htmlFor="description">Description</label>
           <textarea id="description" value={values.description} onChange={set("description")} />
         </div>
+        <fieldset className="span-2" style={{ border: "none", padding: 0, margin: "0 0 var(--space-3)" }}>
+          <legend style={{ fontWeight: 600, fontSize: "var(--font-size-small)" }}>Photos</legend>
+          {values.image_ids.length === 0 && <p className="field-hint">No photos yet.</p>}
+          <ol style={{ listStyle: "none", padding: 0, display: "grid", gap: "var(--space-2)" }}>
+            {values.image_ids.map((id, index) => {
+              const item = media.find((m) => m.id === id);
+              const moveTo = (target: number) =>
+                setValues((v) => {
+                  const ids = [...v.image_ids];
+                  [ids[index], ids[target]] = [ids[target], ids[index]];
+                  return { ...v, image_ids: ids };
+                });
+              return (
+                <li key={id} style={{ display: "flex", gap: "var(--space-3)", alignItems: "center", flexWrap: "wrap" }}>
+                  {item && <MediaImage media={{ ...item, alt: "" }} sizes="64px" className="photo-thumb" />}
+                  <span style={{ flex: 1 }}>
+                    {index === 0 ? "Main photo: " : `Photo ${index + 1}: `}
+                    {item?.label ?? "Image"}
+                  </span>
+                  <button type="button" className="button button-secondary" disabled={index === 0} onClick={() => moveTo(index - 1)}>
+                    Move up<span className="visually-hidden"> photo {index + 1}</span>
+                  </button>
+                  <button
+                    type="button"
+                    className="button button-secondary"
+                    onClick={() => setValues((v) => ({ ...v, image_ids: v.image_ids.filter((x) => x !== id) }))}
+                  >
+                    Remove<span className="visually-hidden"> photo {index + 1}</span>
+                  </button>
+                </li>
+              );
+            })}
+          </ol>
+          <div className="field">
+            <label htmlFor="add-photo">Add a photo from the media library</label>
+            <select
+              id="add-photo"
+              value=""
+              onChange={(event) => {
+                const id = event.target.value;
+                if (id) setValues((v) => ({ ...v, image_ids: [...v.image_ids, id] }));
+              }}
+            >
+              <option value="">Choose a photo…</option>
+              {media
+                .filter((m) => !values.image_ids.includes(m.id))
+                .map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.label}
+                  </option>
+                ))}
+            </select>
+          </div>
+        </fieldset>
         <div className="field-checkbox span-2">
           <input
             id="public_visible"

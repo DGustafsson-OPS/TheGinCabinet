@@ -182,7 +182,9 @@ export default async function CocktailPage({ params, searchParams }: { params: P
               <ul className={styles.pairings}>
                 {recipe.recommended_gins.map((gin) => (
                   <li key={gin.slug} className="card">
-                    <strong>{gin.display_name}</strong>
+                    <strong>
+                      <Link href={`/gins/${gin.slug}`}>{gin.display_name}</Link>
+                    </strong>
                     <div className="field-hint">
                       {[gin.country, `${gin.abv} %`].filter(Boolean).join(" · ")}
                     </div>

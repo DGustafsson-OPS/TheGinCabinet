@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { apiGet, requireAdmin } from "@/lib/server-api";
+import { mediaOptions } from "@/lib/media-options";
 import type { AdminName, Media, Page, Review } from "@/lib/types";
 
 import ReviewEditor from "./ReviewEditor";
@@ -21,18 +22,8 @@ export default async function ReviewPage({ params }: { params: Params }) {
   ]);
   if (!review) notFound();
 
-  const mediaOptions = (media.data?.items ?? []).map((m) => ({
-    id: m.id,
-    url: m.url,
-    alt: m.alt,
-    width: m.width,
-    height: m.height,
-    label: m.alt ?? m.original_filename ?? m.id.slice(0, 8),
-  }));
   // Keep the current cover selectable even if it isn't in the first 100.
-  if (review.cover_image && !mediaOptions.some((m) => m.id === review.cover_image!.id)) {
-    mediaOptions.unshift({ ...review.cover_image, label: review.cover_image.alt ?? "Current cover" });
-  }
+  const options = mediaOptions(media.data?.items ?? [], review.cover_image ? [review.cover_image] : []);
 
   return (
     <>
@@ -46,7 +37,7 @@ export default async function ReviewPage({ params }: { params: Params }) {
         </Link>
       </div>
       {/* `key`: after each save the page reloads and the editor starts fresh. */}
-      <ReviewEditor key={review.version} review={review} authors={authors.data ?? []} media={mediaOptions} />
+      <ReviewEditor key={review.version} review={review} authors={authors.data ?? []} media={options} />
     </>
   );
 }
