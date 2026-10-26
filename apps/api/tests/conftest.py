@@ -16,6 +16,7 @@ os.environ["GC_DATABASE_URL"] = os.environ.get(
     "GC_TEST_DATABASE_URL", f"sqlite:///{_db_dir}/test.db"
 )
 os.environ["GC_ALLOWED_ORIGINS"] = "http://localhost:3000"
+os.environ["GC_MEDIA_DIR"] = f"{_db_dir}/media"
 
 import pyotp  # noqa: E402  (imports below must come after the env setup above)
 import pytest  # noqa: E402

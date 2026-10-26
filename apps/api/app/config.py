@@ -49,6 +49,13 @@ class Settings(BaseSettings):
     # Comma-separated, e.g. "https://gincabinet.example.com".
     allowed_origins: str = "http://localhost:3000"
 
+    # --- Uploaded images (spec A09, §9) ---
+    # Folder for uploaded files. In Docker this is the /app/media volume.
+    media_dir: str = "./media"
+    max_upload_mb: int = 15
+    # Longest side of a stored image, in pixels. Bigger uploads are scaled down.
+    max_image_side: int = 3000
+
     # Name shown in authenticator apps next to the 6-digit code.
     totp_issuer: str = "The Gin Cabinet"
 

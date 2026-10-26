@@ -8,6 +8,8 @@ from pydantic import BaseModel, Field, PlainSerializer
 # A Decimal that is always sent as a string with exactly two decimals, e.g.
 # 41.4 -> "41.40". Used for ABV and money so the API output is consistent.
 Fixed2 = Annotated[Decimal, PlainSerializer(lambda d: f"{d:.2f}", return_type=str)]
+# Same idea with one decimal, for ratings out of 10: 8.5 -> "8.5".
+Fixed1 = Annotated[Decimal, PlainSerializer(lambda d: f"{d:.1f}", return_type=str)]
 
 
 class PageMeta(BaseModel):

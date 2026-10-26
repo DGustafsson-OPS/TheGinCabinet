@@ -17,6 +17,7 @@ dependencies = [
     "pyotp>=2.9",                # TOTP codes for MFA (spec §9)
     "cryptography>=43",          # encrypts the stored TOTP secrets
     "python-multipart>=0.0.9",   # lets FastAPI receive file uploads (CSV import)
+    "pillow>=11",                # reads and re-encodes uploaded images (strips GPS data)
 ]
 
 [project.optional-dependencies]

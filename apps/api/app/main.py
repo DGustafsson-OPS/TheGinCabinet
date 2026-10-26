@@ -15,9 +15,13 @@ from app.api.routes import (
     admin_dashboard,
     admin_data,
     admin_inventory,
+    admin_media,
+    admin_reviews,
+    admin_tastings,
     admin_users,
     auth,
     health,
+    public_reviews,
 )
 from app.config import get_settings
 from app.errors import register_error_handlers
@@ -48,6 +52,11 @@ def create_app() -> FastAPI:
     app.include_router(admin_inventory.router, prefix=API_PREFIX)
     app.include_router(admin_data.router, prefix=API_PREFIX)
     app.include_router(admin_users.router, prefix=API_PREFIX)
+    app.include_router(admin_media.router, prefix=API_PREFIX)
+    app.include_router(admin_media.files_router)  # its path already starts with /api/v1
+    app.include_router(admin_tastings.router, prefix=API_PREFIX)
+    app.include_router(admin_reviews.router, prefix=API_PREFIX)
+    app.include_router(public_reviews.router, prefix=API_PREFIX)
     return app
 
 

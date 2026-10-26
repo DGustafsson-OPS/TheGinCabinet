@@ -37,9 +37,15 @@ Progress against the delivery phases in
 | Choosing gins from long lists | ⬜ | Gin dropdowns show the first 100; switch to search-as-you-type when the catalogue grows |
 | Editing purchase lines after saving | ⬜ | Lines are fixed in V1 because they already created bottles |
 
-## Phase 3 – Editorial ⬜
-Tastings, reviews with revision history and draft→ready→published→archived,
-media library (EXIF GPS stripping), preview.
+## Phase 3 – Editorial
+
+| Item | Status | Notes |
+| --- | --- | --- |
+| Media library API (A09) | ✅ | JPEG/PNG/WebP only, size + pixel limits, re-encoded (EXIF/GPS removed), random file names, alt text / decorative flag, in-use delete protection, soft delete |
+| Tasting journal API (A05) | ✅ | Private; flavour scores 0–5; rating 0–10; only the author can edit; optional link to a bottle of the same gin |
+| Review API (A06) | ✅ | draft → ready → published → archived (+ withdraw); revision snapshot on every change; 409 conflicts; publish checks (public gin, verdict, rating, cover alt text) |
+| Public reviews API (P04/P05) | ✅ | Only published reviews of public gins; 404 otherwise; no private fields |
+| Admin screens: media, tastings, review editor, preview | ⬜ | Next |
 
 ## Phase 4 – Cocktails ⬜
 Ingredient master, recipe editor, serving scaler (1–12), gin recommendations,
