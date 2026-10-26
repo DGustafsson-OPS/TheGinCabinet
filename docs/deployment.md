@@ -28,6 +28,57 @@ if you ever need to move off Coolify.
 Nothing else is required: the site sends no email and needs no outside API
 or CDN.
 
+### Already running Coolify with other sites?
+
+Then you skip buying a server and installing Coolify: start at step 2 of
+[§5](#5-first-deployment-step-by-step). Check these five things first, because
+the Gin Cabinet will share the server with your other sites.
+
+**1. Room on the server.** Running, the three parts need roughly:
+
+| Part | Memory while running |
+| --- | --- |
+| PostgreSQL | 100–250 MB |
+| API | 150–300 MB |
+| Website | 150–300 MB |
+| **Total** | **~0.5–0.9 GB** |
+
+Building the website needs **~2 GB extra for a minute or two** on each deploy.
+That spike is what can slow your other sites. Check the headroom over SSH:
+
+```bash
+free -h                      # "available" should be > 2.5 GB
+df -h /                      # leave 20 GB+ free for images, photos and backups
+docker stats --no-stream     # what the existing sites use
+```
+
+If memory is tight, set **resource limits** in Coolify for each of the three
+parts (e.g. 512 MB each) so a mistake here can't starve the other sites.
+You can also build the images elsewhere so the server only downloads finished
+images: GitHub Actions can push them to GitHub's container registry, and
+Coolify can deploy a "Docker image" instead of building.
+
+**2. Its own database.** Create a **new** PostgreSQL resource for the Gin
+Cabinet rather than adding a database to another site's server. Backups,
+restores and upgrades then stay independent.
+
+**3. Isolation from the other sites.** By default Coolify puts every
+application on one shared Docker network, so another site's containers could
+reach this API and database directly. Both are still protected (sign-in,
+strong database password), but it's better to give this project its own
+network: in Coolify → **Servers → Destinations**, add a new Docker network
+(e.g. `gincabinet`) and choose it for the database, API and website. Then
+only these three can talk to each other, and `FORWARDED_ALLOW_IPS` trusts
+only them.
+
+**4. Names and domains.** Coolify's proxy already serves your other domains,
+so only add the new domain's DNS record. Use project-specific names for
+volumes and resources so nothing collides.
+
+**5. Backups.** If you already have an S3 storage in Coolify for other
+sites, you can reuse the bucket. Give this project its own folder/prefix
+(e.g. `gincabinet/`) so restores never mix sites up.
+
 ## 2. How the pieces fit together
 
 ```
@@ -118,7 +169,8 @@ password manager. Leave **"Make it publicly available"** off.
 
 1. **Install Coolify** on the server (one command from coolify.io). Open the
    dashboard, create your admin account, and give the dashboard its own
-   domain with HTTPS (e.g. `coolify.example.com`).
+   domain with HTTPS (e.g. `coolify.example.com`). *Already have Coolify?
+   Skip this step, and read [the shared-server checks](#already-running-coolify-with-other-sites) first.*
 2. **DNS:** create an `A` record (and `AAAA` for IPv6) for your site's domain
    pointing at the server. If you use Cloudflare, start with the proxy **off**
    (grey cloud) and read [§9](#9-real-visitor-ip-and-cloudflare) before turning it on.
