@@ -11,6 +11,7 @@ from app.errors import ApiError
 from app.models import (
     REVIEW_CONTENT_FIELDS,
     REVIEW_TRANSITIONS,
+    CocktailRecipe,
     MediaAsset,
     Review,
     ReviewRevision,
@@ -47,10 +48,13 @@ def media_summary(asset: MediaAsset | None) -> MediaSummary | None:
 def media_usage(db: Session, asset_id: uuid.UUID) -> list[str]:
     """Human-readable list of what uses an image (spec A09 "usage references").
 
-    Cocktails and blog posts will be added here when those phases arrive.
+    Blog posts will be added here when the Journal is built.
     """
-    titles = db.scalars(select(Review.title).where(Review.cover_media_id == asset_id))
-    return [f"Review: {title}" for title in titles]
+    reviews = db.scalars(select(Review.title).where(Review.cover_media_id == asset_id))
+    cocktails = db.scalars(
+        select(CocktailRecipe.title).where(CocktailRecipe.cover_media_id == asset_id)
+    )
+    return [f"Review: {t}" for t in reviews] + [f"Cocktail: {t}" for t in cocktails]
 
 
 def media_out(db: Session, asset: MediaAsset) -> MediaOut:
@@ -160,9 +164,13 @@ def review_out(review: Review) -> ReviewOut:
 # ---------------- Public output ----------------
 
 
-def teaser(review: Review) -> str:
-    """The first ~220 characters of the intro (or verdict), cut at a word."""
-    text = " ".join((review.intro or review.verdict or "").split())
+def teaser(item: Any) -> str:
+    """The first ~220 characters of the intro (or a review's verdict), cut at a word.
+
+    Works for reviews and cocktail recipes: anything with an ``intro``.
+    """
+    raw = item.intro or getattr(item, "verdict", None) or ""
+    text = " ".join(raw.split())
     if len(text) <= TEASER_LENGTH:
         return text
     return text[:TEASER_LENGTH].rsplit(" ", 1)[0] + "…"

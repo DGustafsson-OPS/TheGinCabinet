@@ -48,9 +48,15 @@ Progress against the delivery phases in
 | Admin screens: media, tastings, review editor, preview, revisions | ✅ | Drag-and-drop upload, flavour sliders, workflow buttons with publish checks, conflict screen |
 | Public review pages (P04/P05) | ✅ | `/reviews` (search, sort) and `/reviews/[slug]` with SEO metadata, Open Graph image and JSON-LD |
 
-## Phase 4 – Cocktails ⬜
-Ingredient master, recipe editor, serving scaler (1–12), gin recommendations,
-public recipe library.
+## Phase 4 – Cocktails
+
+| Item | Status | Notes |
+| --- | --- | --- |
+| Ingredient master + recipe API (A07) | ✅ | Ordered ingredient lines (decimal quantity + metric unit, "top up" has none), ordered steps, gin pairings with priority and note, tags, method/difficulty/glassware |
+| Serving scaler (P07) | ✅ | `?servings=1–12`; exact Decimal maths; garnish count scales; step text never changes |
+| Public library + detail API (P06/P07) | ✅ | Published only; filters (search, method, difficulty, tag); recommended gins only if public |
+| Gin → cocktails API | ✅ | `/public/gins/{slug}/cocktails` reads the same pairing table (consistent both ways) |
+| Admin + public cocktail screens | ⬜ | Next |
 
 ## Phase 5 – Public website ⬜
 Home, collection, gin profiles, distilleries, about, SEO, sitemap. (Reviews

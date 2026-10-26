@@ -8,6 +8,17 @@ from app.models.audit import AuditEvent
 from app.models.auth import AuthSession, LoginAttempt, RecoveryCode
 from app.models.bottles import ALLOWED_TRANSITIONS, IN_CABINET, Bottle, BottleEvent, BottleStatus
 from app.models.catalogue import Botanical, Distillery, GinProduct, GinStyle, gin_botanicals
+from app.models.cocktails import (
+    CocktailGinRecommendation,
+    CocktailRecipe,
+    CocktailStatus,
+    Difficulty,
+    Ingredient,
+    Method,
+    RecipeIngredient,
+    RecipeStep,
+    Unit,
+)
 from app.models.collection import Collection
 from app.models.editorial import (
     FLAVOUR_KEYS,
@@ -24,6 +35,15 @@ from app.models.user import User
 from app.models.wishlist import WishlistItem, WishlistStatus
 
 __all__ = [
+    "CocktailGinRecommendation",
+    "CocktailRecipe",
+    "CocktailStatus",
+    "Difficulty",
+    "Ingredient",
+    "Method",
+    "RecipeIngredient",
+    "RecipeStep",
+    "Unit",
     "ALLOWED_TRANSITIONS",
     "FLAVOUR_KEYS",
     "REVIEW_CONTENT_FIELDS",

@@ -12,6 +12,7 @@ from fastapi import FastAPI
 from app.api.routes import (
     admin_audit,
     admin_catalogue,
+    admin_cocktails,
     admin_dashboard,
     admin_data,
     admin_inventory,
@@ -21,6 +22,7 @@ from app.api.routes import (
     admin_users,
     auth,
     health,
+    public_cocktails,
     public_reviews,
 )
 from app.config import get_settings
@@ -57,6 +59,8 @@ def create_app() -> FastAPI:
     app.include_router(admin_tastings.router, prefix=API_PREFIX)
     app.include_router(admin_reviews.router, prefix=API_PREFIX)
     app.include_router(public_reviews.router, prefix=API_PREFIX)
+    app.include_router(admin_cocktails.router, prefix=API_PREFIX)
+    app.include_router(public_cocktails.router, prefix=API_PREFIX)
     return app
 
 
