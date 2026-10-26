@@ -4,6 +4,7 @@
 // This is a Server Component: it fetches the numbers on the server, using the
 // visitor's own session, and sends finished HTML to the browser.
 import type { Metadata } from "next";
+import Link from "next/link";
 
 import { describeEvent } from "@/lib/audit";
 import { apiGet, requireAdmin } from "@/lib/server-api";
@@ -27,6 +28,19 @@ function formatWhen(iso: string): string {
   }).format(new Date(iso));
 }
 
+// Shortcuts to the things added most often. Each is a plain link to the
+// page that already does the job, so there is nothing new to keep in sync.
+const QUICK_ACTIONS = [
+  { href: "/juniper/gins/new", label: "Add gin" },
+  { href: "/juniper/purchases/new", label: "Record purchase" },
+  { href: "/juniper/bottles/new", label: "Add bottle" },
+  { href: "/juniper/tastings/new", label: "New tasting" },
+  { href: "/juniper/reviews/new", label: "New review" },
+  { href: "/juniper/cocktails/new", label: "New cocktail" },
+  { href: "/juniper/blog/new", label: "New article" },
+  { href: "/juniper/tonics/new", label: "Add tonic" },
+  { href: "/juniper/media", label: "Upload photos" },
+];
 
 export default async function DashboardPage() {
   const session = await requireAdmin();
@@ -38,6 +52,21 @@ export default async function DashboardPage() {
         <h1>Dashboard</h1>
         <p className={styles.welcome}>Welcome back, {session.user.display_name}.</p>
       </header>
+
+      <nav aria-labelledby="quick-title" className={styles.quick}>
+        <h2 id="quick-title" className="visually-hidden">
+          Quick actions
+        </h2>
+        <ul>
+          {QUICK_ACTIONS.map((action) => (
+            <li key={action.href}>
+              <Link href={action.href} className="button button-secondary">
+                {action.label}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </nav>
 
       {!data ? (
         <p className="alert alert-error" role="alert">

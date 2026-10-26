@@ -89,6 +89,22 @@ test("the sidebar shows who is signed in", async ({ page }) => {
   await expect(page.getByText(/Signed in as/)).toBeVisible();
 });
 
+test("the dashboard's quick actions open the right pages", async ({ page }) => {
+  await signInThroughUi(page);
+  const quick = page.getByRole("navigation", { name: "Quick actions" });
+  const links = quick.getByRole("link");
+  await expect(links).toHaveCount(9);
+  // Follow each link and check the page it opens has a heading (no 404).
+  for (const href of await links.evaluateAll((all) => all.map((a) => a.getAttribute("href")!))) {
+    const response = await page.goto(href);
+    expect(response?.status(), href).toBe(200);
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  }
+  await gotoReady(page, "/juniper");
+  await quick.getByRole("link", { name: "Add gin" }).click();
+  await expect(page).toHaveURL(/\/juniper\/gins\/new$/);
+});
+
 test("every admin page sends signed-out visitors to the login page", async ({ page }) => {
   // One URL per admin page file (ids don't need to exist: the check comes first).
   const urls = [

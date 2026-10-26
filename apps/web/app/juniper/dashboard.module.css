@@ -7,6 +7,16 @@
   color: var(--color-muted);
 }
 
+/* Quick actions: a row of buttons that wraps on small screens. */
+.quick ul {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 var(--space-6);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
 .sectionTitle {
   font-size: var(--font-size-h3);
   margin-bottom: var(--space-4);
