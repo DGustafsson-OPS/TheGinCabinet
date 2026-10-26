@@ -22,6 +22,9 @@ node_modules/
 apps/api/media/
 backups/
 
+# --- Logs ---
+*.log
+
 # --- Editors / OS ---
 .idea/
 .vscode/

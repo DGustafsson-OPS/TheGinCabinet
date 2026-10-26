@@ -1,0 +1,25 @@
+.shell {
+  min-height: 100vh;
+  background: var(--color-warm-white);
+}
+
+.workspace {
+  padding: var(--space-5) var(--space-4) var(--space-7);
+  max-width: var(--page-max-width);
+}
+
+@media (min-width: 768px) {
+  .shell {
+    display: flex;
+    /* Paint the sidebar colour down the whole left edge, however long the page. */
+    background: linear-gradient(
+      to right,
+      var(--color-forest) var(--sidebar-width),
+      var(--color-warm-white) var(--sidebar-width)
+    );
+  }
+  .workspace {
+    flex: 1;
+    padding: var(--space-6);
+  }
+}

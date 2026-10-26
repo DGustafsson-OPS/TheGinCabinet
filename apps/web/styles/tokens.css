@@ -1,0 +1,62 @@
+/*
+ * Design tokens (spec §2 "Design language").
+ *
+ * A token is a named design decision: "the brass colour", "medium spacing".
+ * Components use the names (var(--color-brass)), never raw values, so the
+ * whole look can be adjusted here in one place.
+ */
+:root {
+  /* ---- Palette (spec: forest, charcoal, brass, cream, sage) ---- */
+  --color-forest: #19251f;
+  --color-forest-700: #24352c; /* slightly lighter forest for hover/borders */
+  --color-charcoal: #202020;
+  --color-brass: #c7a46b;
+  --color-brass-600: #7d5f2e; /* darker brass for text on light backgrounds (≥5:1 on cream) */
+  --color-cream: #f5f0e6;
+  --color-sage: #718173;
+  --color-warm-white: #fbf9f4; /* admin workspace (spec: "warm-white workspace") */
+  --color-white: #ffffff;
+  --color-border: #e2dbcc;
+  --color-muted: #5c625d; /* secondary text; 5.5:1 contrast on cream (WCAG AA needs 4.5) */
+  --color-danger: #a33a2c;
+  --color-danger-bg: #fbeae7;
+  --color-success: #2f6b46;
+  --color-success-bg: #e6f2ea;
+
+  /* ---- Typography ---- */
+  /* Editorial serif for public hero headings; Aptos/Inter-style sans for UI.
+     System fonts only: nothing is downloaded from third parties. */
+  --font-display: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+  --font-ui: Aptos, Inter, "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial,
+    sans-serif;
+  --font-size-body: 1rem; /* 16px default body (spec) */
+  --font-size-small: 0.875rem;
+  --font-size-h3: 1.25rem;
+  --font-size-h2: 1.75rem;
+  --font-size-h1: clamp(2.25rem, 5vw, 3.75rem); /* grows with the screen */
+  --line-height-body: 1.6;
+
+  /* ---- Spacing: 4/8/12/16/24/32/48 px scale (spec) ---- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px; /* form-row rhythm */
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+
+  /* ---- Surfaces & cards (spec: 8–12 px radius, subtle hover shadow) ---- */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --shadow-card: 0 1px 2px rgb(25 37 31 / 6%);
+  --shadow-card-hover: 0 6px 18px rgb(25 37 31 / 12%);
+
+  /* ---- Layout ---- */
+  --page-max-width: 1200px; /* page shell (spec §10A) */
+  --reading-max-width: 720px; /* comfortable reading column */
+  --touch-target: 44px; /* minimum tap size (spec: 44 px touch targets) */
+  --sidebar-width: 248px;
+
+  /* ---- Focus indicator (spec: WCAG 2.2 AA, visible focus) ---- */
+  --focus-ring: 0 0 0 3px var(--color-brass);
+}

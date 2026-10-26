@@ -16,7 +16,8 @@ Progress against the delivery phases in
 | Admin bootstrap / recovery CLI | ✅ | Max two admins; password and MFA reset |
 | Health endpoint, Dockerfile, docker-compose | ✅ | Non-root, multi-stage, healthcheck |
 | CI (lint + tests on PostgreSQL) | ✅ | `.github/workflows/api.yml` |
-| Design tokens, header/sidebar, admin login UI | ⬜ | Next.js app in `apps/web` |
+| Design tokens, header/sidebar, admin login UI | ✅ | `apps/web`: tokens, public masthead, admin sidebar, two-step login, dashboard |
+| Browser tests (Playwright) + web CI | ✅ | `.github/workflows/web.yml` runs them against the real API |
 | Admin self-service: change password, revoke sessions (A10) | ⬜ | |
 
 ## Phase 2 – Inventory (backend)
@@ -31,7 +32,7 @@ Progress against the delivery phases in
 | Optimistic locking: 409 + diff, `?force=true` (§6) | ✅ | Plus database-level `WHERE version = ?` check |
 | CSV import with preview / dedupe / reasons (§6, §11) | ✅ | Gins; `,` or `;` separated; `|` between botanicals |
 | Export (§6) | ✅ | Full JSON export + gins CSV (formula-injection safe) |
-| Admin UI screens for inventory | ⬜ | Next.js pages for A02–A04, A08 |
+| Admin UI screens for inventory | ⬜ | Next.js pages for A02–A04, A08 (dashboard A01 done) |
 | Editing purchase lines after saving | ⬜ | Lines are fixed in V1 because they already created bottles |
 
 ## Phase 3 – Editorial ⬜
@@ -50,6 +51,9 @@ Plus the Gin Journal blog (spec §10A).
 Security review, accessibility, performance, backup/restore test, Coolify runbook.
 
 ## Known follow-ups
+- Content-Security-Policy header for the website (needs per-request nonces with
+  Next.js); other security headers are already set.
+- Dashboard "quick actions" (A01) arrive with the inventory screens.
 - TOTP codes can be reused within their ~90 s validity window; add a
   "last used time step" per user to block replay.
 - Old rows in `login_attempts` and expired `auth_sessions` should be pruned by a

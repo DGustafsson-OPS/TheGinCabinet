@@ -12,11 +12,11 @@ Progress against its delivery phases is tracked in [`docs/roadmap.md`](docs/road
 
 | Folder | What lives there | Status |
 | --- | --- | --- |
-| [`apps/api/`](apps/api/) | FastAPI (Python) backend: database, auth, business rules | Phase 1 foundation built |
-| [`apps/web/`](apps/web/) | Next.js public site, admin UI and blog | Not started |
+| [`apps/api/`](apps/api/) | FastAPI (Python) backend: database, auth, inventory rules | Phases 1–2 built |
+| [`apps/web/`](apps/web/) | Next.js public site, admin UI and blog | Login, admin shell, dashboard |
 | [`packages/shared/`](packages/shared/) | Shared types and validation contracts | Not started |
-| [`infra/`](infra/) | Docker Compose and environment templates | Started |
-| [`docs/`](docs/) | Specification, roadmap and operational docs | Started |
+| [`infra/`](infra/) | Docker Compose and environment templates | Full stack runs |
+| [`docs/`](docs/) | Specification, roadmap, [deployment guide](docs/deployment.md) | Started |
 
 ## Quick start (backend)
 
@@ -36,9 +36,24 @@ uvicorn app.main:app --reload         # start the API on http://127.0.0.1:8000
 
 Then open <http://127.0.0.1:8000/api/v1/docs> for interactive API documentation.
 
+## Quick start (website)
+
+With the API running (above), in a second terminal:
+
+```bash
+cd apps/web
+npm install
+npm run dev                           # http://localhost:3000, sign in at /login
+```
+
+See [`apps/web/README.md`](apps/web/README.md) for how the frontend is built.
+
 ## Or run everything in Docker
 
 ```bash
 cp infra/.env.example infra/.env      # then edit the passwords/secrets
 docker compose -f infra/docker-compose.yml up --build
+docker compose -f infra/docker-compose.yml run --rm api \
+  python -m app.cli create-admin --username you --email you@example.com --display-name "You"
+# open http://localhost:3000
 ```

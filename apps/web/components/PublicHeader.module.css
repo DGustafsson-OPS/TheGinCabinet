@@ -1,0 +1,82 @@
+/* CSS Modules: class names here are private to PublicHeader, so they can't clash. */
+.masthead {
+  background: var(--color-forest);
+  color: var(--color-cream);
+}
+
+.inner {
+  max-width: var(--page-max-width);
+  margin: 0 auto;
+  padding: 0 var(--space-4);
+  min-height: 64px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brand {
+  font-family: var(--font-display);
+  font-size: 1.375rem;
+  color: var(--color-cream);
+  text-decoration: none;
+  letter-spacing: 0.02em;
+}
+
+.menuButton {
+  min-height: var(--touch-target);
+  padding: 0 var(--space-4);
+  border: 1px solid var(--color-brass);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-cream);
+  font: inherit;
+  cursor: pointer;
+}
+
+.nav,
+.navOpen {
+  width: 100%;
+}
+.nav {
+  display: none; /* hidden on phones until "Menu" is pressed */
+}
+.nav ul,
+.navOpen ul {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 var(--space-3);
+}
+.nav a,
+.navOpen a {
+  display: flex;
+  align-items: center;
+  min-height: var(--touch-target);
+  padding: 0 var(--space-2);
+  color: var(--color-cream);
+  text-decoration: none;
+}
+.nav a:hover,
+.navOpen a:hover,
+.nav a[aria-current="page"],
+.navOpen a[aria-current="page"] {
+  color: var(--color-brass);
+}
+
+/* Tablet and up (≥768 px): always show the menu in a row. */
+@media (min-width: 768px) {
+  .menuButton {
+    display: none;
+  }
+  .nav,
+  .navOpen {
+    display: block;
+    width: auto;
+  }
+  .nav ul,
+  .navOpen ul {
+    display: flex;
+    gap: var(--space-2);
+    padding: 0;
+  }
+}

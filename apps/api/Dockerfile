@@ -27,6 +27,9 @@ COPY --from=build /venv /venv
 COPY app ./app
 COPY migrations ./migrations
 COPY alembic.ini ./
+# Uploaded images will live here, on a Docker volume. Creating the folder now,
+# owned by `gin`, means the non-root app can write to that volume.
+RUN mkdir -p /app/media && chown gin:gin /app/media
 USER gin
 
 EXPOSE 8000

@@ -3,9 +3,11 @@
 #   cp infra/.env.example infra/.env        # then edit the values
 #   docker compose -f infra/docker-compose.yml up --build
 #   docker compose -f infra/docker-compose.yml run --rm api python -m app.cli create-admin ...
+#   open http://localhost:3000
 #
-# The database has NO published port: it's only reachable on the private
-# Docker network (spec §9: "PostgreSQL not public").
+# Only the website is published. The database and the API have NO published
+# port: they're reachable only on the private Docker network, and browsers
+# reach the API through the website's /api path (spec §9, §10B).
 
 name: gin-cabinet
 
@@ -39,12 +41,22 @@ services:
     depends_on:
       migrate:
         condition: service_completed_successfully
-    # Local development only: published on 127.0.0.1 so it isn't reachable
-    # from other machines. In Coolify, the proxy routes /api to this service.
-    ports:
-      - "127.0.0.1:8000:8000"
     volumes:
       - media:/app/media
+
+  web:
+    build:
+      context: ../apps/web
+      args:
+        API_INTERNAL_URL: http://api:8000
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    # Published on 127.0.0.1 only, so other machines can't reach it locally.
+    # In Coolify, its proxy publishes this service on your domain with HTTPS.
+    ports:
+      - "127.0.0.1:3000:3000"
 
 volumes:
   db-data:

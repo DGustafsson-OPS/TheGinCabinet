@@ -1,0 +1,160 @@
+/* Base styles shared by the public site and the admin area. */
+@import "./tokens.css";
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box; /* width includes padding: far easier layouts */
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+  color: var(--color-charcoal);
+  background: var(--color-cream);
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.2;
+  margin: 0 0 var(--space-4);
+}
+
+a {
+  color: var(--color-brass-600);
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Keyboard users must always see where they are (spec: focus indicators). */
+:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+  border-radius: 4px;
+}
+
+/* Text that only screen readers announce. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* "Skip to content" link: hidden until a keyboard user tabs to it. */
+.skip-link {
+  position: absolute;
+  left: var(--space-4);
+  top: -100px;
+  z-index: 100;
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-brass);
+  color: var(--color-forest);
+  font-weight: 600;
+}
+.skip-link:focus {
+  top: var(--space-4);
+}
+
+/* ---------- Buttons ---------- */
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--touch-target);
+  padding: 0 var(--space-5);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+.button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.button-primary {
+  background: var(--color-brass);
+  color: var(--color-forest);
+}
+.button-primary:hover:not(:disabled) {
+  background: #d4b47e;
+}
+.button-secondary {
+  background: transparent;
+  border-color: currentColor;
+  color: inherit;
+}
+.button-secondary:hover:not(:disabled) {
+  background: rgb(199 164 107 / 15%);
+}
+
+/* ---------- Forms ---------- */
+.field {
+  display: grid;
+  gap: var(--space-1);
+  margin-bottom: var(--space-3); /* 12px form-row rhythm */
+}
+.field label {
+  font-weight: 600;
+  font-size: var(--font-size-small);
+}
+.field input {
+  min-height: var(--touch-target);
+  padding: 0 var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font: inherit;
+  background: var(--color-white);
+  color: var(--color-charcoal);
+}
+.field input:focus-visible {
+  border-color: var(--color-brass-600);
+}
+.field-hint {
+  font-size: var(--font-size-small);
+  color: var(--color-muted);
+}
+
+/* ---------- Messages ---------- */
+.alert {
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--space-4);
+}
+.alert-error {
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+}
+
+/* ---------- Cards ---------- */
+.card {
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-5);
+  box-shadow: var(--shadow-card);
+}
+
+/* Respect people who ask their device for less motion. */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
