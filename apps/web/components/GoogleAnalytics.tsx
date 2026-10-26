@@ -5,13 +5,17 @@
 // GA4's "enhanced measurement" (on by default in GA) counts page views when
 // the address changes, so moving between pages inside the site is counted
 // too, without extra code here.
+//
+// `nonce`: the page's Content-Security-Policy only runs scripts that carry it
+// (see lib/csp.ts). gtag.js then loads Google's other scripts itself, which
+// the policy allows ('strict-dynamic').
 import Script from "next/script";
 
-export default function GoogleAnalytics({ id }: { id: string }) {
+export default function GoogleAnalytics({ id, nonce }: { id: string; nonce?: string }) {
   return (
     <>
-      <Script src={`https://www.googletagmanager.com/gtag/js?id=${id}`} strategy="afterInteractive" />
-      <Script id="ga-init" strategy="afterInteractive">
+      <Script src={`https://www.googletagmanager.com/gtag/js?id=${id}`} strategy="afterInteractive" nonce={nonce} />
+      <Script id="ga-init" strategy="afterInteractive" nonce={nonce}>
         {`window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());

@@ -102,18 +102,18 @@ Progress against the delivery phases in
 | Google Analytics with our own consent manager | Categories, Cookie settings page, proof of consent (no personal data), policy versions |
 | Admin area at `/juniper` | `/admin` is a 404; not listed in robots.txt |
 | Tonics | Simple catalogue (no stock) with per-admin reviews (draft/published), public list + pages |
+| Gin reviews ↔ tonics | A review can pick its tonic from the list; the review links to the tonic page, which lists "Gins we pour it with" |
+| Dashboard quick actions (A01) | Shortcuts to add a gin, purchase, bottle, tasting, review, cocktail, article, tonic, photos |
+| Authenticator codes work once | Each admin's last used 30-second step is stored; the same or older code is refused (migration 0010) |
+| Content-Security-Policy | `proxy.ts` + `lib/csp.ts`: a fresh script nonce per page, `'strict-dynamic'`, GA hosts only when GA is configured; tested against a smuggled `<script>` |
 
 ## Phase 8 – Launch QA ⬜
 Security review, accessibility audit, performance, backup/restore test,
 Coolify runbook walk-through.
 
 ## Known follow-ups
-- Content-Security-Policy header for the website (needs per-request nonces with
-  Next.js); other security headers are already set.
-- Dashboard "quick actions" (A01) arrive with the inventory screens.
-- TOTP codes can be reused within their ~90 s validity window; add a
-  "last used time step" per user to block replay. (The e2e tests sign in
-  twice per test with the same code, so they need a helper that waits for
-  the next code first.)
+- Adding a third-party script or service (maps, video embeds, another
+  analytics tool) means allowing its hosts in `apps/web/lib/csp.ts`, or the
+  browser will block it.
 - A known username can be temporarily locked out (15 min) by someone guessing
   wrong passwords. Acceptable for two admins, but worth knowing.

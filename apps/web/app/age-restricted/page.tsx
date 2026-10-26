@@ -1,5 +1,6 @@
 // Shown when a visitor answers "No" at the age gate. It lives outside the
 // public layout, so no site content (and no gate) appears here.
+import { connection } from "next/server";
 import type { Metadata } from "next";
 
 import { MINIMUM_AGE } from "@/lib/age-gate";
@@ -8,7 +9,10 @@ import styles from "../(public)/age-gate.module.css";
 
 export const metadata: Metadata = { title: "Age restricted", robots: { index: false } };
 
-export default function AgeRestrictedPage() {
+export default async function AgeRestrictedPage() {
+  // Render per request, not once at build time, so Next.js can put this
+  // request's script nonce on the page (see lib/csp.ts).
+  await connection();
   return (
     <main id="main" className={styles.restricted}>
       <div className={styles.panel}>

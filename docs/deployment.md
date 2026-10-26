@@ -346,6 +346,13 @@ To set it up:
 > The privacy page is written for this setup, but it isn't legal advice.
 > Have it checked if you're unsure, and keep it accurate if you change GA settings.
 
+**Content-Security-Policy.** Every page is sent with a CSP header (built in
+`apps/web/lib/csp.ts`) that lets the browser run only the site's own scripts.
+Google's hosts are allowed only while `GA_MEASUREMENT_ID` is set. If you ever
+add another outside service (a map, a video embed, a chat widget), add its
+hosts there too, or the browser will block it; the browser's developer
+console names the blocked address.
+
 ## 9. Real visitor IP and Cloudflare
 
 The API slows down password guessing per username **and** per IP address, so

@@ -10,7 +10,7 @@
 // Analytics: when GA_MEASUREMENT_ID is set, visitors who passed the gate are
 // asked once whether Google Analytics may run. Google's script is only loaded
 // after they accept (see lib/consent.ts).
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import Link from "next/link";
 
 import AgeGate from "@/components/AgeGate";
@@ -32,12 +32,14 @@ export default async function PublicLayout({ children }: { children: React.React
   const consent = parseConsent(jar.get(CONSENT_COOKIE)?.value);
   const askConsent = Boolean(gaId) && ageConfirmed && consent === null;
   const analyticsOn = Boolean(gaId) && ageConfirmed && consent?.analytics === true;
+  // This page's script nonce, made by proxy.ts (see lib/csp.ts).
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
 
   return (
     <>
       {!ageConfirmed && <AgeGate />}
       {askConsent && <ConsentBanner />}
-      {analyticsOn && gaId && <GoogleAnalytics id={gaId} />}
+      {analyticsOn && gaId && <GoogleAnalytics id={gaId} nonce={nonce} />}
       {/* `inert`: nothing behind the gate can be clicked, focused or read aloud. */}
       <div inert={!ageConfirmed} className={ageConfirmed ? undefined : gate.gated}>
         <PublicHeader />
