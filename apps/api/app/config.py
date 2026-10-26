@@ -59,6 +59,11 @@ class Settings(BaseSettings):
     # Name shown in authenticator apps next to the 6-digit code.
     totp_issuer: str = "The Gin Cabinet"
 
+    # The background job that publishes scheduled articles and tidies old
+    # sign-in records. Tests switch it off and call it directly instead.
+    scheduler_enabled: bool = True
+    scheduler_interval_seconds: int = 60
+
     @property
     def allowed_origin_list(self) -> list[str]:
         """Turn the comma-separated string into a clean Python list."""

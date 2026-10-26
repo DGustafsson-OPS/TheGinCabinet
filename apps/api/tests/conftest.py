@@ -17,6 +17,7 @@ os.environ["GC_DATABASE_URL"] = os.environ.get(
 )
 os.environ["GC_ALLOWED_ORIGINS"] = "http://localhost:3000"
 os.environ["GC_MEDIA_DIR"] = f"{_db_dir}/media"
+os.environ["GC_SCHEDULER_ENABLED"] = "false"  # tests call the jobs directly
 
 import pyotp  # noqa: E402  (imports below must come after the env setup above)
 import pytest  # noqa: E402

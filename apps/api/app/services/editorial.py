@@ -11,6 +11,7 @@ from app.errors import ApiError
 from app.models import (
     REVIEW_CONTENT_FIELDS,
     REVIEW_TRANSITIONS,
+    BlogPost,
     CocktailRecipe,
     GinImage,
     GinProduct,
@@ -50,7 +51,8 @@ def media_summary(asset: MediaAsset | None) -> MediaSummary | None:
 def media_usage(db: Session, asset_id: uuid.UUID) -> list[str]:
     """Human-readable list of what uses an image (spec A09 "usage references").
 
-    Blog posts will be added here when the Journal is built.
+    Journal articles count when the image is their featured or social image,
+    or appears inside the article.
     """
     reviews = db.scalars(select(Review.title).where(Review.cover_media_id == asset_id))
     cocktails = db.scalars(
@@ -61,10 +63,25 @@ def media_usage(db: Session, asset_id: uuid.UUID) -> list[str]:
         .join(GinImage, GinImage.gin_id == GinProduct.id)
         .where(GinImage.media_id == asset_id)
     )
+    wanted = str(asset_id)
+    articles = [
+        title
+        for title, hero, social, blocks in db.execute(
+            select(
+                BlogPost.title,
+                BlogPost.hero_media_id,
+                BlogPost.social_media_id,
+                BlogPost.body_blocks,
+            )
+        )
+        if asset_id in (hero, social)
+        or any(b.get("type") == "image" and str(b.get("media_id")) == wanted for b in blocks or [])
+    ]
     return (
         [f"Gin: {g.display_name}" for g in gins]
         + [f"Review: {t}" for t in reviews]
         + [f"Cocktail: {t}" for t in cocktails]
+        + [f"Article: {t}" for t in articles]
     )
 
 

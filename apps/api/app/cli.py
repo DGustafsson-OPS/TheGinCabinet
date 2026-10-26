@@ -144,6 +144,14 @@ def list_admins(_: argparse.Namespace) -> None:
             print(f"{user.username:<20} {user.email:<35} {state}  last login: {user.last_login_at}")
 
 
+def run_jobs_command(_: argparse.Namespace) -> None:
+    from app.services.maintenance import run_jobs
+
+    with SessionLocal() as db:
+        published = run_jobs(db)
+    print(f"Done. Published {published} scheduled article(s).")
+
+
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(prog="python -m app.cli", description=__doc__.split("\n")[0])
     sub = parser.add_subparsers(dest="command", required=True)
@@ -164,6 +172,9 @@ def main(argv: list[str] | None = None) -> None:
 
     p = sub.add_parser("list-admins", help="Show admin accounts")
     p.set_defaults(func=list_admins)
+
+    p = sub.add_parser("run-jobs", help="Publish due scheduled articles and tidy old sign-ins")
+    p.set_defaults(func=run_jobs_command)
 
     args = parser.parse_args(argv)
     args.func(args)  # call the function chosen by set_defaults above

@@ -6,6 +6,18 @@ Alembic sees every table when it compares models to the database.
 
 from app.models.audit import AuditEvent
 from app.models.auth import AuthSession, LoginAttempt, RecoveryCode
+from app.models.blog import (
+    POST_CONTENT_FIELDS,
+    POST_TRANSITIONS,
+    BlogCategory,
+    BlogPost,
+    BlogPostRelation,
+    BlogPostRevision,
+    BlogTag,
+    PostStatus,
+    RelationKind,
+    blog_post_tags,
+)
 from app.models.bottles import ALLOWED_TRANSITIONS, IN_CABINET, Bottle, BottleEvent, BottleStatus
 from app.models.catalogue import Botanical, Distillery, GinProduct, GinStyle, gin_botanicals
 from app.models.cocktails import (
@@ -36,6 +48,16 @@ from app.models.user import User
 from app.models.wishlist import WishlistItem, WishlistStatus
 
 __all__ = [
+    "POST_CONTENT_FIELDS",
+    "POST_TRANSITIONS",
+    "BlogCategory",
+    "BlogPost",
+    "BlogPostRelation",
+    "BlogPostRevision",
+    "BlogTag",
+    "PostStatus",
+    "RelationKind",
+    "blog_post_tags",
     "CocktailGinRecommendation",
     "CocktailRecipe",
     "CocktailStatus",
