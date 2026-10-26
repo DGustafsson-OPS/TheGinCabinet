@@ -23,3 +23,14 @@
   font-size: 1.25rem;
   color: var(--color-muted);
 }
+
+/* A wide photo at the top of a text page. */
+.banner {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  margin: var(--space-4) 0 var(--space-5);
+}

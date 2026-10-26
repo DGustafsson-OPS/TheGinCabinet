@@ -33,6 +33,8 @@ WORKDIR /app
 # node_modules; static assets are copied next to it.
 COPY --from=build --chown=node:node /app/.next/standalone ./
 COPY --from=build --chown=node:node /app/.next/static ./.next/static
+# Files in public/ (e.g. the home page photo) are served as-is from /.
+COPY --from=build --chown=node:node /app/public ./public
 # The official Node image already has an unprivileged "node" user.
 USER node
 

@@ -1,6 +1,7 @@
 // P09 About (spec §4): origin story, tasting method and how to get in touch.
 // No administrator names, usernames or emails are shown (spec P09).
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 
 import { publicGet } from "@/lib/public-api";
@@ -21,6 +22,14 @@ export default async function AboutPage() {
   return (
     <article className={styles.prose}>
       <h1>About {site?.site_name ?? "The Gin Cabinet"}</h1>
+      <Image
+        src="/images/juniper-berries.jpg"
+        alt="Fresh juniper berries and sprigs on a dark wooden table"
+        width={1408}
+        height={768}
+        className={styles.banner}
+        priority
+      />
       {intro.length > 0 ? (
         intro.map((paragraph, index) => (
           <p key={index} className={index === 0 ? styles.lead : undefined}>
