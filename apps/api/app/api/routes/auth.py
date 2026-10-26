@@ -9,7 +9,7 @@ The login is a two-step flow:
 """
 
 from fastapi import APIRouter, Request, Response
-from sqlalchemy import select
+from sqlalchemy import or_, select, update
 
 from app.api.deps import DbSession, OptionalSession, check_csrf, client_ip
 from app.config import get_settings
@@ -85,12 +85,38 @@ def login(body: LoginRequest, request: Request, response: Response, db: DbSessio
     return LoginResponse(mfa_required=True)
 
 
+def claim_totp_step(db: DbSession, user: User, step: int) -> bool:
+    """Record ``step`` as used, but only if it's newer than the last one used.
+
+    A single conditional UPDATE makes this safe even when two sign-ins with the
+    same code arrive at the same moment: only one of them changes the row.
+    """
+    result = db.execute(
+        update(User)
+        .where(
+            User.id == user.id,
+            or_(User.totp_last_step.is_(None), User.totp_last_step < step),
+        )
+        .values(totp_last_step=step)
+        .execution_options(synchronize_session=False)
+    )
+    if result.rowcount == 1:
+        user.totp_last_step = step
+        return True
+    return False
+
+
 def _check_mfa_code(db: DbSession, user: User, code: str) -> str | None:
-    """Return "totp" or "recovery_code" if the code is valid, else ``None``."""
-    if user.totp_secret_encrypted and mfa.verify_totp(
-        crypto.decrypt(user.totp_secret_encrypted), code
-    ):
-        return "totp"
+    """Return "totp" or "recovery_code" if the code is valid, else ``None``.
+
+    An authenticator code is valid only once: reusing it (even within its
+    validity window) is refused, so a code seen over someone's shoulder or
+    caught in transit can't be replayed.
+    """
+    if user.totp_secret_encrypted:
+        step = mfa.totp_step(crypto.decrypt(user.totp_secret_encrypted), code)
+        if step is not None and claim_totp_step(db, user, step):
+            return "totp"
     unused = db.scalars(
         select(RecoveryCode).where(RecoveryCode.user_id == user.id, RecoveryCode.used_at.is_(None))
     )

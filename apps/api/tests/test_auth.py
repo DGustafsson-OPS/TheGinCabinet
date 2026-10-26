@@ -1,7 +1,9 @@
 """End-to-end tests of sign-in, MFA, sessions, CSRF and throttling (spec §9, §11)."""
 
+import time
 from datetime import timedelta
 
+import pyotp
 from sqlalchemy import select
 
 from app.models import AuditEvent, AuthSession
@@ -70,6 +72,32 @@ def test_wrong_mfa_code_is_rejected(client, admin):
     r = client.post(VERIFY, json={"code": wrong})
     assert r.status_code == 401
     assert r.json()["error"]["code"] == "invalid_mfa_code"
+
+
+def test_authenticator_code_works_only_once(client, admin):
+    """A code seen over someone's shoulder can't be reused, even within its 30 s."""
+    code = admin.current_code()
+    client.post(LOGIN, json={"username": "anna", "password": admin.password})
+    assert client.post(VERIFY, json={"code": code}).status_code == 200
+
+    client.post(LOGOUT, headers={"X-CSRF-Token": client.get(SESSION).json()["csrf_token"]})
+    client.post(LOGIN, json={"username": "anna", "password": admin.password})
+    r = client.post(VERIFY, json={"code": code})
+    assert r.status_code == 401
+    assert r.json()["error"]["code"] == "invalid_mfa_code"
+    # The next code (a fresh one) works.
+    assert client.post(VERIFY, json={"code": admin.current_code()}).status_code == 200
+
+
+def test_older_codes_are_refused_after_a_newer_one(client, admin):
+    """Once a code from window N is used, codes from window N-1 are refused too."""
+    totp = pyotp.TOTP(admin.totp_secret)
+    now = time.time()
+    client.post(LOGIN, json={"username": "anna", "password": admin.password})
+    assert client.post(VERIFY, json={"code": totp.at(now + 30)}).status_code == 200
+    client.post(LOGOUT, headers={"X-CSRF-Token": client.get(SESSION).json()["csrf_token"]})
+    client.post(LOGIN, json={"username": "anna", "password": admin.password})
+    assert client.post(VERIFY, json={"code": totp.at(now)}).status_code == 401
 
 
 def test_recovery_code_works_only_once(client, admin):

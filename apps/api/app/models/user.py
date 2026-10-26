@@ -3,7 +3,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Boolean, String, Text
+from sqlalchemy import BigInteger, Boolean, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db import Base
@@ -27,6 +27,9 @@ class User(Base):
     # A new secret being set up from the Settings page. It replaces the real
     # one only after the admin proves it works by typing a code from it.
     totp_pending_encrypted: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # The 30-second window of the last code accepted. A code from that window
+    # (or an earlier one) is refused, so a code can't be used twice.
+    totp_last_step: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
     enabled: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)
     last_login_at: Mapped[datetime | None] = mapped_column(UTCDateTime, nullable=True)

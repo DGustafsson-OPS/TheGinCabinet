@@ -8,7 +8,9 @@ Recovery codes are single-use backups for when the phone is lost. Like
 passwords, we store only their hashes.
 """
 
+import hmac
 import secrets
+import time
 
 import pyotp
 
@@ -24,6 +26,26 @@ def new_totp_secret() -> str:
 def provisioning_uri(secret: str, username: str, issuer: str) -> str:
     """The ``otpauth://`` link an authenticator app understands (often shown as a QR code)."""
     return pyotp.TOTP(secret).provisioning_uri(name=username, issuer_name=issuer)
+
+
+TOTP_PERIOD = 30  # seconds per code
+
+
+def totp_step(secret: str, code: str, now: float | None = None) -> int | None:
+    """Return the 30-second "step" (window number) this code belongs to, or None.
+
+    Like ``verify_totp`` it also accepts the previous and next window, for small
+    clock differences. Knowing the step lets the caller refuse a code that was
+    already used (a "replay"): see ``auth._check_mfa_code``.
+    """
+    code = code.strip().replace(" ", "")
+    totp = pyotp.TOTP(secret)
+    current = int((now if now is not None else time.time()) // TOTP_PERIOD)
+    for step in (current, current - 1, current + 1):
+        # compare_digest takes the same time whether the codes match or not.
+        if hmac.compare_digest(totp.at(step * TOTP_PERIOD), code):
+            return step
+    return None
 
 
 def verify_totp(secret: str, code: str) -> bool:

@@ -6,6 +6,7 @@ test asks for it by naming it as a parameter, e.g. ``def test_x(client):``.
 
 import os
 import tempfile
+import time
 from dataclasses import dataclass
 
 # Point the app at a throwaway database BEFORE importing it, because the
@@ -59,8 +60,20 @@ class AdminFixture:
     totp_secret: str
     recovery_codes: list[str]
 
+    last_step: int = -1
+
     def current_code(self) -> str:
-        return pyotp.TOTP(self.totp_secret).now()
+        """A valid code that hasn't been used yet.
+
+        The API refuses a code from a 30-second window it already accepted. The
+        server also accepts the *next* window's code, so we use that when the
+        current one is taken, and only wait when both are used.
+        """
+        step = max(int(time.time() // mfa.TOTP_PERIOD), self.last_step + 1)
+        while step > int(time.time() // mfa.TOTP_PERIOD) + 1:
+            time.sleep(0.5)  # rare: three sign-ins within one window
+        self.last_step = step
+        return pyotp.TOTP(self.totp_secret).at(step * mfa.TOTP_PERIOD)
 
 
 def make_admin(db, username: str = "anna", email: str = "anna@example.com") -> AdminFixture:

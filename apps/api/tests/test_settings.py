@@ -1,5 +1,7 @@
 """Settings & admins (spec §5 A10)."""
 
+import time
+
 import pyotp
 
 from tests.conftest import PASSWORD, make_admin, sign_in
@@ -132,7 +134,12 @@ def test_move_mfa_to_a_new_app(api, admin, client):
     old_code = admin.current_code()
     if old_code != new_code:
         assert client.post("/api/v1/auth/mfa/verify", json={"code": old_code}).status_code == 401
-    r = client.post("/api/v1/auth/mfa/verify", json={"code": pyotp.TOTP(setup["secret"]).now()})
+    # The confirmation code itself was "used" and can't sign in again...
+    r = client.post("/api/v1/auth/mfa/verify", json={"code": new_code})
+    assert r.status_code == 401
+    # ...but the new app's next code works.
+    next_code = pyotp.TOTP(setup["secret"]).at(time.time() + 30)
+    r = client.post("/api/v1/auth/mfa/verify", json={"code": next_code})
     assert r.status_code == 200
 
 

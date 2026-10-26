@@ -260,9 +260,11 @@ def confirm_mfa_change(body: MfaConfirm, admin: CurrentAdminWrite, db: DbSession
     user = admin.user
     if user.totp_pending_encrypted is None:
         raise ApiError(409, "no_mfa_setup", "Start the authenticator change first.")
-    if not mfa.verify_totp(crypto.decrypt(user.totp_pending_encrypted), body.code):
+    step = mfa.totp_step(crypto.decrypt(user.totp_pending_encrypted), body.code)
+    if step is None:
         raise ApiError(422, "invalid_mfa_code", "That code is not valid. Check the new app's code.")
     user.totp_secret_encrypted = user.totp_pending_encrypted
+    user.totp_last_step = step  # this code has now been used; it can't sign in too
     user.totp_pending_encrypted = None
     codes = _new_recovery_codes(db, user)
     _revoke_other_sessions(db, user, admin.session)

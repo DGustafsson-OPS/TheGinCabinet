@@ -3,7 +3,7 @@
 import { expect, test } from "@playwright/test";
 
 import { HAS_CREDENTIALS, PASSWORD, SECRET, USERNAME, gotoReady, signInThroughUi, signedInApi } from "./helpers";
-import { totp } from "./totp";
+import { freshCode } from "./totp";
 
 test.skip(!HAS_CREDENTIALS, "Set E2E_PASSWORD and E2E_TOTP_SECRET (see e2e/README.md)");
 
@@ -58,7 +58,7 @@ test("two-step sign-in, dashboard numbers, mobile menu and sign-out", async ({ p
   const codeBox = page.getByLabel("Authentication code");
   await expect(codeBox).toBeFocused();
   await expect(codeBox).toHaveValue("");
-  await codeBox.fill(totp(SECRET));
+  await codeBox.fill(await freshCode(SECRET));
   await page.getByRole("button", { name: "Sign in" }).click();
   await expect(page).toHaveURL(/\/juniper$/);
 
