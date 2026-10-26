@@ -75,14 +75,19 @@ def replace_lists(db: Session, recipe: CocktailRecipe, data: dict[str, Any]) -> 
         for gin_id in gin_ids:
             if db.get(GinProduct, gin_id) is None:
                 raise ApiError(404, "not_found", "A recommended gin doesn't exist.")
-        recipe.gin_recommendations = [
-            CocktailGinRecommendation(
-                gin_id=pairing["gin_id"],
-                priority=pairing.get("priority", 1),
-                pairing_note=pairing.get("pairing_note"),
+        # Reuse the row for a gin that stays: a new row for the same gin would
+        # clash with the unique (recipe, gin) rule, because the database
+        # inserts new rows before it deletes the old ones.
+        existing = {rec.gin_id: rec for rec in recipe.gin_recommendations}
+        rows = []
+        for pairing in data["gins"]:
+            row = existing.get(pairing["gin_id"]) or CocktailGinRecommendation(
+                gin_id=pairing["gin_id"]
             )
-            for pairing in data["gins"]
-        ]
+            row.priority = pairing.get("priority", 1)
+            row.pairing_note = pairing.get("pairing_note")
+            rows.append(row)
+        recipe.gin_recommendations = rows
 
 
 def check_can_publish(recipe: CocktailRecipe) -> None:

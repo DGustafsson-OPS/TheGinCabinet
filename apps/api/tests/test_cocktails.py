@@ -205,3 +205,19 @@ def test_cocktail_cover_counts_as_media_use(api):
     image = upload(api, jpeg_with_gps(), alt="A G&T").json()
     create(api, cover_media_id=image["id"])
     assert api.delete(f"/api/v1/admin/media/{image['id']}").status_code == 409
+
+
+def test_resaving_the_same_gin_pairing_works(api):
+    """Replacing the pairing list with the same gin must not hit the unique rule."""
+    gin = make_gin(api)
+    recipe = create(api, gins=[{"gin_id": gin["id"], "pairing_note": "Old note"}])
+    r = api.patch(
+        f"{ADMIN}/{recipe['id']}",
+        json={
+            "version": recipe["version"],
+            "gins": [{"gin_id": gin["id"], "priority": 2, "pairing_note": "New note"}],
+        },
+    )
+    assert r.status_code == 200, r.text
+    assert r.json()["gins"][0]["pairing_note"] == "New note"
+    assert r.json()["gins"][0]["priority"] == 2

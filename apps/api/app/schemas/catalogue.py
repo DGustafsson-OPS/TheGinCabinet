@@ -20,7 +20,7 @@ from typing import Annotated
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.models import GinStyle
-from app.schemas.common import Fixed2
+from app.schemas.common import Fixed2, MediaSummary
 
 SLUG_PATTERN = r"^[a-z0-9]+(?:-[a-z0-9]+)*$"
 
@@ -111,6 +111,8 @@ class GinIn(BaseModel):
     description: str | None = Field(default=None, max_length=20_000)
     public_visible: bool = False
     botanicals: list[str] = Field(default_factory=list, max_length=40)
+    # Photos from the media library, in order: the first is the main photo.
+    image_ids: list[uuid.UUID] = Field(default_factory=list, max_length=12)
 
     _botanicals = field_validator("botanicals")(_clean_botanicals)
 
@@ -133,6 +135,7 @@ class GinPatch(BaseModel):
     description: str | None = Field(default=None, max_length=20_000)
     public_visible: bool | None = None
     botanicals: list[str] | None = Field(default=None, max_length=40)
+    image_ids: list[uuid.UUID] | None = Field(default=None, max_length=12)
 
     _botanicals = field_validator("botanicals")(_clean_botanicals)
 
@@ -156,11 +159,18 @@ class GinOut(GinSummary):
     description: str | None
     public_visible: bool
     botanicals: list[str]
+    images: list[MediaSummary] = []
     bottles_in_cabinet: int = 0
     bottles_total: int = 0
     version: int
     created_at: datetime
     updated_at: datetime
+
+    @field_validator("images", mode="before")
+    @classmethod
+    def _no_raw_images(cls, value):
+        # The model holds GinImage rows; services/catalogue.py fills this in.
+        return [v for v in value if isinstance(v, MediaSummary | dict)]
 
     @field_validator("botanicals", mode="before")
     @classmethod

@@ -8,6 +8,7 @@ have many bottles of different sizes, prices and states.
 import uuid
 from decimal import Decimal
 from enum import StrEnum
+from typing import TYPE_CHECKING
 
 from sqlalchemy import (
     Boolean,
@@ -25,6 +26,11 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db import Base
 from app.models._mixins import Versioned
 from app.models._types import UUIDType, new_uuid
+
+# Only for type checkers: importing it for real would create an import loop,
+# because editorial.py imports this file.
+if TYPE_CHECKING:
+    from app.models.editorial import GinImage
 
 
 class GinStyle(StrEnum):
@@ -113,6 +119,11 @@ class GinProduct(Versioned, Base):
     distillery: Mapped[Distillery | None] = relationship(lazy="joined")
     botanicals: Mapped[list[Botanical]] = relationship(
         secondary=gin_botanicals, order_by=Botanical.name, lazy="selectin"
+    )
+    # Bottle photos (spec A02 "images", P03 "hero bottle photo, thumbnails").
+    # "GinImage" is written as text and looked up by SQLAlchemy later.
+    images: Mapped[list["GinImage"]] = relationship(
+        order_by="GinImage.position", cascade="all, delete-orphan", lazy="selectin"
     )
 
     @property

@@ -22,6 +22,7 @@ from app.api.routes import (
     admin_users,
     auth,
     health,
+    public_catalogue,
     public_cocktails,
     public_reviews,
 )
@@ -61,6 +62,7 @@ def create_app() -> FastAPI:
     app.include_router(public_reviews.router, prefix=API_PREFIX)
     app.include_router(admin_cocktails.router, prefix=API_PREFIX)
     app.include_router(public_cocktails.router, prefix=API_PREFIX)
+    app.include_router(public_catalogue.router, prefix=API_PREFIX)
     return app
 
 

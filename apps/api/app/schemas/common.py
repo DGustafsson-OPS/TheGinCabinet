@@ -1,5 +1,6 @@
 """Schemas shared by many endpoints."""
 
+import uuid
 from decimal import Decimal
 from typing import Annotated
 
@@ -10,6 +11,16 @@ from pydantic import BaseModel, Field, PlainSerializer
 Fixed2 = Annotated[Decimal, PlainSerializer(lambda d: f"{d:.2f}", return_type=str)]
 # Same idea with one decimal, for ratings out of 10: 8.5 -> "8.5".
 Fixed1 = Annotated[Decimal, PlainSerializer(lambda d: f"{d:.1f}", return_type=str)]
+
+
+class MediaSummary(BaseModel):
+    """An image as shown on a page: its address, alt text and size."""
+
+    id: uuid.UUID
+    url: str
+    alt: str | None
+    width: int
+    height: int
 
 
 class PageMeta(BaseModel):

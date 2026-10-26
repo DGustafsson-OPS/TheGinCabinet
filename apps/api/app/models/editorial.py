@@ -57,6 +57,24 @@ class MediaAsset(Versioned, Base):
     deleted_at: Mapped[datetime | None] = mapped_column(UTCDateTime, nullable=True)
 
 
+class GinImage(Base):
+    """One photo of a gin, in display order: the first is the main photo."""
+
+    __tablename__ = "gin_images"
+    __table_args__ = (UniqueConstraint("gin_id", "media_id", name="uq_gin_image"),)
+
+    id: Mapped[uuid.UUID] = mapped_column(UUIDType, primary_key=True, default=new_uuid)
+    gin_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("gin_products.id", ondelete="CASCADE"), index=True
+    )
+    media_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("media_assets.id", ondelete="RESTRICT"), index=True
+    )
+    position: Mapped[int] = mapped_column(Integer, default=0)
+
+    media: Mapped[MediaAsset] = relationship(lazy="joined")
+
+
 # ---------------- Tastings ----------------
 
 # The flavour sliders (0–5) shown in the tasting form (spec A05).

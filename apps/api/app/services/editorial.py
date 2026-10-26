@@ -12,6 +12,8 @@ from app.models import (
     REVIEW_CONTENT_FIELDS,
     REVIEW_TRANSITIONS,
     CocktailRecipe,
+    GinImage,
+    GinProduct,
     MediaAsset,
     Review,
     ReviewRevision,
@@ -54,7 +56,16 @@ def media_usage(db: Session, asset_id: uuid.UUID) -> list[str]:
     cocktails = db.scalars(
         select(CocktailRecipe.title).where(CocktailRecipe.cover_media_id == asset_id)
     )
-    return [f"Review: {t}" for t in reviews] + [f"Cocktail: {t}" for t in cocktails]
+    gins = db.scalars(
+        select(GinProduct)
+        .join(GinImage, GinImage.gin_id == GinProduct.id)
+        .where(GinImage.media_id == asset_id)
+    )
+    return (
+        [f"Gin: {g.display_name}" for g in gins]
+        + [f"Review: {t}" for t in reviews]
+        + [f"Cocktail: {t}" for t in cocktails]
+    )
 
 
 def media_out(db: Session, asset: MediaAsset) -> MediaOut:

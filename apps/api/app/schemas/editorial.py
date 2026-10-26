@@ -14,7 +14,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.models import FLAVOUR_KEYS, ReviewStatus
 from app.schemas.catalogue import SLUG_PATTERN, GinSummary
-from app.schemas.common import Fixed1, Fixed2
+from app.schemas.common import Fixed1, Fixed2, MediaSummary
 
 Rating = Annotated[Decimal, Field(ge=0, le=10, max_digits=3, decimal_places=1)]
 LongText = Annotated[str, Field(max_length=20_000)]
@@ -59,14 +59,6 @@ class MediaPatch(BaseModel):
     decorative: bool | None = None
     credit: str | None = Field(default=None, max_length=200)
     rights: str | None = Field(default=None, max_length=200)
-
-
-class MediaSummary(BaseModel):
-    id: uuid.UUID
-    url: str
-    alt: str | None
-    width: int
-    height: int
 
 
 # ---------------- Tastings ----------------
