@@ -6,7 +6,10 @@
 // Safety rules from the spec:
 // * Autosave runs only for drafts, never forces over someone else's save, and
 //   can never publish anything.
-// * Leaving the page with unsaved changes asks for confirmation.
+// * Leaving the page with unsaved changes asks for confirmation, inside the
+//   page (UnsavedChangesGuard). Closing the tab or reloading can't show an
+//   in-page question, so unsaved edits are kept as a local copy in this
+//   browser and offered back next time (lib/local-copy.ts).
 // * Publishing, scheduling and archiving ask "Are you sure?" first.
 
 import Link from "next/link";
@@ -19,14 +22,19 @@ import ConfirmButton from "@/components/admin/ConfirmButton";
 import ConflictPanel from "@/components/admin/ConflictPanel";
 import PostStatusBadge from "@/components/admin/PostStatusBadge";
 import Tabs from "@/components/admin/Tabs";
+import UnsavedChangesGuard from "@/components/admin/UnsavedChangesGuard";
 import { ApiError } from "@/lib/api-client";
+import { clearLocalCopy, parseLocalCopy, readLocalCopyRaw, writeLocalCopy } from "@/lib/local-copy";
 import type { MediaOption } from "@/lib/media-options";
 import type { Category, ConflictDetails, Person, Post, RelationKind } from "@/lib/types";
 
 import BlockEditor, { type BlockRow, KIND_LABELS, type RefOptions, cleanBlocks } from "./BlockEditor";
 
 const AUTOSAVE_AFTER_MS = 15_000; // quiet time after the last change
-const noSubscription = () => () => {}; // the time zone never changes while the page is open
+const noSubscription = () => () => {}; // read once: these values don't change while the page is open
+
+/** What the local safety copy holds: everything on screen. */
+type Snapshot = { fields: Fields; blocks: BlockRow[]; relations: RelationRow[] };
 
 type Fields = {
   title: string; slug: string; excerpt: string; category_id: string; tags: string;
@@ -177,13 +185,48 @@ export default function PostEditor({ post, categories, authors, media, refs }: P
     return () => clearTimeout(timer); // typing again restarts the wait
   }, [draftChanges, changeKey]);
 
-  // Warn before closing the tab or reloading with unsaved changes.
+  // Unsaved edits from an earlier visit (tab closed, reloaded, Back button).
+  // Read from this browser once; the server's first HTML has none.
+  const copyKey = `gc-unsaved-post:${post.id}`;
+  const copyRaw = useSyncExternalStore(noSubscription, () => readLocalCopyRaw(copyKey), () => null);
+  const [copyHandled, setCopyHandled] = useState(false);
+  const copy = parseLocalCopy<Snapshot>(copyRaw);
+  const copyDiffers =
+    copy !== null &&
+    JSON.stringify(payload(copy.data.fields, copy.data.blocks, copy.data.relations)) !== JSON.stringify(original);
+  const offerCopy = copyDiffers && !copyHandled;
+
+  // Keep the local copy up to date while there are unsaved changes, and drop
+  // it once they're saved. (Not while the restore question is still open,
+  // so the earlier copy isn't overwritten before it's answered.)
+  const wasDirty = useRef(false);
   useEffect(() => {
-    if (!dirty) return;
-    const warn = (event: BeforeUnloadEvent) => event.preventDefault();
-    window.addEventListener("beforeunload", warn);
-    return () => window.removeEventListener("beforeunload", warn);
-  }, [dirty]);
+    if (offerCopy) return;
+    if (dirty) {
+      writeLocalCopy<Snapshot>(copyKey, saved.version, { fields, blocks, relations });
+      wasDirty.current = true;
+    } else if (wasDirty.current) {
+      clearLocalCopy(copyKey);
+      wasDirty.current = false;
+    }
+    // changeKey stands for fields/blocks/relations (it's their JSON).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dirty, changeKey, offerCopy, copyKey, saved.version]);
+
+  function restoreCopy() {
+    if (!copy) return;
+    setFields(copy.data.fields);
+    setBlocks(copy.data.blocks);
+    setRelations(copy.data.relations);
+    setCopyHandled(true);
+    toast("Unsaved changes restored. Save to keep them.");
+  }
+
+  function discardCopy() {
+    clearLocalCopy(copyKey);
+    setCopyHandled(true);
+    toast("Unsaved changes discarded.");
+  }
 
   async function act(action: "publish" | "schedule" | "unpublish" | "archive", success: string, extra = {}) {
     setBusy(true);
@@ -267,6 +310,30 @@ export default function PostEditor({ post, categories, authors, media, refs }: P
 
   return (
     <>
+      <UnsavedChangesGuard dirty={dirty} onLeave={() => clearLocalCopy(copyKey)} />
+      {offerCopy && copy && (
+        <div className="alert alert-warning" role="region" aria-label="Unsaved changes found">
+          <p style={{ marginTop: 0 }}>
+            <strong>Unsaved changes found.</strong> This browser kept edits to this article from{" "}
+            {new Date(copy.savedAt).toLocaleString([], { dateStyle: "medium", timeStyle: "short" })} that were never saved.
+            {copy.version !== saved.version && " The article has been saved since then, so check the result before saving."}
+          </p>
+          <div className="form-actions" style={{ marginTop: 0 }}>
+            <button type="button" className="button button-primary" onClick={restoreCopy}>
+              Restore them
+            </button>
+            <ConfirmButton
+              label="Discard"
+              title="Discard the unsaved changes?"
+              description="The edits kept in this browser are deleted for good. The saved article is not affected."
+              confirmLabel="Discard changes"
+              danger
+              quiet
+              onConfirm={discardCopy}
+            />
+          </div>
+        </div>
+      )}
       <section className="card" aria-labelledby={id("workflow")} style={{ marginBottom: "var(--space-4)" }}>
         <h2 id={id("workflow")} style={{ fontSize: "var(--font-size-h3)" }}>
           Status: <PostStatusBadge post={saved} />
@@ -554,9 +621,14 @@ function RelationsEditor({ idPrefix, rows, onChange, newKey, refs, statusOf }: R
                 </select>
                 {known && !known.public && <span className="field-hint">Not public: it won&apos;t show on the site.</span>}
               </div>
-              <button type="button" className="button button-secondary" onClick={() => onChange(rows.filter((_, i) => i !== index))}>
-                Remove<span className="visually-hidden"> related item {index + 1}</span>
-              </button>
+              <ConfirmButton
+                quiet
+                label={<>Remove<span className="visually-hidden"> related item {index + 1}</span></>}
+                title={`Remove related item ${index + 1}?`}
+                description="The linked gin, review or recipe itself is not affected. It disappears from the form now; nothing is saved until you press Save."
+                confirmLabel="Remove"
+                onConfirm={() => onChange(rows.filter((_, i) => i !== index))}
+              />
             </li>
           );
         })}

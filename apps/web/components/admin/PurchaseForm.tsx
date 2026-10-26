@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useId, useRef, useState } from "react";
 
 import { errorMessage, useAdmin } from "@/components/admin/AdminProvider";
+import ConfirmButton from "@/components/admin/ConfirmButton";
 import { formatMoney, today } from "@/lib/format";
 import type { GinSummary, Purchase } from "@/lib/types";
 
@@ -196,13 +197,14 @@ export default function PurchaseForm({
               </div>
             </div>
             {lines.length > 1 && (
-              <button
-                type="button"
-                className="button button-secondary"
-                onClick={() => setLines((current) => current.filter((l) => l.key !== line.key))}
-              >
-                Remove line {index + 1}
-              </button>
+              <ConfirmButton
+                quiet
+                label={`Remove line ${index + 1}`}
+                title={`Remove line ${index + 1}?`}
+                description="Its gin, size, quantity and price are cleared. It disappears from the form now; nothing is saved until you press Save."
+                confirmLabel="Remove line"
+                onConfirm={() => setLines((current) => current.filter((l) => l.key !== line.key))}
+              />
             )}
           </div>
         ))}

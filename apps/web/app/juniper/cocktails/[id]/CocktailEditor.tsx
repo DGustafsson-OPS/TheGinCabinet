@@ -319,9 +319,14 @@ export default function CocktailEditor({ cocktail, gins, media, knownIngredients
               <button type="button" className="button button-secondary" disabled={index === lines.length - 1} onClick={() => setLines((all) => move(all, index, 1))}>
                 Move down<span className="visually-hidden"> ingredient {n}</span>
               </button>
-              <button type="button" className="button button-secondary" onClick={() => setLines((all) => all.filter((l) => l.key !== line.key))}>
-                Remove<span className="visually-hidden"> ingredient {n}</span>
-              </button>
+              <ConfirmButton
+                quiet
+                label={<>Remove<span className="visually-hidden"> ingredient {n}</span></>}
+                title={`Remove ingredient ${n}?`}
+                description="It disappears from the form now; nothing is saved until you press Save."
+                confirmLabel="Remove ingredient"
+                onConfirm={() => setLines((all) => all.filter((l) => l.key !== line.key))}
+              />
             </div>
           </fieldset>
         );
@@ -360,9 +365,14 @@ export default function CocktailEditor({ cocktail, gins, media, knownIngredients
               <button type="button" className="button button-secondary" disabled={index === steps.length - 1} onClick={() => setSteps((all) => move(all, index, 1))}>
                 Move down<span className="visually-hidden"> step {index + 1}</span>
               </button>
-              <button type="button" className="button button-secondary" onClick={() => setSteps((all) => all.filter((s) => s.key !== step.key))}>
-                Remove<span className="visually-hidden"> step {index + 1}</span>
-              </button>
+              <ConfirmButton
+                quiet
+                label={<>Remove<span className="visually-hidden"> step {index + 1}</span></>}
+                title={`Remove step ${index + 1}?`}
+                description="It disappears from the form now; nothing is saved until you press Save."
+                confirmLabel="Remove step"
+                onConfirm={() => setSteps((all) => all.filter((s) => s.key !== step.key))}
+              />
             </div>
           </li>
         ))}
@@ -435,9 +445,14 @@ export default function CocktailEditor({ cocktail, gins, media, knownIngredients
                 <input id={`${formId}-note-${row.key}`} value={row.pairing_note} onChange={(e) => update({ pairing_note: e.target.value })} />
               </div>
             </div>
-            <button type="button" className="button button-secondary" onClick={() => setGinRows((all) => all.filter((g) => g.key !== row.key))}>
-              Remove<span className="visually-hidden"> gin {index + 1}</span>
-            </button>
+            <ConfirmButton
+              quiet
+              label={<>Remove<span className="visually-hidden"> gin {index + 1}</span></>}
+              title={`Remove gin pairing ${index + 1}?`}
+              description="The gin itself is not affected. It disappears from the form now; nothing is saved until you press Save."
+              confirmLabel="Remove pairing"
+              onConfirm={() => setGinRows((all) => all.filter((g) => g.key !== row.key))}
+            />
           </fieldset>
         );
       })}

@@ -37,9 +37,9 @@ test("build a recipe in the tabbed editor, publish it, scale it as a visitor", a
 
   await page.getByRole("tab", { name: /Steps/ }).click();
   await page.getByRole("button", { name: "Add step" }).click();
-  await page.getByLabel("Step 1").fill("Fill a copa glass with ice.");
+  await page.getByLabel("Step 1", { exact: true }).fill("Fill a copa glass with ice.");
   await page.getByRole("button", { name: "Add step" }).click();
-  await page.getByLabel("Step 2").fill("Pour 50 ml gin and top up with tonic.");
+  await page.getByLabel("Step 2", { exact: true }).fill("Pour 50 ml gin and top up with tonic.");
 
   await page.getByRole("tab", { name: /Gin pairings/ }).click();
   await page.getByRole("button", { name: "Add recommended gin" }).click();

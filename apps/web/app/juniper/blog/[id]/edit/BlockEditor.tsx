@@ -10,6 +10,7 @@
 import { useEffect, useRef } from "react";
 
 import MediaImage from "@/components/MediaImage";
+import ConfirmButton from "@/components/admin/ConfirmButton";
 import type { MediaOption } from "@/lib/media-options";
 import type { PostBlock, RelationKind } from "@/lib/types";
 
@@ -198,9 +199,14 @@ export default function BlockEditor({ idPrefix, blocks, onChange, newKey, media,
                   <button type="button" className="button button-secondary" disabled={index === blocks.length - 1} onClick={() => moveBlock(index, 1)}>
                     Move down<span className="visually-hidden"> {name}</span>
                   </button>
-                  <button type="button" className="button button-secondary" onClick={() => onChange(blocks.filter((_, i) => i !== index))}>
-                    Remove<span className="visually-hidden"> {name}</span>
-                  </button>
+                  <ConfirmButton
+                    quiet
+                    label={<>Remove<span className="visually-hidden"> {name}</span></>}
+                    title={`Remove ${name}?`}
+                    description="Its content is removed from the article. It disappears from the form now; nothing is saved until you press Save."
+                    confirmLabel="Remove block"
+                    onConfirm={() => onChange(blocks.filter((_, i) => i !== index))}
+                  />
                 </div>
               </fieldset>
             </li>

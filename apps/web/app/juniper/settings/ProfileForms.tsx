@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import { useId, useState } from "react";
 
 import { errorMessage, useAdmin } from "@/components/admin/AdminProvider";
+import ConfirmButton from "@/components/admin/ConfirmButton";
 import { ApiError } from "@/lib/api-client";
 import type { Profile } from "@/lib/types";
 
@@ -260,16 +261,18 @@ export function MfaChange({ pending }: { pending: boolean }) {
             <button className="button button-primary" type="submit" disabled={busy}>
               Confirm new app
             </button>
-            <button
-              type="button"
-              className="button button-secondary"
-              onClick={async () => {
+            <ConfirmButton
+              label="Cancel"
+              title="Cancel moving to a new app?"
+              description="The new app's setup is thrown away; remove its entry from that app too. Your current authenticator app keeps working."
+              confirmLabel="Cancel the move"
+              danger
+              quiet
+              onConfirm={async () => {
                 await call("/admin/profile/mfa/start", "DELETE");
                 setSetup(null);
               }}
-            >
-              Cancel
-            </button>
+            />
           </div>
         </form>
       )}

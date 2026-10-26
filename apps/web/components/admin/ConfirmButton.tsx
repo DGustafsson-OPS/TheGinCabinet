@@ -2,20 +2,24 @@
 // A button that asks "Are you sure?" before doing something hard to undo
 // (spec §2: "destructive action confirmation").
 //
-// It uses the browser's built-in <dialog> element, which handles focus and the
-// Escape key for us, so keyboard and screen-reader users get it for free.
+// The question appears inside the page (never as a browser popup). It uses
+// the HTML <dialog> element, which handles focus and the Escape key for us,
+// so keyboard and screen-reader users get it for free.
 
 import { useId, useRef, useState } from "react";
 
 import styles from "./ConfirmButton.module.css";
 
 type Props = {
-  label: string;
+  /** The button's text. May include visually-hidden words for screen readers. */
+  label: React.ReactNode;
   title: string;
   description: string;
   confirmLabel: string;
   onConfirm: () => Promise<void> | void;
   danger?: boolean;
+  /** Keep the button grey (e.g. "Remove" beside "Move up"); the confirm button is still red. */
+  quiet?: boolean;
   disabled?: boolean;
 };
 
@@ -38,7 +42,7 @@ export default function ConfirmButton(props: Props) {
     <>
       <button
         type="button"
-        className={`button ${props.danger ? styles.danger : "button-secondary"}`}
+        className={`button ${props.danger && !props.quiet ? styles.danger : "button-secondary"}`}
         onClick={() => dialog.current?.showModal()}
         disabled={props.disabled}
       >
@@ -60,7 +64,7 @@ export default function ConfirmButton(props: Props) {
           </button>
           <button
             type="button"
-            className={`button ${props.danger ? styles.danger : "button-primary"}`}
+            className={`button ${props.danger || props.quiet ? styles.danger : "button-primary"}`}
             onClick={confirm}
             disabled={busy}
           >

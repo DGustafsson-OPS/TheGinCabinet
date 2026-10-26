@@ -8,6 +8,7 @@ import { useState } from "react";
 import MediaImage from "@/components/MediaImage";
 import ConflictPanel from "@/components/admin/ConflictPanel";
 import { errorMessage, useAdmin } from "@/components/admin/AdminProvider";
+import ConfirmButton from "@/components/admin/ConfirmButton";
 import { ApiError } from "@/lib/api-client";
 import { humanize } from "@/lib/format";
 import {
@@ -255,13 +256,14 @@ export default function GinForm({ gin, distilleries, media }: Props) {
                   <button type="button" className="button button-secondary" disabled={index === 0} onClick={() => moveTo(index - 1)}>
                     Move up<span className="visually-hidden"> photo {index + 1}</span>
                   </button>
-                  <button
-                    type="button"
-                    className="button button-secondary"
-                    onClick={() => setValues((v) => ({ ...v, image_ids: v.image_ids.filter((x) => x !== id) }))}
-                  >
-                    Remove<span className="visually-hidden"> photo {index + 1}</span>
-                  </button>
+                  <ConfirmButton
+                    quiet
+                    label={<>Remove<span className="visually-hidden"> photo {index + 1}</span></>}
+                    title={`Remove photo ${index + 1} from this gin?`}
+                    description="The photo stays in the media library. It disappears from the form now; nothing is saved until you press Save."
+                    confirmLabel="Remove photo"
+                    onConfirm={() => setValues((v) => ({ ...v, image_ids: v.image_ids.filter((x) => x !== id) }))}
+                  />
                 </li>
               );
             })}

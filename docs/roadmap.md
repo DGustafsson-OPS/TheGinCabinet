@@ -105,6 +105,7 @@ Progress against the delivery phases in
 | Gin reviews ↔ tonics | A review can pick its tonic from the list; the review links to the tonic page, which lists "Gins we pour it with" |
 | Dashboard quick actions (A01) | Shortcuts to add a gin, purchase, bottle, tasting, review, cocktail, article, tonic, photos |
 | Authenticator codes work once | Each admin's last used 30-second step is stored; the same or older code is refused (migration 0010) |
+| In-page dialogs only; every removal confirmed | No browser popups anywhere (`alert`/`confirm`/"Leave site?"). Every Remove/Delete/Discard asks first in an in-page dialog. Unsaved Journal edits: in-page "Leave without saving?" for links, and a restorable local copy for reloads and closed tabs |
 | Content-Security-Policy | `proxy.ts` + `lib/csp.ts`: a fresh script nonce per page, `'strict-dynamic'`, GA hosts only when GA is configured; tested against a smuggled `<script>` |
 
 ## Phase 8 – Launch QA ⬜
