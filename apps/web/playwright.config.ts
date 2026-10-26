@@ -18,7 +18,7 @@ export default defineConfig({
     storageState: {
       cookies: [
         { name: "gc_age_ok", value: "1", domain: new URL(baseURL).hostname, path: "/", expires: -1, httpOnly: true, secure: false, sameSite: "Lax" },
-        { name: "gc_consent", value: "necessary", domain: new URL(baseURL).hostname, path: "/", expires: -1, httpOnly: false, secure: false, sameSite: "Lax" },
+        { name: "gc_consent", value: "v1.e2etestconsent00000000.none", domain: new URL(baseURL).hostname, path: "/", expires: -1, httpOnly: true, secure: false, sameSite: "Lax" },
       ],
       origins: [],
     },

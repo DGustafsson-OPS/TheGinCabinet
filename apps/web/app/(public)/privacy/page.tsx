@@ -2,6 +2,7 @@
 // what the code actually does. The analytics section appears only when
 // Google Analytics is switched on (GA_MEASUREMENT_ID is set).
 import type { Metadata } from "next";
+import Link from "next/link";
 
 import { gaMeasurementId } from "@/lib/consent";
 
@@ -52,7 +53,8 @@ export default function PrivacyPage() {
             <li>
               Google Analytics sets the cookies <code>_ga</code> and <code>_ga_…</code> (they keep for up
               to 2 years) to recognise returning visits. Your choice itself is stored in the cookie{" "}
-              <code>gc_consent</code> for 6 months.
+              <code>gc_consent</code> for 6 months. The full list is on the{" "}
+              <Link href="/cookie-settings">Cookie settings</Link> page.
             </li>
             <li>
               Google processes the data on our behalf. It may be transferred to the United States under the
@@ -61,8 +63,14 @@ export default function PrivacyPage() {
             <li>We have switched off advertising features and Google signals. Nothing is sold.</li>
             <li>The legal basis is your consent (GDPR art. 6(1)(a)). Saying no changes nothing on the site.</li>
             <li>
-              You can change your mind at any time with <strong>Cookie settings</strong> at the bottom of
-              every page; saying no also deletes the Google Analytics cookies.
+              You can change your mind at any time on the <Link href="/cookie-settings">Cookie settings</Link>{" "}
+              page (linked at the bottom of every page); switching analytics off also deletes the Google
+              Analytics cookies.
+            </li>
+            <li>
+              To be able to show that you agreed, we keep a record of each choice: a random ID (also stored in
+              your <code>gc_consent</code> cookie), what you chose and when. It contains no IP address or
+              other personal details and is deleted after 3 years.
             </li>
           </ul>
         </>

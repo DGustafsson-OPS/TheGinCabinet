@@ -32,6 +32,7 @@ from app.models.cocktails import (
     Unit,
 )
 from app.models.collection import Collection
+from app.models.consent import ConsentRecord
 from app.models.editorial import (
     FLAVOUR_KEYS,
     REVIEW_CONTENT_FIELDS,
@@ -49,6 +50,7 @@ from app.models.user import User
 from app.models.wishlist import WishlistItem, WishlistStatus
 
 __all__ = [
+    "ConsentRecord",
     "SETTINGS_ID",
     "SiteSettings",
     "POST_CONTENT_FIELDS",

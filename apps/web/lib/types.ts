@@ -556,3 +556,11 @@ export type AdminAccount = {
   last_login_at: string | null;
   is_you: boolean;
 };
+
+export type ConsentStats = {
+  days: number;
+  total: number;
+  analytics_allowed: number;
+  analytics_refused: number;
+  by_action: Record<string, number>;
+};

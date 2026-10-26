@@ -72,13 +72,70 @@
   }
 }
 
-/* "Cookie settings" in the footer: a button that looks like the other links. */
-.settingsButton {
-  background: none;
-  border: none;
-  padding: 0;
-  font: inherit;
-  color: inherit;
-  text-decoration: underline;
+
+/* "Choose cookies": the per-category switches, under the banner's text. */
+.more {
+  grid-column: 1 / -1;
+}
+.more summary {
   cursor: pointer;
+  color: var(--color-brass);
+  text-decoration: underline;
+  width: fit-content;
+}
+.more[open] summary {
+  margin-bottom: var(--space-3);
+}
+
+.choices {
+  display: grid;
+  gap: var(--space-3);
+  justify-items: start;
+}
+.fieldset {
+  border: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-3);
+}
+.category {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-3);
+  align-items: start;
+}
+.category input {
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-top: 0.15rem;
+}
+.categoryTitle {
+  font-weight: 600;
+}
+.always {
+  font-weight: 400;
+  opacity: 0.8;
+}
+.categoryText {
+  margin: var(--space-1) 0 0;
+  font-size: var(--font-size-small);
+}
+
+/* The Cookie settings page: the choices in a card, quick buttons below. */
+.settingsPanel {
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-5);
+  margin: var(--space-4) 0 var(--space-6);
+  display: grid;
+  gap: var(--space-4);
+}
+.quick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
 }

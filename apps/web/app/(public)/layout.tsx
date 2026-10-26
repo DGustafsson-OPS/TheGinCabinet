@@ -17,9 +17,8 @@ import AgeGate from "@/components/AgeGate";
 import ConsentBanner from "@/components/ConsentBanner";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
 import PublicHeader from "@/components/PublicHeader";
-import ReturnPathInput from "@/components/ReturnPathInput";
 import { AGE_COOKIE } from "@/lib/age-gate";
-import { CONSENT_COOKIE, gaMeasurementId } from "@/lib/consent";
+import { CONSENT_COOKIE, gaMeasurementId, parseConsent } from "@/lib/consent";
 
 import gate from "./age-gate.module.css";
 import consentStyles from "./consent.module.css";
@@ -29,9 +28,10 @@ export default async function PublicLayout({ children }: { children: React.React
   const jar = await cookies();
   const ageConfirmed = jar.get(AGE_COOKIE)?.value === "1";
   const gaId = gaMeasurementId();
-  const consent = jar.get(CONSENT_COOKIE)?.value; // "analytics", "necessary" or undefined
-  const askConsent = Boolean(gaId) && ageConfirmed && consent !== "analytics" && consent !== "necessary";
-  const analyticsOn = Boolean(gaId) && ageConfirmed && consent === "analytics";
+  // null = no valid answer for the current policy version yet: ask.
+  const consent = parseConsent(jar.get(CONSENT_COOKIE)?.value);
+  const askConsent = Boolean(gaId) && ageConfirmed && consent === null;
+  const analyticsOn = Boolean(gaId) && ageConfirmed && consent?.analytics === true;
 
   return (
     <>
@@ -46,16 +46,7 @@ export default async function PublicLayout({ children }: { children: React.React
           <div className={styles.footerInner}>
             <span>© The Gin Cabinet</span>
             <Link href="/privacy">Privacy</Link>
-            {gaId && (
-              // A form, not a link: it clears the choice on the server, then
-              // the page reloads with the banner. Works without JavaScript.
-              <form method="post" action="/consent">
-                <ReturnPathInput />
-                <button type="submit" name="choice" value="reset" className={consentStyles.settingsButton}>
-                  Cookie settings
-                </button>
-              </form>
-            )}
+            <Link href="/cookie-settings">Cookie settings</Link>
           </div>
         </footer>
         {askConsent && <div className={consentStyles.spacer} aria-hidden="true" />}

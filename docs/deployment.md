@@ -326,6 +326,19 @@ To set it up:
 4. Check it: open the site in a private window, pass the age gate, choose
    **Accept analytics**, and watch GA → **Reports → Realtime**.
 
+**The consent manager is the site's own code** (no third-party service):
+
+* The banner offers **Accept all**, **Reject all** and **Choose cookies**
+  (one switch per category). **Cookie settings** in the footer shows the
+  visitor's choice, lets them change it, and lists every cookie.
+* Every answer is logged as **proof of consent**: a random ID (also in the
+  visitor's `gc_consent` cookie), the policy version, the choice and the time,
+  with no IP address or other personal data. Records are deleted after 3
+  years. The totals are under Admin → Settings → **Cookie consent**.
+* **Changing what you track?** Update the cookie list in
+  `apps/web/lib/consent.ts` and raise `CONSENT_VERSION` there: everyone is
+  then asked again.
+
 > The privacy page is written for this setup, but it isn't legal advice.
 > Have it checked if you're unsure, and keep it accurate if you change GA settings.
 

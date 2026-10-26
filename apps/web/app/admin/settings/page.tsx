@@ -8,7 +8,7 @@ import Tabs from "@/components/admin/Tabs";
 import { formatDateTime } from "@/lib/format";
 import { mediaOptions } from "@/lib/media-options";
 import { apiGet, requireAdmin } from "@/lib/server-api";
-import type { AdminAccount, Media, Page, Profile, SiteSettings } from "@/lib/types";
+import type { AdminAccount, ConsentStats, Media, Page, Profile, SiteSettings } from "@/lib/types";
 
 import AdminsPanel from "./AdminsPanel";
 import { MfaChange, PasswordForm, ProfileForm, RecoveryCodes } from "./ProfileForms";
@@ -16,13 +16,64 @@ import SiteSettingsForm from "./SiteSettingsForm";
 
 export const metadata: Metadata = { title: "Settings" };
 
+/** How visitors answered the cookie banner (one count per browser, latest answer). */
+function ConsentPanel({ stats }: { stats: ConsentStats | null }) {
+  if (!stats) return <p className="alert alert-error">The consent figures could not be loaded.</p>;
+  const share = stats.total ? Math.round((stats.analytics_allowed / stats.total) * 100) : 0;
+  const labels: Record<string, string> = { accept_all: "Accept all", reject_all: "Reject all", custom: "Chose per category" };
+  return (
+    <div>
+      <p>
+        Answers to the cookie banner in the last {stats.days} days, counting each browser&apos;s latest answer.
+        Every answer is stored as proof of consent (a random ID, the choice and the time; no personal data)
+        and deleted after 3 years.
+      </p>
+      {stats.total === 0 ? (
+        <p className="empty-state">No answers yet. The banner only appears when GA_MEASUREMENT_ID is set.</p>
+      ) : (
+        <div className="table-wrap">
+          <table className="table">
+            <tbody>
+              <tr>
+                <th scope="row">Browsers that answered</th>
+                <td className="num">{stats.total}</td>
+              </tr>
+              <tr>
+                <th scope="row">Allowed analytics</th>
+                <td className="num">
+                  {stats.analytics_allowed} ({share} %)
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">Refused analytics</th>
+                <td className="num">{stats.analytics_refused}</td>
+              </tr>
+              {Object.entries(stats.by_action).map(([action, count]) => (
+                <tr key={action}>
+                  <th scope="row">… of which “{labels[action] ?? action}”</th>
+                  <td className="num">{count}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      <p className="field-hint">
+        Google Analytics only counts visitors who allowed it, so its figures are lower than the real number of
+        visits.
+      </p>
+    </div>
+  );
+}
+
 export default async function SettingsPage() {
   await requireAdmin();
-  const [site, profile, admins, media] = await Promise.all([
+  const [site, profile, admins, media, consent] = await Promise.all([
     apiGet<SiteSettings>("/admin/settings"),
     apiGet<Profile>("/admin/profile"),
     apiGet<AdminAccount[]>("/admin/admins"),
     apiGet<Page<Media>>("/admin/media?page_size=100"),
+    apiGet<ConsentStats>("/admin/consent/stats?days=30"),
   ]);
   if (!site.data || !profile.data || !admins.data) {
     return (
@@ -91,6 +142,11 @@ export default async function SettingsPage() {
               id: "admins",
               label: "Admins",
               content: <AdminsPanel admins={admins.data} />,
+            },
+            {
+              id: "consent",
+              label: "Cookie consent",
+              content: <ConsentPanel stats={consent.data} />,
             },
           ]}
         />

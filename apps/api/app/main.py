@@ -27,6 +27,7 @@ from app.api.routes import (
     admin_tastings,
     admin_users,
     auth,
+    consent,
     health,
     public_blog,
     public_catalogue,
@@ -113,6 +114,9 @@ def create_app() -> FastAPI:
     app.include_router(public_blog.router, prefix=API_PREFIX)
     app.include_router(admin_settings.router, prefix=API_PREFIX)
     app.include_router(public_site.router, prefix=API_PREFIX)
+    app.include_router(consent.router, prefix=API_PREFIX)
+    # Not under /api: only reachable on the private network (see routes/consent.py).
+    app.include_router(consent.internal_router)
     return app
 
 
