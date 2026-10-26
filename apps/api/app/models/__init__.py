@@ -46,10 +46,15 @@ from app.models.editorial import (
 )
 from app.models.purchases import Purchase, PurchaseLine
 from app.models.settings import SETTINGS_ID, SiteSettings
+from app.models.tonics import Tonic, TonicReview, TonicReviewStatus, TonicStyle
 from app.models.user import User
 from app.models.wishlist import WishlistItem, WishlistStatus
 
 __all__ = [
+    "Tonic",
+    "TonicReview",
+    "TonicReviewStatus",
+    "TonicStyle",
     "ConsentRecord",
     "SETTINGS_ID",
     "SiteSettings",

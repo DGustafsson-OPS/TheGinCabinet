@@ -34,6 +34,7 @@ from app.api.routes import (
     public_cocktails,
     public_reviews,
     public_site,
+    tonics,
 )
 from app.config import get_settings
 from app.db import SessionLocal
@@ -115,6 +116,8 @@ def create_app() -> FastAPI:
     app.include_router(admin_settings.router, prefix=API_PREFIX)
     app.include_router(public_site.router, prefix=API_PREFIX)
     app.include_router(consent.router, prefix=API_PREFIX)
+    app.include_router(tonics.router, prefix=API_PREFIX)
+    app.include_router(tonics.public_router, prefix=API_PREFIX)
     # Not under /api: only reachable on the private network (see routes/consent.py).
     app.include_router(consent.internal_router)
     return app

@@ -94,6 +94,15 @@ Progress against the delivery phases in
 | Reset the other admin's password | ✅ | Your password + their username typed; their sessions end; audit event; they see a notice |
 | Audit log viewer | ✅ | Filters by action and area; IP shown to admins only |
 
+## Added after the spec ✅
+
+| Item | Notes |
+| --- | --- |
+| 18+ age gate | Every public page, server-checked cookie, works without JavaScript |
+| Google Analytics with our own consent manager | Categories, Cookie settings page, proof of consent (no personal data), policy versions |
+| Admin area at `/juniper` | `/admin` is a 404; not listed in robots.txt |
+| Tonics | Simple catalogue (no stock) with per-admin reviews (draft/published), public list + pages |
+
 ## Phase 8 – Launch QA ⬜
 Security review, accessibility audit, performance, backup/restore test,
 Coolify runbook walk-through.

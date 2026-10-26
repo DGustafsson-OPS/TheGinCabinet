@@ -99,7 +99,8 @@ test("every admin page sends signed-out visitors to the login page", async ({ pa
     "/juniper/reviews", "/juniper/reviews/new", "/juniper/reviews/x", "/juniper/reviews/x/preview",
     "/juniper/reviews/x/revisions", "/juniper/cocktails", "/juniper/cocktails/new", "/juniper/cocktails/x",
     "/juniper/blog", "/juniper/blog/new", "/juniper/blog/categories", "/juniper/blog/x/edit", "/juniper/blog/x/preview",
-    "/juniper/blog/x/revisions", "/juniper/settings", "/juniper/audit",
+    "/juniper/blog/x/revisions", "/juniper/settings", "/juniper/audit", "/juniper/tonics",
+    "/juniper/tonics/new", "/juniper/tonics/x",
   ];
   for (const url of urls) {
     await page.goto(url);

@@ -42,6 +42,14 @@ export const ACTION_LABELS: Record<string, string> = {
   "blog.archived": "archived an article",
   "blog.publish_scheduled": "published a scheduled article",
   "media.upload": "uploaded an image",
+  "tonic.create": "added a tonic",
+  "tonic.update": "edited a tonic",
+  "tonic.delete": "deleted a tonic",
+  "tonic_review.create": "started a tonic review",
+  "tonic_review.update": "edited a tonic review",
+  "tonic_review.published": "published a tonic review",
+  "tonic_review.unpublished": "unpublished a tonic review",
+  "tonic_review.delete": "deleted a tonic review",
 };
 
 /** "Anna signed in", "Failed sign-in attempt (anna)", "The scheduler published …". */

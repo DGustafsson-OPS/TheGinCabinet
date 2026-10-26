@@ -564,3 +564,57 @@ export type ConsentStats = {
   analytics_refused: number;
   by_action: Record<string, number>;
 };
+
+// ---------------- Tonics (a simple catalogue: no stock) ----------------
+
+export const TONIC_STYLES = ["indian", "light", "mediterranean", "aromatic", "flavoured", "other"] as const;
+export type TonicStyle = (typeof TONIC_STYLES)[number];
+
+export type TonicReview = {
+  id: string;
+  author: Person;
+  rating: string | null;
+  notes: string | null;
+  pairs_with: string | null;
+  status: "draft" | "published";
+  published_at: string | null;
+  version: number;
+  updated_at: string;
+};
+
+export type Tonic = {
+  id: string;
+  slug: string;
+  brand: string;
+  name: string;
+  display_name: string;
+  style: TonicStyle;
+  country: string | null;
+  flavour_notes: string[];
+  description: string | null;
+  image_media_id: string | null;
+  image: MediaSummary | null;
+  public_visible: boolean;
+  reviews: TonicReview[];
+  version: number;
+  created_at: string;
+  updated_at: string;
+};
+
+export type PublicTonicCard = {
+  slug: string;
+  brand: string;
+  display_name: string;
+  style: TonicStyle;
+  country: string | null;
+  image: MediaSummary | null;
+  rating: string | null;
+  review_count: number;
+};
+
+export type PublicTonic = PublicTonicCard & {
+  flavour_notes: string[];
+  description: string | null;
+  reviews: { author_name: string; rating: string | null; notes: string | null; pairs_with: string | null; published_at: string | null }[];
+  updated_at: string;
+};
