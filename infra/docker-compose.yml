@@ -1,0 +1,51 @@
+# Portable Docker Compose setup (spec §10: "remains portable outside Coolify").
+#
+#   cp infra/.env.example infra/.env        # then edit the values
+#   docker compose -f infra/docker-compose.yml up --build
+#   docker compose -f infra/docker-compose.yml run --rm api python -m app.cli create-admin ...
+#
+# The database has NO published port: it's only reachable on the private
+# Docker network (spec §9: "PostgreSQL not public").
+
+name: gin-cabinet
+
+services:
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # One-off job: apply database migrations, then exit (spec §10B step 4).
+  migrate:
+    build: ../apps/api
+    env_file: .env
+    command: ["alembic", "upgrade", "head"]
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  api:
+    build: ../apps/api
+    restart: unless-stopped
+    env_file: .env
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    # Local development only: published on 127.0.0.1 so it isn't reachable
+    # from other machines. In Coolify, the proxy routes /api to this service.
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - media:/app/media
+
+volumes:
+  db-data:
+  media:

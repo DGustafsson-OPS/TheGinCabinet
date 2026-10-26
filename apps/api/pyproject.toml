@@ -1,0 +1,46 @@
+# pyproject.toml is the standard place to describe a Python project:
+# its name, which libraries it needs, and settings for tools (pytest, ruff).
+
+[project]
+name = "gin-cabinet-api"
+version = "0.1.0"
+description = "FastAPI backend for The Gin Cabinet"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115",            # the web framework
+    "uvicorn[standard]>=0.30",   # the server that runs FastAPI
+    "sqlalchemy>=2.0",           # talks to the database using Python classes
+    "alembic>=1.13",             # database migrations (schema changes over time)
+    "psycopg[binary]>=3.2",      # PostgreSQL driver
+    "pydantic-settings>=2.4",    # reads configuration from environment variables
+    "argon2-cffi>=23.1",         # Argon2id password hashing (spec §9)
+    "pyotp>=2.9",                # TOTP codes for MFA (spec §9)
+    "cryptography>=43",          # encrypts the stored TOTP secrets
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8",   # test runner
+    "httpx>=0.27", # needed by FastAPI's TestClient
+    "ruff>=0.6",   # linter + formatter
+]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["app*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+# E/F = common errors, I = sorted imports, UP = modern Python syntax, B = likely bugs
+select = ["E", "F", "I", "UP", "B"]
+# FastAPI's `Depends(...)` in default arguments is the intended pattern.
+ignore = ["B008"]

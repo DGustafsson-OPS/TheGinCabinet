@@ -1,0 +1,50 @@
+# Continuous Integration: GitHub runs this on every push and pull request that
+# touches the API, so broken code is caught before it is merged.
+name: API
+
+on:
+  push:
+    paths: ["apps/api/**", ".github/workflows/api.yml"]
+  pull_request:
+    paths: ["apps/api/**", ".github/workflows/api.yml"]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/api
+
+    # A real PostgreSQL, just like production, available at localhost:5432.
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: gin
+          POSTGRES_PASSWORD: ci-only-password
+          POSTGRES_DB: gin_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U gin -d gin_test"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+
+    env:
+      GC_TEST_DATABASE_URL: postgresql+psycopg://gin:ci-only-password@localhost:5432/gin_test
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Install
+        run: pip install -e ".[dev]"
+      - name: Lint
+        run: ruff check . && ruff format --check .
+      - name: Migrations apply cleanly and match the models
+        env:
+          GC_DATABASE_URL: ${{ env.GC_TEST_DATABASE_URL }}
+        run: alembic upgrade head && alembic check && alembic downgrade base
+      - name: Tests
+        run: pytest
+      - name: Docker image builds
+        run: docker build -t gin-cabinet-api .

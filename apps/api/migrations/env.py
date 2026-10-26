@@ -1,0 +1,52 @@
+"""Alembic runtime setup: connects to the database and runs migrations."""
+
+from logging.config import fileConfig
+
+from alembic import context
+from sqlalchemy import engine_from_config, pool
+
+from app import models  # noqa: F401  (importing registers every table on Base.metadata)
+from app.config import get_settings
+from app.db import Base
+
+config = context.config
+config.set_main_option("sqlalchemy.url", get_settings().database_url)
+
+if config.config_file_name is not None:
+    fileConfig(config.config_file_name)
+
+# Alembic compares this (our Python models) to the real database for --autogenerate.
+target_metadata = Base.metadata
+
+
+def run_migrations_offline() -> None:
+    """Write SQL to the screen instead of running it (``alembic upgrade head --sql``)."""
+    context.configure(
+        url=config.get_main_option("sqlalchemy.url"),
+        target_metadata=target_metadata,
+        literal_binds=True,
+        dialect_opts={"paramstyle": "named"},
+    )
+    with context.begin_transaction():
+        context.run_migrations()
+
+
+def run_migrations_online() -> None:
+    connectable = engine_from_config(
+        config.get_section(config.config_ini_section, {}),
+        prefix="sqlalchemy.",
+        poolclass=pool.NullPool,
+    )
+    with connectable.connect() as connection:
+        # render_as_batch lets ALTER TABLE work on SQLite too (used in tests).
+        context.configure(
+            connection=connection, target_metadata=target_metadata, render_as_batch=True
+        )
+        with context.begin_transaction():
+            context.run_migrations()
+
+
+if context.is_offline_mode():
+    run_migrations_offline()
+else:
+    run_migrations_online()
