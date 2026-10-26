@@ -37,6 +37,9 @@ Internet ──HTTPS──▶ Coolify proxy ──▶ web (Next.js :3000) ──
    Each admin scans their MFA key into an authenticator app and stores the
    recovery codes safely.
 
+Scheduled Journal articles are published by a timer inside the api service
+(every minute), so no extra cron job is needed.
+
 > ⚠️ Back up `GC_SECRET_KEY`. It encrypts the stored MFA secrets; if it is
 > lost, every admin needs `python -m app.cli reset-mfa`.
 

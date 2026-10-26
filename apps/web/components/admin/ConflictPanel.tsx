@@ -21,11 +21,26 @@ const FIELD_LABELS: Record<string, string> = {
   remaining_ml: "Remaining (ml)",
   acquired_on: "Date acquired",
   image_ids: "Photos",
+  body_blocks: "Article text",
+  excerpt: "Summary",
+  hero_media_id: "Featured image",
+  social_media_id: "Social image",
+  relations: "Related items",
 };
+
+/** One readable line for a list entry such as an article block or a related item. */
+function describe(item: unknown): string {
+  if (item && typeof item === "object") {
+    const o = item as Record<string, unknown>;
+    if (Array.isArray(o.items)) return o.items.join("; ");
+    return String(o.text ?? o.label ?? o.caption ?? o.kind ?? o.type ?? "…");
+  }
+  return String(item);
+}
 
 function show(value: unknown): string {
   if (value === null || value === undefined || value === "") return "(empty)";
-  if (Array.isArray(value)) return value.join(", ") || "(empty)";
+  if (Array.isArray(value)) return value.map(describe).join(" / ") || "(empty)";
   if (typeof value === "boolean") return value ? "Yes" : "No";
   return String(value);
 }

@@ -424,3 +424,96 @@ export type PublicDistillery = PublicDistilleryCard & {
 };
 
 export type PublicStats = { gins: number; reviews: number; cocktails: number; countries: number };
+
+// ---------------- Gin Journal (spec §10A) ----------------
+
+export type PostStatus = "draft" | "scheduled" | "published" | "archived";
+export type RelationKind = "gin" | "review" | "cocktail" | "post";
+
+/** One block of an article body, as the editor stores it. */
+export type PostBlock =
+  | { type: "heading"; level: 2 | 3; text: string }
+  | { type: "paragraph"; text: string }
+  | { type: "list"; ordered: boolean; items: string[] }
+  | { type: "quote"; text: string; cite?: string | null }
+  | { type: "image"; media_id: string; caption?: string | null }
+  | { type: "card"; kind: RelationKind; id: string };
+
+export type CategoryRef = { id: string; name: string; slug: string };
+export type Category = CategoryRef & {
+  description: string | null;
+  display_order: number;
+  post_count: number;
+  version: number;
+};
+
+export type Relation = { kind: RelationKind; id: string; label: string; public: boolean };
+
+export type Post = {
+  id: string;
+  slug: string;
+  title: string;
+  excerpt: string | null;
+  body_blocks: PostBlock[];
+  status: PostStatus;
+  is_live: boolean;
+  author: Person;
+  edited_by: Person | null;
+  category: CategoryRef | null;
+  tags: string[];
+  hero_media_id: string | null;
+  hero_image: MediaSummary | null;
+  hero_credit: string | null;
+  social_media_id: string | null;
+  featured: boolean;
+  seo_title: string | null;
+  seo_description: string | null;
+  relations: Relation[];
+  reading_minutes: number;
+  published_at: string | null;
+  scheduled_at: string | null;
+  version: number;
+  created_at: string;
+  updated_at: string;
+};
+
+export type PublicPostCard = {
+  slug: string;
+  title: string;
+  excerpt: string | null;
+  category: { name: string; slug: string } | null;
+  tags: { name: string; slug: string }[];
+  author_name: string;
+  published_at: string | null;
+  reading_minutes: number;
+  image: MediaSummary | null;
+  featured: boolean;
+};
+
+/** A block ready to display: images and cards are filled in by the API. */
+export type PublicBlock =
+  | { type: "heading"; level: 2 | 3; text: string }
+  | { type: "paragraph"; text: string }
+  | { type: "list"; ordered: boolean; items: string[] }
+  | { type: "quote"; text: string; cite?: string | null }
+  | { type: "image"; image: MediaSummary; caption: string | null }
+  | { type: "card"; kind: "gin"; card: PublicGinCard }
+  | { type: "card"; kind: "review"; card: PublicReviewCard }
+  | { type: "card"; kind: "cocktail"; card: PublicCocktailCard }
+  | { type: "card"; kind: "post"; card: PublicPostCard };
+
+export type PublicPost = PublicPostCard & {
+  body: PublicBlock[];
+  hero_credit: string | null;
+  seo_title: string | null;
+  seo_description: string | null;
+  social_image: MediaSummary | null;
+  updated_at: string;
+  gins: PublicGinCard[];
+  reviews: PublicReviewCard[];
+  cocktails: PublicCocktailCard[];
+  related: PublicPostCard[];
+};
+
+export type PublicCategory = { name: string; slug: string; description: string | null; post_count: number };
+export type PublicTag = { name: string; slug: string; post_count: number };

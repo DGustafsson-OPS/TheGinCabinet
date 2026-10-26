@@ -38,6 +38,7 @@ apps/web/
 │   │   ├── collection/       ← "/collection": search + filters (a plain GET form)
 │   │   ├── gins/[slug]/      ← one public gin: photos, botanicals, reviews, cocktails, related
 │   │   ├── distilleries/     ← list and "/distilleries/[slug]"
+│   │   ├── blog/             ← the Gin Journal: /blog, /blog/[slug], category/ and tag/ pages, rss.xml
 │   │   ├── about/, privacy/  ← static pages
 │   │   ├── reviews/          ← "/reviews" list and "/reviews/[slug]" (public)
 │   │   └── cocktails/        ← "/cocktails" library and recipe pages with a serving stepper
@@ -51,7 +52,8 @@ apps/web/
 │   │   ├── media/            ← upload (drag and drop) + edit alt text
 │   │   ├── tastings/         ← private notes with flavour sliders
 │   │   ├── reviews/          ← editor, preview, revision history
-│   │   └── cocktails/        ← tabbed recipe editor
+│   │   ├── cocktails/        ← tabbed recipe editor
+│   │   └── blog/             ← Journal list, block editor (with autosave), categories, preview, history
 │   ├── sitemap.ts, robots.ts ← "/sitemap.xml" (public pages only), "/robots.txt"
 │   ├── health/route.ts       ← "/health" for Docker/Coolify
 │   └── not-found.tsx         ← any unknown URL

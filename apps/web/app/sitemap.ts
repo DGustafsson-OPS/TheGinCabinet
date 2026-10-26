@@ -3,7 +3,15 @@
 import type { MetadataRoute } from "next";
 
 import { SITE_URL, publicGet } from "@/lib/public-api";
-import type { Page, PublicCocktailCard, PublicDistilleryCard, PublicGinCard, PublicReviewCard } from "@/lib/types";
+import type {
+  Page,
+  PublicCategory,
+  PublicCocktailCard,
+  PublicDistilleryCard,
+  PublicGinCard,
+  PublicPostCard,
+  PublicReviewCard,
+} from "@/lib/types";
 
 // Build it on every request from live data. (By default Next.js would build it
 // once, at `npm run build`, when the API may not even be running.)
@@ -23,11 +31,13 @@ async function all<T>(path: string): Promise<T[]> {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [gins, reviews, cocktails, distilleries] = await Promise.all([
+  const [gins, reviews, cocktails, distilleries, posts, categories] = await Promise.all([
     all<PublicGinCard>("/gins"),
     all<PublicReviewCard>("/reviews"),
     all<PublicCocktailCard>("/cocktails"),
     publicGet<PublicDistilleryCard[]>("/distilleries"),
+    all<PublicPostCard>("/blog"),
+    publicGet<PublicCategory[]>("/blog/categories"),
   ]);
   const page = (path: string, priority: number, lastModified?: string) => ({
     url: `${SITE_URL}${path}`,
@@ -40,11 +50,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     page("/reviews", 0.9),
     page("/cocktails", 0.9),
     page("/distilleries", 0.6),
+    page("/blog", 0.9),
     page("/about", 0.4),
     page("/privacy", 0.2),
     ...gins.map((g) => page(`/gins/${g.slug}`, 0.8)),
     ...reviews.map((r) => page(`/reviews/${r.slug}`, 0.8, r.published_at)),
     ...cocktails.map((c) => page(`/cocktails/${c.slug}`, 0.7)),
     ...(distilleries ?? []).map((d) => page(`/distilleries/${d.slug}`, 0.5)),
+    ...posts.map((p) => page(`/blog/${p.slug}`, 0.8, p.published_at ?? undefined)),
+    ...(categories ?? []).filter((c) => c.post_count > 0).map((c) => page(`/blog/category/${c.slug}`, 0.5)),
   ];
 }

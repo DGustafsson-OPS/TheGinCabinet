@@ -69,8 +69,21 @@ Progress against the delivery phases in
 | Public stats (P01) | ✅ | Public gins, reviews, cocktails, countries |
 | Public pages: home, collection, gin, distilleries, about/privacy, sitemap, robots | ✅ | Filters work without JavaScript (plain GET form); private gins 404 and stay out of the sitemap |
 
-## Phase 6 – Launch QA ⬜
-Security review, accessibility, performance, backup/restore test, Coolify runbook.
+## Phase 6 – The Gin Journal (§10A) ✅
+
+| Item | Status | Notes |
+| --- | --- | --- |
+| Data model (blog_posts, categories, tags, revisions, relations) | ✅ | Migration 0006 seeds the six suggested categories |
+| Block body (heading, paragraph, list, quote, image, card) | ✅ | JSON data, never HTML; links only https/http or /paths |
+| Admin API + workflow (draft → scheduled/published → archived) | ✅ | Optimistic locking, autosave for drafts only, bulk archive, duplicate, revisions |
+| Scheduled publishing job | ✅ | Every minute inside the API, idempotent; also `python -m app.cli run-jobs`; prunes old sessions/login attempts |
+| Admin UI: A11 list, A12 editor, A13 categories, preview, history | ✅ | Unsaved-change warning, confirmation before publish/schedule/archive |
+| Public UI: B01 /blog, B02 article, B03 category/tag pages | ✅ | Featured hero, chips, search, related stories, Article JSON-LD, Open Graph |
+| RSS (/blog/rss.xml) and sitemap entries | ✅ | Only live articles |
+
+## Phase 7 – Settings and launch QA ⬜
+Settings & admins (A10), security review, accessibility, performance,
+backup/restore test, Coolify runbook.
 
 ## Known follow-ups
 - Content-Security-Policy header for the website (needs per-request nonces with
@@ -78,7 +91,5 @@ Security review, accessibility, performance, backup/restore test, Coolify runboo
 - Dashboard "quick actions" (A01) arrive with the inventory screens.
 - TOTP codes can be reused within their ~90 s validity window; add a
   "last used time step" per user to block replay.
-- Old rows in `login_attempts` and expired `auth_sessions` should be pruned by a
-  periodic job (comes with the scheduled-publishing job in the blog phase).
 - A known username can be temporarily locked out (15 min) by someone guessing
   wrong passwords. Acceptable for two admins, but worth knowing.

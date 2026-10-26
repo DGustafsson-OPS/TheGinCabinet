@@ -1,0 +1,117 @@
+.card,
+.hero {
+  position: relative;
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  transition: box-shadow 0.15s ease;
+}
+.card:hover,
+.card:focus-within,
+.hero:hover,
+.hero:focus-within {
+  box-shadow: var(--shadow-card-hover);
+}
+
+/* Spec §10A: listing thumbnails 4:3, featured hero 16:9. */
+.image,
+.heroImage {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  background: linear-gradient(170deg, var(--color-cream), #e6dcc8);
+}
+.image {
+  aspect-ratio: 4 / 3;
+}
+.heroImage {
+  aspect-ratio: 16 / 9;
+}
+
+.body {
+  padding: var(--space-4);
+}
+.kicker {
+  margin: 0 0 var(--space-1);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-brass-600);
+}
+.title {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 1.3rem;
+  line-height: 1.25;
+  margin: 0 0 var(--space-2);
+}
+.link {
+  color: var(--color-charcoal);
+  text-decoration: none;
+}
+.link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+.excerpt {
+  margin: 0 0 var(--space-2);
+  color: var(--color-charcoal);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.meta {
+  margin: 0;
+  font-size: var(--font-size-small);
+  color: var(--color-muted);
+}
+
+.hero {
+  display: grid;
+  margin-bottom: var(--space-6);
+}
+.heroBody {
+  padding: var(--space-5);
+  align-self: center;
+}
+.heroTitle {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(1.75rem, 3vw, 2.5rem);
+  line-height: 1.15;
+  margin: 0 0 var(--space-3);
+}
+.heroExcerpt {
+  font-size: 1.1rem;
+  margin: 0 0 var(--space-3);
+}
+@media (min-width: 900px) {
+  .hero {
+    grid-template-columns: 3fr 2fr;
+  }
+}
+
+/* 1 column on phones, 2 on tablets, 3 on desktops (spec B01). */
+.grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-5);
+  grid-template-columns: 1fr;
+}
+@media (min-width: 640px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}

@@ -354,3 +354,32 @@ input[type="radio"] {
   object-fit: cover;
   border-radius: 6px;
 }
+
+/* A button that looks like a text link, for small row actions. */
+.link-button {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: var(--color-brass-600);
+  text-decoration: underline;
+  cursor: pointer;
+}
+.link-button:disabled {
+  color: var(--color-muted);
+  cursor: default;
+}
+
+/* One block in the Journal article editor. */
+.block-card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  margin: 0;
+  background: var(--color-warm-white);
+}
+.block-card legend {
+  font-weight: 600;
+  font-size: var(--font-size-small);
+  padding: 0 var(--space-2);
+}

@@ -148,9 +148,15 @@ python -m app.cli create-admin   --username anna --email anna@example.com --disp
 python -m app.cli reset-password --username anna   # lost password; signs out all sessions
 python -m app.cli reset-mfa      --username anna   # lost phone; new key + recovery codes
 python -m app.cli list-admins
+python -m app.cli run-jobs       # publish due scheduled articles now; tidy old sign-ins
 ```
 
-Each command writes an audit event.
+Each admin command writes an audit event.
+
+**Background jobs.** The API itself runs `run-jobs` every minute (publishing
+scheduled Journal articles and deleting expired sessions). It is safe for
+several API processes to do this at once. To switch the timer off (for
+example to run it from cron instead) set `GC_SCHEDULER_ENABLED=false`.
 
 ## 7. Configuration
 
