@@ -26,9 +26,18 @@ export async function signedInApi(baseURL: string): Promise<{ api: APIRequestCon
   return { api, csrf };
 }
 
+/**
+ * Open a page and wait until React has made it interactive (see
+ * components/HydrationMarker.tsx). Typing before that can be lost.
+ */
+export async function gotoReady(page: Page, url: string) {
+  await page.goto(url);
+  await page.locator("html[data-hydrated]").waitFor({ state: "attached" });
+}
+
 /** Sign in through the real login form. */
 export async function signInThroughUi(page: Page) {
-  await page.goto("/login");
+  await gotoReady(page, "/login");
   await page.getByLabel("Username").fill(USERNAME);
   await page.getByLabel("Password").fill(PASSWORD);
   await page.getByRole("button", { name: "Continue" }).click();

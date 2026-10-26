@@ -2,7 +2,7 @@
 // §6 workflows and §11 acceptance tests).
 import { expect, test } from "@playwright/test";
 
-import { HAS_CREDENTIALS, createGin, signInThroughUi, signedInApi, toasts, unique } from "./helpers";
+import { HAS_CREDENTIALS, createGin, gotoReady, signInThroughUi, signedInApi, toasts, unique } from "./helpers";
 
 test.skip(!HAS_CREDENTIALS, "Set E2E_PASSWORD and E2E_TOTP_SECRET (see e2e/README.md)");
 
@@ -10,7 +10,7 @@ test("add a gin through the form", async ({ page }) => {
   await signInThroughUi(page);
   const name = `Form Gin ${unique()}`;
 
-  await page.goto("/admin/gins/new");
+  await gotoReady(page, "/admin/gins/new");
   await page.getByLabel("Brand").fill("E2E");
   await page.getByLabel("Name", { exact: true }).fill(name);
   await page.getByLabel("ABV (%)").fill("43,1"); // a decimal comma is accepted
@@ -23,7 +23,7 @@ test("add a gin through the form", async ({ page }) => {
   await expect(page.getByLabel("Botanicals")).toHaveValue("coriander, juniper");
 
   // It shows up in the searchable list.
-  await page.goto("/admin/gins");
+  await gotoReady(page, "/admin/gins");
   await page.getByLabel("Search").fill(name);
   await expect(page.getByRole("link", { name: `E2E ${name}` })).toBeVisible();
 });
@@ -37,7 +37,7 @@ test("two admins editing the same gin get a conflict screen, not a silent overwr
   const gin = await createGin(api, csrf, { country: "Sweden" });
 
   await signInThroughUi(page);
-  await page.goto(`/admin/gins/${gin.id}`);
+  await gotoReady(page, `/admin/gins/${gin.id}`);
   await expect(page.getByLabel("Country")).toHaveValue("Sweden");
 
   // Meanwhile, the other admin saves a change...
@@ -74,7 +74,7 @@ test("record a purchase with a gift line, then follow a bottle through its life"
   await api.dispose();
 
   await signInThroughUi(page);
-  await page.goto(`/admin/purchases/new?gin=${gin.id}`);
+  await gotoReady(page, `/admin/purchases/new?gin=${gin.id}`);
   await page.getByLabel("Shop").fill("E2E Bottle Shop");
   await page.getByLabel("Bottles on line 1").fill("2");
   await page.getByLabel("Price per bottle on line 1").fill("299,50");
@@ -90,7 +90,7 @@ test("record a purchase with a gift line, then follow a bottle through its life"
   await expect(page.getByText("1 bottle has no price")).toBeVisible();
 
   // The gin now has 3 bottles; open the first 700 ml one.
-  await page.goto(`/admin/gins/${gin.id}`);
+  await gotoReady(page, `/admin/gins/${gin.id}`);
   await expect(page.getByRole("heading", { name: "Bottles (3 in the cabinet)" })).toBeVisible();
   await page.getByRole("row", { name: /700 ml/ }).first().getByRole("link").click();
 
@@ -122,7 +122,7 @@ test("turn a wishlist entry into a purchase", async ({ page, baseURL }) => {
   const note = `Ask for the gift box ${unique()}`;
 
   await signInThroughUi(page);
-  await page.goto("/admin/wishlist");
+  await gotoReady(page, "/admin/wishlist");
   await page.getByLabel("Gin from the catalogue").selectOption(gin.id);
   await page.getByLabel("Target price").fill("350");
   await page.getByLabel("Notes").fill(note);
@@ -138,7 +138,7 @@ test("turn a wishlist entry into a purchase", async ({ page, baseURL }) => {
   await expect(page.getByRole("heading", { level: 1, name: /Duty free/ })).toBeVisible();
 
   // The wish is kept, notes and all, under "Bought".
-  await page.goto("/admin/wishlist?status=purchased");
+  await gotoReady(page, "/admin/wishlist?status=purchased");
   const bought = page.getByRole("row").filter({ hasText: note });
   await expect(bought.getByRole("link", { name: "View purchase" })).toBeVisible();
 });

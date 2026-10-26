@@ -45,3 +45,17 @@ export function param(value: string | string[] | undefined): string | undefined 
 export function today(): string {
   return new Date().toISOString().slice(0, 10);
 }
+
+// Plural forms for units that are words ("2 dashes", "3 leaves").
+const PLURALS: Record<string, string> = {
+  dash: "dashes", drop: "drops", piece: "pieces", slice: "slices", wedge: "wedges",
+  sprig: "sprigs", leaf: "leaves", barspoon: "barspoons",
+};
+
+/** "50 ml", "2 dashes", "1 slice"… An amount and its unit, ready to read. */
+export function formatAmount(quantity: string | null, unit: string): string {
+  if (unit === "top up") return "Top up";
+  if (quantity === null) return unit;
+  const plural = Number(quantity) !== 1 && PLURALS[unit];
+  return `${quantity} ${plural || unit}`;
+}

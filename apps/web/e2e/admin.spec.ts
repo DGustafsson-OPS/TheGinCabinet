@@ -2,7 +2,7 @@
 // They need a running API + website and a test admin; see e2e/README.md.
 import { expect, test } from "@playwright/test";
 
-import { HAS_CREDENTIALS, PASSWORD, SECRET, USERNAME, signInThroughUi, signedInApi } from "./helpers";
+import { HAS_CREDENTIALS, PASSWORD, SECRET, USERNAME, gotoReady, signInThroughUi, signedInApi } from "./helpers";
 import { totp } from "./totp";
 
 test.skip(!HAS_CREDENTIALS, "Set E2E_PASSWORD and E2E_TOTP_SECRET (see e2e/README.md)");
@@ -21,7 +21,7 @@ test("admin pages send signed-out visitors to the login page", async ({ page }) 
 });
 
 test("a wrong password shows a clear error", async ({ page }) => {
-  await page.goto("/login");
+  await gotoReady(page, "/login");
   // An unknown username, so repeated test runs never lock out the real test admin.
   await page.getByLabel("Username").fill("nobody-here");
   await page.getByLabel("Password").fill("definitely wrong");
@@ -51,7 +51,7 @@ test("two-step sign-in, dashboard numbers, mobile menu and sign-out", async ({ p
   await api.dispose();
 
   // Step 1 → step 2: the code box must start empty (regression test).
-  await page.goto("/login");
+  await gotoReady(page, "/login");
   await page.getByLabel("Username").fill(USERNAME);
   await page.getByLabel("Password").fill(PASSWORD);
   await page.getByRole("button", { name: "Continue" }).click();
@@ -87,4 +87,20 @@ test("two-step sign-in, dashboard numbers, mobile menu and sign-out", async ({ p
 test("the sidebar shows who is signed in", async ({ page }) => {
   await signInThroughUi(page);
   await expect(page.getByText(/Signed in as/)).toBeVisible();
+});
+
+test("every admin page sends signed-out visitors to the login page", async ({ page }) => {
+  // One URL per admin page file (ids don't need to exist: the check comes first).
+  const urls = [
+    "/admin", "/admin/gins", "/admin/gins/new", "/admin/gins/x", "/admin/distilleries",
+    "/admin/bottles", "/admin/bottles/new", "/admin/bottles/x", "/admin/purchases",
+    "/admin/purchases/new", "/admin/purchases/x", "/admin/wishlist", "/admin/wishlist/x/convert",
+    "/admin/media", "/admin/media/x", "/admin/tastings", "/admin/tastings/new", "/admin/tastings/x",
+    "/admin/reviews", "/admin/reviews/new", "/admin/reviews/x", "/admin/reviews/x/preview",
+    "/admin/reviews/x/revisions", "/admin/cocktails", "/admin/cocktails/new", "/admin/cocktails/x",
+  ];
+  for (const url of urls) {
+    await page.goto(url);
+    await expect(page, `${url} should redirect`).toHaveURL(/\/login$/);
+  }
 });

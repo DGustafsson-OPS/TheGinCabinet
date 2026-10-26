@@ -1,6 +1,8 @@
 // The root layout wraps every page on the site.
 import type { Metadata, Viewport } from "next";
 
+import HydrationMarker from "@/components/HydrationMarker";
+
 import "@/styles/globals.css";
 
 export const metadata: Metadata = {
@@ -23,6 +25,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           Skip to content
         </a>
         {children}
+        <HydrationMarker />
       </body>
     </html>
   );

@@ -296,3 +296,85 @@ export type PublicReview = PublicReviewCard & {
   seo_description: string | null;
   updated_at: string;
 };
+
+// ---------- Cocktails ----------
+
+export const UNITS = [
+  "ml", "cl", "g", "tsp", "tbsp", "barspoon", "dash", "drop",
+  "piece", "slice", "wedge", "sprig", "leaf", "top up",
+] as const;
+export type Unit = (typeof UNITS)[number];
+export const METHODS = ["build", "shake", "stir", "blend"] as const;
+export const DIFFICULTIES = ["easy", "medium", "advanced"] as const;
+
+export type IngredientLine = {
+  name: string;
+  quantity: string | null; // exact decimal as text, e.g. "50" or "1.5"
+  unit: Unit;
+  note: string | null;
+  optional: boolean;
+};
+
+export type Pairing = {
+  gin: GinSummary;
+  gin_public: boolean;
+  priority: number;
+  pairing_note: string | null;
+};
+
+export type CocktailStatus = "draft" | "published" | "archived";
+
+export type Cocktail = {
+  id: string;
+  slug: string;
+  title: string;
+  intro: string | null;
+  method: (typeof METHODS)[number];
+  glassware: string | null;
+  prep_minutes: number | null;
+  difficulty: (typeof DIFFICULTIES)[number];
+  servings_base: number;
+  garnish: string | null;
+  garnish_quantity: string | null;
+  tags: string[];
+  status: CocktailStatus;
+  author: Person;
+  cover_media_id: string | null;
+  cover_image: MediaSummary | null;
+  seo_title: string | null;
+  seo_description: string | null;
+  ingredients: IngredientLine[];
+  steps: string[];
+  gins: Pairing[];
+  published_at: string | null;
+  version: number;
+  created_at: string;
+  updated_at: string;
+};
+
+export type PublicCocktailCard = {
+  slug: string;
+  title: string;
+  teaser: string;
+  method: string;
+  difficulty: string;
+  prep_minutes: number | null;
+  glassware: string | null;
+  tags: string[];
+  cover: MediaSummary | null;
+};
+
+export type PublicCocktail = PublicCocktailCard & {
+  intro: string | null;
+  servings: number;
+  servings_base: number;
+  ingredients: IngredientLine[];
+  garnish: string | null;
+  garnish_quantity: string | null;
+  steps: string[];
+  recommended_gins: { slug: string; display_name: string; country: string | null; abv: string; pairing_note: string | null }[];
+  seo_title: string | null;
+  seo_description: string | null;
+  published_at: string;
+  updated_at: string;
+};

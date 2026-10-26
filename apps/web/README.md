@@ -35,7 +35,8 @@ apps/web/
 │   ├── (public)/             ← public site; "(…)" folders don't appear in URLs
 │   │   ├── layout.tsx        ← forest masthead + footer
 │   │   ├── page.tsx          ← "/" home page
-│   │   └── reviews/          ← "/reviews" list and "/reviews/[slug]" (public)
+│   │   ├── reviews/          ← "/reviews" list and "/reviews/[slug]" (public)
+│   │   └── cocktails/        ← "/cocktails" library and recipe pages with a serving stepper
 │   ├── login/                ← "/login": page + the two-step LoginForm
 │   ├── admin/                ← "/admin": sidebar layout + dashboard
 │   │   ├── gins/             ← list, new, [id] edit (with conflict screen)
@@ -45,7 +46,8 @@ apps/web/
 │   │   ├── wishlist/         ← list + add, [id]/convert to a purchase
 │   │   ├── media/            ← upload (drag and drop) + edit alt text
 │   │   ├── tastings/         ← private notes with flavour sliders
-│   │   └── reviews/          ← editor, preview, revision history
+│   │   ├── reviews/          ← editor, preview, revision history
+│   │   └── cocktails/        ← tabbed recipe editor
 │   ├── health/route.ts       ← "/health" for Docker/Coolify
 │   └── not-found.tsx         ← any unknown URL
 ├── components/               ← reusable pieces (headers, sidebar, buttons)
@@ -90,6 +92,15 @@ function from `AdminProvider` through `useAdmin()`, call the API, then run
 Edit forms send **only the fields you changed**, plus the record's `version`.
 If someone else saved in the meantime, the API answers `409` and
 `ConflictPanel` shows both versions with two deliberate choices (spec §6).
+
+### Lists of rows (keys and ids)
+
+Forms with repeatable rows (purchase lines, recipe ingredients) give each row a
+React `key`. Those keys must be **the same on the server and in the browser**,
+otherwise the HTML ids built from them don't match after hydration and two
+inputs can end up sharing an id. So rows loaded with the page are keyed by
+position (`init-0`…), new rows by a counter kept *inside* the component, and
+ids are prefixed with React's `useId()`. Never use a module-level counter.
 
 ### Who may see /admin?
 

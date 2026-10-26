@@ -56,7 +56,8 @@ Progress against the delivery phases in
 | Serving scaler (P07) | ✅ | `?servings=1–12`; exact Decimal maths; garnish count scales; step text never changes |
 | Public library + detail API (P06/P07) | ✅ | Published only; filters (search, method, difficulty, tag); recommended gins only if public |
 | Gin → cocktails API | ✅ | `/public/gins/{slug}/cocktails` reads the same pairing table (consistent both ways) |
-| Admin + public cocktail screens | ⬜ | Next |
+| Admin cocktail editor (A07) | ✅ | Accessible tabs (arrow keys); ingredient/step/gin rows with reorder; save keeps the open tab |
+| Public library + recipe pages (P06/P07) | ✅ | Filter chips, cards, serving stepper as plain links (works without JavaScript), Recipe JSON-LD |
 
 ## Phase 5 – Public website ⬜
 Home, collection, gin profiles, distilleries, about, SEO, sitemap. (Reviews

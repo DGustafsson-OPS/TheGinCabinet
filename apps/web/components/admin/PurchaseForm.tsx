@@ -3,13 +3,13 @@
 // bottle per unit. Also used to turn a wishlist entry into a purchase (A08).
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useId, useRef, useState } from "react";
 
 import { errorMessage, useAdmin } from "@/components/admin/AdminProvider";
 import { formatMoney, today } from "@/lib/format";
 import type { GinSummary, Purchase } from "@/lib/types";
 
-type Line = { key: number; gin_id: string; size_ml: string; quantity: string; unit_price: string };
+type Line = { key: string; gin_id: string; size_ml: string; quantity: string; unit_price: string };
 
 type Mode =
   | { kind: "create" }
@@ -22,10 +22,8 @@ type Props = {
   defaultCurrency?: string;
 };
 
-let nextKey = 1; // React needs a stable `key` for each row in a list
-
-function emptyLine(initial: Partial<Omit<Line, "key">> = {}): Line {
-  return { key: nextKey++, gin_id: "", size_ml: "700", quantity: "1", unit_price: "", ...initial };
+function emptyLine(key: string, initial: Partial<Omit<Line, "key">> = {}): Line {
+  return { key, gin_id: "", size_ml: "700", quantity: "1", unit_price: "", ...initial };
 }
 
 export default function PurchaseForm({
@@ -36,12 +34,17 @@ export default function PurchaseForm({
 }: Props) {
   const router = useRouter();
   const { call, toast } = useAdmin();
-  const [lines, setLines] = useState<Line[]>(() => [emptyLine(initialLine)]);
+  // Row keys must be the same on the server and in the browser, so the first
+  // row is always "init" and rows added later count up from this form's own
+  // counter. (A shared module-level counter gave duplicate ids: see git history.)
+  const formId = useId();
+  const added = useRef(0);
+  const [lines, setLines] = useState<Line[]>(() => [emptyLine("init", initialLine)]);
   const [currency, setCurrency] = useState(defaultCurrency);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  const updateLine = (key: number, field: keyof Omit<Line, "key">, value: string) =>
+  const updateLine = (key: string, field: keyof Omit<Line, "key">, value: string) =>
     setLines((current) => current.map((line) => (line.key === key ? { ...line, [field]: value } : line)));
 
   // Running total of the lines that have a price (prices in cents avoid rounding errors).
@@ -128,9 +131,9 @@ export default function PurchaseForm({
           <div key={line.key} className="card" style={{ marginBottom: "var(--space-3)", padding: "var(--space-4)" }}>
             <div className="form-grid">
               <div className="field span-2">
-                <label htmlFor={`gin-${line.key}`}>Gin (line {index + 1})</label>
+                <label htmlFor={`${formId}-gin-${line.key}`}>Gin (line {index + 1})</label>
                 <select
-                  id={`gin-${line.key}`}
+                  id={`${formId}-gin-${line.key}`}
                   value={line.gin_id}
                   onChange={(event) => updateLine(line.key, "gin_id", event.target.value)}
                   required
@@ -146,13 +149,13 @@ export default function PurchaseForm({
                 </select>
               </div>
               <div className="field">
-                <label htmlFor={`size-${line.key}`}>
+                <label htmlFor={`${formId}-size-${line.key}`}>
                   Size (ml)
                   {/* Hidden words give each line's fields a unique name for screen readers. */}
                   <span className="visually-hidden"> on line {index + 1}</span>
                 </label>
                 <input
-                  id={`size-${line.key}`}
+                  id={`${formId}-size-${line.key}`}
                   type="number"
                   min={1}
                   value={line.size_ml}
@@ -161,12 +164,12 @@ export default function PurchaseForm({
                 />
               </div>
               <div className="field">
-                <label htmlFor={`qty-${line.key}`}>
+                <label htmlFor={`${formId}-qty-${line.key}`}>
                   Bottles
                   <span className="visually-hidden"> on line {index + 1}</span>
                 </label>
                 <input
-                  id={`qty-${line.key}`}
+                  id={`${formId}-qty-${line.key}`}
                   type="number"
                   min={1}
                   max={48}
@@ -176,18 +179,18 @@ export default function PurchaseForm({
                 />
               </div>
               <div className="field">
-                <label htmlFor={`price-${line.key}`}>
+                <label htmlFor={`${formId}-price-${line.key}`}>
                   Price per bottle
                   <span className="visually-hidden"> on line {index + 1}</span>
                 </label>
                 <input
-                  id={`price-${line.key}`}
+                  id={`${formId}-price-${line.key}`}
                   inputMode="decimal"
                   value={line.unit_price}
                   onChange={(event) => updateLine(line.key, "unit_price", event.target.value)}
-                  aria-describedby={`price-hint-${line.key}`}
+                  aria-describedby={`${formId}-price-hint-${line.key}`}
                 />
-                <span id={`price-hint-${line.key}`} className="field-hint">
+                <span id={`${formId}-price-hint-${line.key}`} className="field-hint">
                   Leave empty for a gift or an unknown price.
                 </span>
               </div>
@@ -206,7 +209,11 @@ export default function PurchaseForm({
         <button
           type="button"
           className="button button-secondary"
-          onClick={() => setLines((current) => [...current, emptyLine()])}
+          onClick={() => {
+            added.current += 1;
+            const key = `new-${added.current}`;
+            setLines((current) => [...current, emptyLine(key)]);
+          }}
         >
           Add another line
         </button>

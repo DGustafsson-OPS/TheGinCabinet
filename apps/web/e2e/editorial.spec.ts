@@ -3,7 +3,7 @@
 // correctly updates listing and canonical pages").
 import { expect, test } from "@playwright/test";
 
-import { HAS_CREDENTIALS, createGin, signInThroughUi, signedInApi, toasts, unique } from "./helpers";
+import { HAS_CREDENTIALS, createGin, gotoReady, signInThroughUi, signedInApi, toasts, unique } from "./helpers";
 
 test.skip(!HAS_CREDENTIALS, "Set E2E_PASSWORD and E2E_TOTP_SECRET (see e2e/README.md)");
 
@@ -22,7 +22,7 @@ test("tasting → review → publish → withdraw", async ({ page, browser, base
   await signInThroughUi(page);
 
   // 1. Upload a cover image and describe it.
-  await page.goto("/admin/media");
+  await gotoReady(page, "/admin/media");
   await page.locator("#upload-input").setInputFiles({ name: "cover.png", mimeType: "image/png", buffer: TINY_PNG });
   await expect(toasts(page)).toContainText("1 image uploaded");
   await page.getByRole("link", { name: /No alt text/ }).first().click();
@@ -31,7 +31,7 @@ test("tasting → review → publish → withdraw", async ({ page, browser, base
   await expect(toasts(page)).toContainText("Saved.");
 
   // 2. A private tasting with flavour sliders.
-  await page.goto(`/admin/tastings/new?gin=${gin.id}`);
+  await gotoReady(page, `/admin/tastings/new?gin=${gin.id}`);
   await page.getByLabel("Nose").fill("Meadowsweet and pine");
   await page.getByLabel(/^Juniper/).fill("4");
   await page.getByLabel("Overall rating (0–10)").fill("8.5");
@@ -74,7 +74,7 @@ test("tasting → review → publish → withdraw", async ({ page, browser, base
   await expect(page.getByText("Live on the site")).toBeVisible();
 
   // The visitor now finds it in the list and can read it.
-  await visitor.goto("/reviews");
+  await gotoReady(visitor, "/reviews");
   await visitor.getByRole("link", { name: title }).click();
   await expect(visitor.getByRole("heading", { level: 1, name: title })).toBeVisible();
   await expect(visitor.getByText("Buy two bottles.")).toBeVisible();
@@ -86,7 +86,7 @@ test("tasting → review → publish → withdraw", async ({ page, browser, base
   await page.getByRole("button", { name: "Withdraw" }).click();
   await page.getByRole("dialog").getByRole("button", { name: "Withdraw" }).click();
   await expect(page.getByText("Draft", { exact: true })).toBeVisible();
-  await visitor.goto("/reviews");
+  await gotoReady(visitor, "/reviews");
   await expect(visitor.getByRole("link", { name: title })).toHaveCount(0);
   expect((await visitor.goto(`/reviews/${review.slug}`))?.status()).toBe(404);
 

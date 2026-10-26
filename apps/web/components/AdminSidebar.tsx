@@ -32,7 +32,7 @@ const SECTIONS: { title: string; items: NavItem[] }[] = [
     items: [
       { href: "/admin/tastings", label: "Tastings", ready: true },
       { href: "/admin/reviews", label: "Reviews", ready: true },
-      { href: "/admin/cocktails", label: "Cocktails", ready: false },
+      { href: "/admin/cocktails", label: "Cocktails", ready: true },
       { href: "/admin/blog", label: "Journal", ready: false },
       { href: "/admin/media", label: "Media", ready: true },
     ],
