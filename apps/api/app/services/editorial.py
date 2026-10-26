@@ -19,6 +19,7 @@ from app.models import (
     Review,
     ReviewRevision,
     ReviewStatus,
+    SiteSettings,
 )
 from app.models._types import utcnow
 from app.schemas.editorial import (
@@ -82,6 +83,11 @@ def media_usage(db: Session, asset_id: uuid.UUID) -> list[str]:
         + [f"Review: {t}" for t in reviews]
         + [f"Cocktail: {t}" for t in cocktails]
         + [f"Article: {t}" for t in articles]
+        + (
+            ["Website logo"]
+            if db.scalar(select(SiteSettings.id).where(SiteSettings.logo_media_id == asset_id))
+            else []
+        )
     )
 
 

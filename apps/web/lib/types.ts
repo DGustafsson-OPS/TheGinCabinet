@@ -30,6 +30,7 @@ export type AuditEvent = {
   action: string;
   occurred_at: string;
   summary: Record<string, unknown>;
+  ip_address: string | null;
 };
 
 export type InventoryValue = {
@@ -517,3 +518,41 @@ export type PublicPost = PublicPostCard & {
 
 export type PublicCategory = { name: string; slug: string; description: string | null; post_count: number };
 export type PublicTag = { name: string; slug: string; post_count: number };
+
+// ---------------- Settings & admins (spec A10) ----------------
+
+export type SiteSettings = {
+  site_name: string;
+  tagline: string | null;
+  meta_description: string | null;
+  contact_email: string | null;
+  logo_media_id: string | null;
+  logo: MediaSummary | null;
+  default_gin_public: boolean;
+  about_text: string | null;
+  version: number;
+  updated_at: string;
+};
+
+export type PublicSite = Omit<SiteSettings, "logo_media_id" | "default_gin_public" | "version" | "updated_at">;
+
+export type Profile = {
+  id: string;
+  username: string;
+  email: string;
+  display_name: string;
+  last_login_at: string | null;
+  recovery_codes_left: number;
+  mfa_setup_pending: boolean;
+  notices: { action: string; by: string; at: string }[];
+};
+
+export type AdminAccount = {
+  id: string;
+  username: string;
+  display_name: string;
+  email: string;
+  enabled: boolean;
+  last_login_at: string | null;
+  is_you: boolean;
+};

@@ -39,7 +39,10 @@ const SECTIONS: { title: string; items: NavItem[] }[] = [
   },
   {
     title: "System",
-    items: [{ href: "/admin/settings", label: "Settings", ready: false }],
+    items: [
+      { href: "/admin/settings", label: "Settings", ready: true },
+      { href: "/admin/audit", label: "Audit log", ready: true },
+    ],
   },
 ];
 

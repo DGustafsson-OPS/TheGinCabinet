@@ -44,10 +44,13 @@ from app.models.editorial import (
     Tasting,
 )
 from app.models.purchases import Purchase, PurchaseLine
+from app.models.settings import SETTINGS_ID, SiteSettings
 from app.models.user import User
 from app.models.wishlist import WishlistItem, WishlistStatus
 
 __all__ = [
+    "SETTINGS_ID",
+    "SiteSettings",
     "POST_CONTENT_FIELDS",
     "POST_TRANSITIONS",
     "BlogCategory",

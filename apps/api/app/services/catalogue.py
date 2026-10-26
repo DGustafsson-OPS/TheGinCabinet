@@ -18,6 +18,7 @@ from app.services.common import (
     unique_slug,
 )
 from app.services.editorial import media_summary
+from app.services.site import get_site_settings
 
 
 def find_duplicate(
@@ -93,6 +94,9 @@ def create_gin(db: Session, data: dict[str, Any]) -> GinProduct:
     check_distillery(db, data.get("distillery_id"))
     botanical_names = data.pop("botanicals", [])
     image_ids = data.pop("image_ids", [])
+    if data.get("public_visible") is None:
+        # Not chosen: use the site-wide default from Settings (spec A10).
+        data["public_visible"] = get_site_settings(db).default_gin_public
     if data.get("slug"):
         ensure_slug_free(db, GinProduct, data["slug"])
     else:

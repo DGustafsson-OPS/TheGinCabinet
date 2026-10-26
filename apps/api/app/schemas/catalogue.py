@@ -109,7 +109,7 @@ class GinIn(BaseModel):
     country: str | None = Field(default=None, max_length=80)
     distillery_id: uuid.UUID | None = None
     description: str | None = Field(default=None, max_length=20_000)
-    public_visible: bool = False
+    public_visible: bool | None = None  # None: use the default from Settings
     botanicals: list[str] = Field(default_factory=list, max_length=40)
     # Photos from the media library, in order: the first is the main photo.
     image_ids: list[uuid.UUID] = Field(default_factory=list, max_length=12)

@@ -53,7 +53,9 @@ apps/web/
 │   │   ├── tastings/         ← private notes with flavour sliders
 │   │   ├── reviews/          ← editor, preview, revision history
 │   │   ├── cocktails/        ← tabbed recipe editor
-│   │   └── blog/             ← Journal list, block editor (with autosave), categories, preview, history
+│   │   ├── blog/             ← Journal list, block editor (with autosave), categories, preview, history
+│   │   ├── settings/         ← website settings, profile, password & MFA, the two admins
+│   │   └── audit/            ← audit log viewer
 │   ├── sitemap.ts, robots.ts ← "/sitemap.xml" (public pages only), "/robots.txt"
 │   ├── health/route.ts       ← "/health" for Docker/Coolify
 │   └── not-found.tsx         ← any unknown URL

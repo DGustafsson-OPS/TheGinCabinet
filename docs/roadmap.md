@@ -81,15 +81,30 @@ Progress against the delivery phases in
 | Public UI: B01 /blog, B02 article, B03 category/tag pages | ✅ | Featured hero, chips, search, related stories, Article JSON-LD, Open Graph |
 | RSS (/blog/rss.xml) and sitemap entries | ✅ | Only live articles |
 
-## Phase 7 – Settings and launch QA ⬜
-Settings & admins (A10), security review, accessibility, performance,
-backup/restore test, Coolify runbook.
+## Phase 7 – Settings & admins (A10) ✅
+
+| Item | Status | Notes |
+| --- | --- | --- |
+| Website settings (name, tagline, description, logo, contact, About text) | ✅ | One versioned row; About page reads it; logo counts as media "in use" |
+| Default visibility of new gins | ✅ | Used when a new gin doesn't say |
+| Own profile: name, email (needs password) | ✅ | |
+| Change password | ✅ | Policy checked; other sessions signed out |
+| Move MFA to a new app | ✅ | Two steps: new secret is pending until a code from it is confirmed |
+| New recovery codes | ✅ | Shown once |
+| Reset the other admin's password | ✅ | Your password + their username typed; their sessions end; audit event; they see a notice |
+| Audit log viewer | ✅ | Filters by action and area; IP shown to admins only |
+
+## Phase 8 – Launch QA ⬜
+Security review, accessibility audit, performance, backup/restore test,
+Coolify runbook walk-through.
 
 ## Known follow-ups
 - Content-Security-Policy header for the website (needs per-request nonces with
   Next.js); other security headers are already set.
 - Dashboard "quick actions" (A01) arrive with the inventory screens.
 - TOTP codes can be reused within their ~90 s validity window; add a
-  "last used time step" per user to block replay.
+  "last used time step" per user to block replay. (The e2e tests sign in
+  twice per test with the same code, so they need a helper that waits for
+  the next code first.)
 - A known username can be temporarily locked out (15 min) by someone guessing
   wrong passwords. Acceptable for two admins, but worth knowing.

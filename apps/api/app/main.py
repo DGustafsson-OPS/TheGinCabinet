@@ -23,6 +23,7 @@ from app.api.routes import (
     admin_inventory,
     admin_media,
     admin_reviews,
+    admin_settings,
     admin_tastings,
     admin_users,
     auth,
@@ -31,6 +32,7 @@ from app.api.routes import (
     public_catalogue,
     public_cocktails,
     public_reviews,
+    public_site,
 )
 from app.config import get_settings
 from app.db import SessionLocal
@@ -109,6 +111,8 @@ def create_app() -> FastAPI:
     app.include_router(public_catalogue.router, prefix=API_PREFIX)
     app.include_router(admin_blog.router, prefix=API_PREFIX)
     app.include_router(public_blog.router, prefix=API_PREFIX)
+    app.include_router(admin_settings.router, prefix=API_PREFIX)
+    app.include_router(public_site.router, prefix=API_PREFIX)
     return app
 
 

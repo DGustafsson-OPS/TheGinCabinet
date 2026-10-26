@@ -5,34 +5,13 @@
 // visitor's own session, and sends finished HTML to the browser.
 import type { Metadata } from "next";
 
+import { describeEvent } from "@/lib/audit";
 import { apiGet, requireAdmin } from "@/lib/server-api";
-import type { AuditEvent, Dashboard, InventoryValue } from "@/lib/types";
+import type { Dashboard, InventoryValue } from "@/lib/types";
 
 import styles from "./dashboard.module.css";
 
 export const metadata: Metadata = { title: "Dashboard" };
-
-// Readable wording for audit actions. Unknown ones fall back to the raw code.
-const ACTION_LABELS: Record<string, string> = {
-  "auth.login": "signed in",
-  "auth.logout": "signed out",
-  "gin.create": "added a gin",
-  "gin.update": "edited a gin",
-  "distillery.create": "added a distillery",
-  "distillery.update": "edited a distillery",
-  "bottle.create": "added bottles",
-  "bottle.update": "updated a bottle",
-  "bottle.status": "changed a bottle's status",
-  "purchase.create": "recorded a purchase",
-  "purchase.update": "edited a purchase",
-  "wishlist.create": "added to the wishlist",
-  "wishlist.update": "edited the wishlist",
-  "wishlist.convert": "bought a wishlist item",
-  "import.gins": "imported gins",
-  "export.full": "exported all data",
-  "export.gins_csv": "exported the gin list",
-  "user.create": "created an admin account",
-};
 
 function formatMoney(value: InventoryValue): string {
   return new Intl.NumberFormat("en-GB", { style: "currency", currency: value.currency }).format(
@@ -48,16 +27,6 @@ function formatWhen(iso: string): string {
   }).format(new Date(iso));
 }
 
-function describe(event: AuditEvent): string {
-  if (event.action === "auth.login_failed") {
-    const username = event.summary.username;
-    return typeof username === "string"
-      ? `Failed sign-in attempt (${username})`
-      : "Failed sign-in attempt";
-  }
-  const who = event.actor_name ?? "Someone";
-  return `${who} ${ACTION_LABELS[event.action] ?? event.action}`;
-}
 
 export default async function DashboardPage() {
   const session = await requireAdmin();
@@ -117,7 +86,7 @@ export default async function DashboardPage() {
                 <ol className={styles.activity}>
                   {data.recent_activity.map((event) => (
                     <li key={event.id}>
-                      <span>{describe(event)}</span>
+                      <span>{describeEvent(event)}</span>
                       <time dateTime={event.occurred_at} className={styles.when}>
                         {formatWhen(event.occurred_at)} UTC
                       </time>

@@ -383,3 +383,14 @@ input[type="radio"] {
   font-size: var(--font-size-small);
   padding: 0 var(--space-2);
 }
+
+/* A red button for serious actions outside a confirmation dialog. */
+.button-danger {
+  background: var(--color-danger);
+  border-color: var(--color-danger);
+  color: var(--color-white);
+}
+.button-danger:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}

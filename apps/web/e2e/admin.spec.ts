@@ -99,7 +99,7 @@ test("every admin page sends signed-out visitors to the login page", async ({ pa
     "/admin/reviews", "/admin/reviews/new", "/admin/reviews/x", "/admin/reviews/x/preview",
     "/admin/reviews/x/revisions", "/admin/cocktails", "/admin/cocktails/new", "/admin/cocktails/x",
     "/admin/blog", "/admin/blog/new", "/admin/blog/categories", "/admin/blog/x/edit", "/admin/blog/x/preview",
-    "/admin/blog/x/revisions",
+    "/admin/blog/x/revisions", "/admin/settings", "/admin/audit",
   ];
   for (const url of urls) {
     await page.goto(url);

@@ -24,6 +24,9 @@ class User(Base):
     password_hash: Mapped[str] = mapped_column(Text)
     # The TOTP secret, encrypted with the app's secret key (see security/crypto.py).
     totp_secret_encrypted: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # A new secret being set up from the Settings page. It replaces the real
+    # one only after the admin proves it works by typing a code from it.
+    totp_pending_encrypted: Mapped[str | None] = mapped_column(Text, nullable=True)
     enabled: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)
     last_login_at: Mapped[datetime | None] = mapped_column(UTCDateTime, nullable=True)

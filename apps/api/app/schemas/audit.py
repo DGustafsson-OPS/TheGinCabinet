@@ -19,3 +19,4 @@ class AuditEventOut(BaseModel):
     action: str
     occurred_at: datetime
     summary: dict[str, Any]
+    ip_address: str | None = None  # admin-only: helps spot unknown sign-in attempts
