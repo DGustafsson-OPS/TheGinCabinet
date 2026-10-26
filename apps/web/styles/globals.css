@@ -36,6 +36,13 @@ img {
   height: auto;
 }
 
+/* Tint sliders, checkboxes and radio buttons with the brand colour. */
+input[type="range"],
+input[type="checkbox"],
+input[type="radio"] {
+  accent-color: var(--color-brass-600);
+}
+
 /* Keyboard users must always see where they are (spec: focus indicators). */
 :focus-visible {
   outline: none;
@@ -313,4 +320,29 @@ img {
   background: #fdf3e1;
   color: #6b4a12;
   border: 1px solid #e8cf9e;
+}
+
+.cover-preview {
+  display: block;
+  max-width: 320px;
+  width: 100%;
+  height: auto;
+  margin-top: var(--space-2);
+  border-radius: var(--radius-sm);
+}
+
+/* Banner above the review preview. */
+.preview-banner {
+  background: var(--color-forest);
+  color: var(--color-cream);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-sm);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: center;
+  justify-content: space-between;
+}
+.preview-banner a {
+  color: var(--color-brass);
 }

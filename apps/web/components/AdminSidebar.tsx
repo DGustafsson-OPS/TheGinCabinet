@@ -30,11 +30,11 @@ const SECTIONS: { title: string; items: NavItem[] }[] = [
   {
     title: "Editorial",
     items: [
-      { href: "/admin/tastings", label: "Tastings", ready: false },
-      { href: "/admin/reviews", label: "Reviews", ready: false },
+      { href: "/admin/tastings", label: "Tastings", ready: true },
+      { href: "/admin/reviews", label: "Reviews", ready: true },
       { href: "/admin/cocktails", label: "Cocktails", ready: false },
       { href: "/admin/blog", label: "Journal", ready: false },
-      { href: "/admin/media", label: "Media", ready: false },
+      { href: "/admin/media", label: "Media", ready: true },
     ],
   },
   {

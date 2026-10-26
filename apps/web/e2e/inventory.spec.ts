@@ -2,7 +2,7 @@
 // §6 workflows and §11 acceptance tests).
 import { expect, test } from "@playwright/test";
 
-import { HAS_CREDENTIALS, createGin, signInThroughUi, signedInApi, unique } from "./helpers";
+import { HAS_CREDENTIALS, createGin, signInThroughUi, signedInApi, toasts, unique } from "./helpers";
 
 test.skip(!HAS_CREDENTIALS, "Set E2E_PASSWORD and E2E_TOTP_SECRET (see e2e/README.md)");
 
@@ -18,7 +18,7 @@ test("add a gin through the form", async ({ page }) => {
   await page.getByRole("button", { name: "Add gin" }).click();
 
   await expect(page.getByRole("heading", { level: 1, name: `E2E ${name}` })).toBeVisible();
-  await expect(page.getByRole("status")).toContainText("was added");
+  await expect(toasts(page)).toContainText("was added");
   await expect(page.getByLabel("ABV (%)")).toHaveValue("43.10");
   await expect(page.getByLabel("Botanicals")).toHaveValue("coriander, juniper");
 
@@ -59,7 +59,7 @@ test("two admins editing the same gin get a conflict screen, not a silent overwr
 
   // Overwriting takes a deliberate click.
   await panel.getByRole("button", { name: "Keep my version" }).click();
-  await expect(page.getByRole("status")).toContainText("Saved.");
+  await expect(toasts(page)).toContainText("Saved.");
   const saved = await (await api.get(`/api/v1/admin/gins/${gin.id}`)).json();
   expect(saved.country).toBe("Denmark");
   await api.dispose();
@@ -127,7 +127,7 @@ test("turn a wishlist entry into a purchase", async ({ page, baseURL }) => {
   await page.getByLabel("Target price").fill("350");
   await page.getByLabel("Notes").fill(note);
   await page.getByRole("button", { name: "Add to wishlist" }).click();
-  await expect(page.getByRole("status")).toContainText("Added to the wishlist.");
+  await expect(toasts(page)).toContainText("Added to the wishlist.");
 
   const row = page.getByRole("row").filter({ hasText: note });
   await row.getByRole("link", { name: "Bought it" }).click();

@@ -50,6 +50,9 @@ services:
       args:
         API_INTERNAL_URL: http://api:8000
     restart: unless-stopped
+    # Only what the website needs. The API's secrets are NOT passed to it.
+    environment:
+      SITE_URL: ${SITE_URL:-http://localhost:3000}
     depends_on:
       api:
         condition: service_healthy

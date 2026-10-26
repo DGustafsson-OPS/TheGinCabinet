@@ -1,0 +1,77 @@
+.dropzone,
+.dropzoneActive {
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-6) var(--space-4);
+  text-align: center;
+  background: var(--color-white);
+}
+.dropzoneActive {
+  border-color: var(--color-brass-600);
+  background: #fdf8ee;
+}
+
+.grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+}
+
+.tile {
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  transition: box-shadow 0.15s ease;
+}
+.tile:hover {
+  box-shadow: var(--shadow-card-hover);
+}
+
+.tileLink {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+
+.thumb {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 5; /* spec §2: gin cards use 4:5 photography */
+  height: auto;
+  object-fit: cover;
+  background: var(--color-cream);
+}
+
+.caption {
+  display: block;
+  padding: var(--space-2) var(--space-3) 0;
+  font-size: var(--font-size-small);
+}
+
+.used {
+  display: block;
+  padding: 0 var(--space-3) var(--space-2);
+  font-size: 0.75rem;
+  color: var(--color-muted);
+}
+
+.preview {
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--radius-sm);
+}
+
+.layout {
+  display: grid;
+  gap: var(--space-4);
+}
+@media (min-width: 1000px) {
+  .layout {
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+  }
+}

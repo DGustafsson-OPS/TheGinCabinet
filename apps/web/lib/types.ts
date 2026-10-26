@@ -184,3 +184,115 @@ export type ConflictDetails<T> = {
 };
 
 export type AdminName = { id: string; display_name: string };
+
+// ---------- Editorial ----------
+
+export type Media = {
+  id: string;
+  url: string;
+  original_filename: string | null;
+  mime: string;
+  width: number;
+  height: number;
+  size_bytes: number;
+  alt: string | null;
+  decorative: boolean;
+  credit: string | null;
+  rights: string | null;
+  uploaded_by_id: string | null;
+  version: number;
+  created_at: string;
+  used_by: string[];
+};
+
+export type MediaSummary = { id: string; url: string; alt: string | null; width: number; height: number };
+
+export const FLAVOURS = ["juniper", "citrus", "floral", "spice", "herbal", "sweetness"] as const;
+export type Flavour = (typeof FLAVOURS)[number];
+
+export type Person = { id: string; display_name: string };
+
+export type Tasting = {
+  id: string;
+  gin: GinSummary;
+  author: Person;
+  bottle_id: string | null;
+  tasted_on: string;
+  context: string | null;
+  nose: string | null;
+  palate: string | null;
+  finish: string | null;
+  flavours: Partial<Record<Flavour, number>>;
+  rating: string | null;
+  tonic: string | null;
+  garnish: string | null;
+  private_notes: string | null;
+  version: number;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ReviewStatus = "draft" | "ready" | "published" | "archived";
+
+export type Review = {
+  id: string;
+  gin: GinSummary;
+  gin_public: boolean;
+  author: Person;
+  tasting_id: string | null;
+  slug: string;
+  status: ReviewStatus;
+  title: string;
+  rating: string | null;
+  intro: string | null;
+  nose: string | null;
+  palate: string | null;
+  finish: string | null;
+  tonic: string | null;
+  garnish: string | null;
+  verdict: string | null;
+  cover_media_id: string | null;
+  cover_image: MediaSummary | null;
+  seo_title: string | null;
+  seo_description: string | null;
+  published_at: string | null;
+  version: number;
+  created_at: string;
+  updated_at: string;
+};
+
+export type Revision = {
+  id: string;
+  revision_number: number;
+  actor_id: string | null;
+  status: ReviewStatus;
+  note: string | null;
+  saved_at: string;
+  snapshot: Record<string, unknown>;
+};
+
+export type PublicGinRef = { slug: string; display_name: string; country: string | null; abv: string };
+
+export type PublicReviewCard = {
+  slug: string;
+  title: string;
+  author_name: string;
+  published_at: string;
+  rating: string | null;
+  teaser: string;
+  cover: MediaSummary | null;
+  gin: PublicGinRef;
+};
+
+export type PublicReview = PublicReviewCard & {
+  intro: string | null;
+  nose: string | null;
+  palate: string | null;
+  finish: string | null;
+  tonic: string | null;
+  garnish: string | null;
+  verdict: string | null;
+  seo_title: string | null;
+  seo_description: string | null;
+  updated_at: string;
+};

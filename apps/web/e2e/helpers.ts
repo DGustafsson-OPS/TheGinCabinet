@@ -8,6 +8,9 @@ export const PASSWORD = process.env.E2E_PASSWORD ?? "";
 export const SECRET = process.env.E2E_TOTP_SECRET ?? "";
 export const HAS_CREDENTIALS = Boolean(PASSWORD && SECRET);
 
+/** The admin toast area ("Saved." etc.), found by its accessible name. */
+export const toasts = (page: Page) => page.getByRole("status", { name: "Notifications" });
+
 /** A unique suffix so repeated runs never create duplicate gins. */
 export const unique = () => `${Date.now().toString(36)}${Math.floor(Math.random() * 1000)}`;
 

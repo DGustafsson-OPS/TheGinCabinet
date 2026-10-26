@@ -8,7 +8,7 @@
 
 import { createContext, useCallback, useContext, useRef, useState } from "react";
 
-import { ApiError, apiFetch } from "@/lib/api-client";
+import { ApiError, apiFetch, apiUpload } from "@/lib/api-client";
 
 import styles from "./AdminProvider.module.css";
 
@@ -20,6 +20,8 @@ type AdminContextValue = {
   toast: (message: string, kind?: ToastKind) => void;
   /** apiFetch with the CSRF token already filled in. */
   call: <T>(path: string, method: "POST" | "PATCH" | "DELETE", body?: unknown) => Promise<T>;
+  /** Upload a file with the CSRF token filled in. */
+  upload: <T>(path: string, form: FormData) => Promise<T>;
 };
 
 const AdminContext = createContext<AdminContextValue | null>(null);
@@ -53,11 +55,16 @@ export default function AdminProvider({
     [csrfToken],
   );
 
+  const upload = useCallback(
+    <T,>(path: string, form: FormData) => apiUpload<T>(path, form, csrfToken),
+    [csrfToken],
+  );
+
   return (
-    <AdminContext.Provider value={{ csrfToken, toast, call }}>
+    <AdminContext.Provider value={{ csrfToken, toast, call, upload }}>
       {children}
       {/* aria-live: screen readers read new toasts aloud without moving focus. */}
-      <div className={styles.toasts} aria-live="polite" role="status">
+      <div className={styles.toasts} aria-live="polite" role="status" aria-label="Notifications">
         {toasts.map((t) => (
           <p key={t.id} className={t.kind === "error" ? styles.toastError : styles.toast}>
             {t.message}

@@ -29,7 +29,8 @@ Internet ──HTTPS──▶ Coolify proxy ──▶ web (Next.js :3000) ──
    persistent volume at `/app/media`.
 4. Add the **web** service: Dockerfile build in `apps/web` with build argument
    `API_INTERNAL_URL=http://<api service name>:8000`, health check `/health`
-   on port 3000, and your public domain with HTTPS.
+   on port 3000, and your public domain with HTTPS. Runtime variable:
+   `SITE_URL=https://your-domain` (canonical links and social previews).
 5. Pre-deployment command for the api: `alembic upgrade head`.
 6. Create the two admins from the api container's terminal:
    `python -m app.cli create-admin --username ... --email ... --display-name ...`

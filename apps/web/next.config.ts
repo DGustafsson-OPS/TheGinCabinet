@@ -20,6 +20,9 @@ const nextConfig: NextConfig = {
   // Produce a small self-contained server for the Docker image (see Dockerfile).
   output: "standalone",
   poweredByHeader: false,
+  // Uploaded images are already checked, cleaned and resized by the API
+  // (apps/api/app/services/media.py), so Next.js serves them as they are.
+  images: { unoptimized: true },
 
   // The browser only ever talks to this site. Requests to /api/... are passed
   // on to FastAPI, so cookies and CSRF checks work on a single origin

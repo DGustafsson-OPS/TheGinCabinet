@@ -45,14 +45,16 @@ Progress against the delivery phases in
 | Tasting journal API (A05) | ✅ | Private; flavour scores 0–5; rating 0–10; only the author can edit; optional link to a bottle of the same gin |
 | Review API (A06) | ✅ | draft → ready → published → archived (+ withdraw); revision snapshot on every change; 409 conflicts; publish checks (public gin, verdict, rating, cover alt text) |
 | Public reviews API (P04/P05) | ✅ | Only published reviews of public gins; 404 otherwise; no private fields |
-| Admin screens: media, tastings, review editor, preview | ⬜ | Next |
+| Admin screens: media, tastings, review editor, preview, revisions | ✅ | Drag-and-drop upload, flavour sliders, workflow buttons with publish checks, conflict screen |
+| Public review pages (P04/P05) | ✅ | `/reviews` (search, sort) and `/reviews/[slug]` with SEO metadata, Open Graph image and JSON-LD |
 
 ## Phase 4 – Cocktails ⬜
 Ingredient master, recipe editor, serving scaler (1–12), gin recommendations,
 public recipe library.
 
 ## Phase 5 – Public website ⬜
-Home, collection, gin profiles, reviews, distilleries, about, SEO, sitemap.
+Home, collection, gin profiles, distilleries, about, SEO, sitemap. (Reviews
+pages are already done, see Phase 3.)
 Plus the Gin Journal blog (spec §10A).
 
 ## Phase 6 – Launch QA ⬜

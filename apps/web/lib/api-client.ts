@@ -58,3 +58,29 @@ export async function apiFetch<T>(path: string, options: Options = {}): Promise<
   }
   return payload as T;
 }
+
+/** Upload a file (multipart form). The browser sets the right content type itself. */
+export async function apiUpload<T>(path: string, form: FormData, csrfToken: string): Promise<T> {
+  let response: Response;
+  try {
+    response = await fetch(`/api/v1${path}`, {
+      method: "POST",
+      headers: { accept: "application/json", "x-csrf-token": csrfToken },
+      body: form,
+      credentials: "same-origin",
+    });
+  } catch {
+    throw new ApiError(0, "network_error", "Could not reach the server. Check your connection.");
+  }
+  const payload = await response.json().catch(() => null);
+  if (!response.ok) {
+    const error = (payload as ApiErrorBody | null)?.error;
+    throw new ApiError(
+      response.status,
+      error?.code ?? "http_error",
+      error?.message ?? `Upload failed (${response.status}).`,
+      error?.details ?? null,
+    );
+  }
+  return payload as T;
+}

@@ -34,14 +34,18 @@ apps/web/
 │   ├── layout.tsx            ← wraps every page: <html>, fonts, skip link
 │   ├── (public)/             ← public site; "(…)" folders don't appear in URLs
 │   │   ├── layout.tsx        ← forest masthead + footer
-│   │   └── page.tsx          ← "/" home page
+│   │   ├── page.tsx          ← "/" home page
+│   │   └── reviews/          ← "/reviews" list and "/reviews/[slug]" (public)
 │   ├── login/                ← "/login": page + the two-step LoginForm
 │   ├── admin/                ← "/admin": sidebar layout + dashboard
 │   │   ├── gins/             ← list, new, [id] edit (with conflict screen)
 │   │   ├── distilleries/     ← list + add
 │   │   ├── bottles/          ← list, new, [id] with actions and history
 │   │   ├── purchases/        ← list, new (multi-line form), [id]
-│   │   └── wishlist/         ← list + add, [id]/convert to a purchase
+│   │   ├── wishlist/         ← list + add, [id]/convert to a purchase
+│   │   ├── media/            ← upload (drag and drop) + edit alt text
+│   │   ├── tastings/         ← private notes with flavour sliders
+│   │   └── reviews/          ← editor, preview, revision history
 │   ├── health/route.ts       ← "/health" for Docker/Coolify
 │   └── not-found.tsx         ← any unknown URL
 ├── components/               ← reusable pieces (headers, sidebar, buttons)
@@ -106,4 +110,5 @@ colours were checked against WCAG AA contrast (at least 4.5:1).
 | Variable | Used for | Default |
 | --- | --- | --- |
 | `API_INTERNAL_URL` | Where Next.js finds FastAPI (build time for `/api`, run time for server pages) | `http://127.0.0.1:8000` |
+| `SITE_URL` | Public address for canonical links and social images | `http://localhost:3000` |
 | `PORT` / `HOSTNAME` | Where the production server listens | `3000` / `0.0.0.0` in Docker |
