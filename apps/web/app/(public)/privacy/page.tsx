@@ -20,7 +20,11 @@ export default function PrivacyPage() {
       <ul>
         <li>There are no visitor accounts, comments or newsletters.</li>
         <li>We don&apos;t use analytics, advertising or third-party tracking scripts.</li>
-        <li>We don&apos;t set cookies for visitors, so there is no cookie banner.</li>
+        <li>
+          We set one small cookie, <code>gc_age_ok</code>, when you confirm you are old enough to visit.
+          It contains only the value &quot;1&quot;, is never used for tracking, and expires after 30 days.
+          There are no tracking or advertising cookies, so there is no cookie banner.
+        </li>
         <li>
           Like every website, our server briefly logs technical details of requests (such as IP
           address and time) to keep the site secure and working. These logs are not used to
