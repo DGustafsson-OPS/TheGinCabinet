@@ -43,7 +43,7 @@ export async function signInThroughUi(page: Page) {
   await page.getByRole("button", { name: "Continue" }).click();
   await page.getByLabel("Authentication code").fill(totp(SECRET));
   await page.getByRole("button", { name: "Sign in" }).click();
-  await expect(page).toHaveURL(/\/admin$/);
+  await expect(page).toHaveURL(/\/juniper$/);
 }
 
 /** Create a gin through the API and return its id and name. */

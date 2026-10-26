@@ -68,7 +68,7 @@ export default function LoginForm({ initialStep }: { initialStep: Step }) {
     setError(null);
     try {
       await apiFetch("/auth/mfa/verify", { method: "POST", body: { code: form.get("code") } });
-      router.replace("/admin");
+      router.replace("/juniper");
       router.refresh(); // re-run server components so they see the new session
     } catch (err) {
       showError(err);

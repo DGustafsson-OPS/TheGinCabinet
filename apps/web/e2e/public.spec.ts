@@ -109,5 +109,8 @@ test("the public site shows public gins with their reviews and cocktails, and no
   expect(sitemap).not.toContain(`/gins/${secret.slug}`);
   expect(sitemap).toContain(`/reviews/`);
   const robots = await (await page.request.get("/robots.txt")).text();
-  expect(robots).toContain("Disallow: /admin");
+  expect(robots).toContain("Disallow: /login");
+  // robots.txt is public: it must not reveal where the admin area is.
+  expect(robots).not.toContain("/juniper");
+  expect(robots).not.toContain("/admin");
 });

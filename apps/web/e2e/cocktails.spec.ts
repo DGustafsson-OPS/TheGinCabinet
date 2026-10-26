@@ -13,7 +13,7 @@ test("build a recipe in the tabbed editor, publish it, scale it as a visitor", a
   const title = `Garden Tonic ${unique()}`;
 
   await signInThroughUi(page);
-  await gotoReady(page, "/admin/cocktails/new");
+  await gotoReady(page, "/juniper/cocktails/new");
   await page.getByLabel("Name").fill(title);
   await page.getByRole("button", { name: "Create draft" }).click();
   await expect(page.getByRole("heading", { level: 1, name: title })).toBeVisible();

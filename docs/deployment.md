@@ -211,7 +211,11 @@ password manager. Leave **"Make it publicly available"** off.
    authenticator app and save the recovery codes in the password manager.
    Repeat for the second admin. There are no public sign-ups; at most two
    accounts can exist.
-9. **Smoke test** with the [go-live checklist](#10-go-live-checklist).
+9. **Sign in** at `https://<domain>/login`. The admin area lives at
+   `/juniper` (deliberately not the guessable `/admin`, which shows "not
+   found"). It isn't linked from the public site or listed in `robots.txt`;
+   bookmark it.
+10. **Smoke test** with the [go-live checklist](#10-go-live-checklist).
 
 ## 6. Updates and rollbacks
 

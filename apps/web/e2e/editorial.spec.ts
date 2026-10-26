@@ -22,7 +22,7 @@ test("tasting → review → publish → withdraw", async ({ page, browser, base
   await signInThroughUi(page);
 
   // 1. Upload a cover image and describe it.
-  await gotoReady(page, "/admin/media");
+  await gotoReady(page, "/juniper/media");
   await page.locator("#upload-input").setInputFiles({ name: "cover.png", mimeType: "image/png", buffer: TINY_PNG });
   await expect(toasts(page)).toContainText("1 image uploaded");
   await page.getByRole("link", { name: /No alt text/ }).first().click();
@@ -31,7 +31,7 @@ test("tasting → review → publish → withdraw", async ({ page, browser, base
   await expect(toasts(page)).toContainText("Saved.");
 
   // 2. A private tasting with flavour sliders.
-  await gotoReady(page, `/admin/tastings/new?gin=${gin.id}`);
+  await gotoReady(page, `/juniper/tastings/new?gin=${gin.id}`);
   await page.getByLabel("Nose").fill("Meadowsweet and pine");
   await page.getByLabel(/^Juniper/).fill("4");
   await page.getByLabel("Overall rating (0–10)").fill("8.5");
@@ -51,7 +51,7 @@ test("tasting → review → publish → withdraw", async ({ page, browser, base
 
   // A draft is invisible to the public.
   const visitor = await browser.newPage(); // a separate, signed-out browser
-  const slug = new URL(page.url()).pathname; // /admin/reviews/<id>
+  const slug = new URL(page.url()).pathname; // /juniper/reviews/<id>
   const review = await (await api.get(`/api/v1${slug}`)).json();
   expect((await visitor.goto(`/reviews/${review.slug}`))?.status()).toBe(404);
 

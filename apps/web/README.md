@@ -43,7 +43,7 @@ apps/web/
 │   │   ├── reviews/          ← "/reviews" list and "/reviews/[slug]" (public)
 │   │   └── cocktails/        ← "/cocktails" library and recipe pages with a serving stepper
 │   ├── login/                ← "/login": page + the two-step LoginForm
-│   ├── admin/                ← "/admin": sidebar layout + dashboard
+│   ├── juniper/              ← the admin area at "/juniper" (not the guessable "/admin"): sidebar layout + dashboard
 │   │   ├── gins/             ← list, new, [id] edit (with conflict screen)
 │   │   ├── distilleries/     ← list + add
 │   │   ├── bottles/          ← list, new, [id] with actions and history
@@ -85,7 +85,7 @@ client components small: `LoginForm`, `PublicHeader`, `AdminSidebar` and
 
 ```
 Browser ──/api/v1/...──▶ Next.js ──(rewrite)──▶ FastAPI :8000
-Browser ──/admin──────▶ Next.js server component ──(cookie forwarded)──▶ FastAPI
+Browser ──/juniper────▶ Next.js server component ──(cookie forwarded)──▶ FastAPI
 ```
 
 The browser only ever talks to one site, so the session cookie and the CSRF
@@ -111,7 +111,7 @@ inputs can end up sharing an id. So rows loaded with the page are keyed by
 position (`init-0`…), new rows by a counter kept *inside* the component, and
 ids are prefixed with React's `useId()`. Never use a module-level counter.
 
-### Who may see /admin?
+### Who may see the admin area (/juniper)?
 
 Every admin page starts with `await requireAdmin()` (in `lib/server-api.ts`),
 which asks the API for the session and redirects to `/login` if needed. The

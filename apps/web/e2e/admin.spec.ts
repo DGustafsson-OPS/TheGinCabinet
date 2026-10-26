@@ -15,7 +15,7 @@ test("home page has a hero and a working skip link", async ({ page }) => {
 });
 
 test("admin pages send signed-out visitors to the login page", async ({ page }) => {
-  await page.goto("/admin");
+  await page.goto("/juniper");
   await expect(page).toHaveURL(/\/login$/);
   await expect(page.getByLabel("Username")).toBeFocused();
 });
@@ -60,7 +60,7 @@ test("two-step sign-in, dashboard numbers, mobile menu and sign-out", async ({ p
   await expect(codeBox).toHaveValue("");
   await codeBox.fill(totp(SECRET));
   await page.getByRole("button", { name: "Sign in" }).click();
-  await expect(page).toHaveURL(/\/admin$/);
+  await expect(page).toHaveURL(/\/juniper$/);
 
   // The tiles show what the API reports.
   await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible();
@@ -80,7 +80,7 @@ test("two-step sign-in, dashboard numbers, mobile menu and sign-out", async ({ p
   // Sign out, and the admin area is closed again.
   await page.getByRole("button", { name: "Sign out" }).click();
   await expect(page).toHaveURL(/\/login$/);
-  await page.goto("/admin");
+  await page.goto("/juniper");
   await expect(page).toHaveURL(/\/login$/);
 });
 
@@ -92,17 +92,30 @@ test("the sidebar shows who is signed in", async ({ page }) => {
 test("every admin page sends signed-out visitors to the login page", async ({ page }) => {
   // One URL per admin page file (ids don't need to exist: the check comes first).
   const urls = [
-    "/admin", "/admin/gins", "/admin/gins/new", "/admin/gins/x", "/admin/distilleries",
-    "/admin/bottles", "/admin/bottles/new", "/admin/bottles/x", "/admin/purchases",
-    "/admin/purchases/new", "/admin/purchases/x", "/admin/wishlist", "/admin/wishlist/x/convert",
-    "/admin/media", "/admin/media/x", "/admin/tastings", "/admin/tastings/new", "/admin/tastings/x",
-    "/admin/reviews", "/admin/reviews/new", "/admin/reviews/x", "/admin/reviews/x/preview",
-    "/admin/reviews/x/revisions", "/admin/cocktails", "/admin/cocktails/new", "/admin/cocktails/x",
-    "/admin/blog", "/admin/blog/new", "/admin/blog/categories", "/admin/blog/x/edit", "/admin/blog/x/preview",
-    "/admin/blog/x/revisions", "/admin/settings", "/admin/audit",
+    "/juniper", "/juniper/gins", "/juniper/gins/new", "/juniper/gins/x", "/juniper/distilleries",
+    "/juniper/bottles", "/juniper/bottles/new", "/juniper/bottles/x", "/juniper/purchases",
+    "/juniper/purchases/new", "/juniper/purchases/x", "/juniper/wishlist", "/juniper/wishlist/x/convert",
+    "/juniper/media", "/juniper/media/x", "/juniper/tastings", "/juniper/tastings/new", "/juniper/tastings/x",
+    "/juniper/reviews", "/juniper/reviews/new", "/juniper/reviews/x", "/juniper/reviews/x/preview",
+    "/juniper/reviews/x/revisions", "/juniper/cocktails", "/juniper/cocktails/new", "/juniper/cocktails/x",
+    "/juniper/blog", "/juniper/blog/new", "/juniper/blog/categories", "/juniper/blog/x/edit", "/juniper/blog/x/preview",
+    "/juniper/blog/x/revisions", "/juniper/settings", "/juniper/audit",
   ];
   for (const url of urls) {
     await page.goto(url);
     await expect(page, `${url} should redirect`).toHaveURL(/\/login$/);
   }
+});
+
+test("the old /admin address doesn't exist and doesn't point to the new one", async ({ page }) => {
+  for (const url of ["/admin", "/admin/gins"]) {
+    const response = await page.goto(url);
+    expect(response?.status(), url).toBe(404);
+    await expect(page).toHaveURL(new RegExp(`${url}$`)); // no redirect giving the real address away
+  }
+});
+
+test("admin pages tell search engines not to index them", async ({ request }) => {
+  const response = await request.get("/juniper", { maxRedirects: 0 });
+  expect(response.headers()["x-robots-tag"]).toContain("noindex");
 });

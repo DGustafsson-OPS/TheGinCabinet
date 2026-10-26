@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 export default async function LoginPage() {
   const session = await getSession();
   if (session.authenticated) {
-    redirect("/admin");
+    redirect("/juniper");
   }
 
   return (

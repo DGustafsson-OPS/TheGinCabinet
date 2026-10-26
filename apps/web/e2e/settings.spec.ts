@@ -10,7 +10,7 @@ test.skip(!HAS_CREDENTIALS, "Set E2E_PASSWORD and E2E_TOTP_SECRET (see e2e/READM
 test("edit the website settings, see them on the About page, check the audit log", async ({ page, browser }) => {
   const contact = `hello-${unique()}@gincabinet.example`;
   await signInThroughUi(page);
-  await gotoReady(page, "/admin/settings");
+  await gotoReady(page, "/juniper/settings");
 
   // Website tab (the first one).
   await page.getByLabel("Public contact email").fill(contact);
@@ -38,7 +38,7 @@ test("edit the website settings, see them on the About page, check the audit log
   // The admins tab lists the account; the audit log records the changes.
   await page.getByRole("tab", { name: "Admins" }).click();
   await expect(page.getByRole("cell", { name: /\(you\)/ })).toBeVisible();
-  await gotoReady(page, "/admin/audit");
+  await gotoReady(page, "/juniper/audit");
   await expect(page.getByText(/changed the website settings/).first()).toBeVisible();
   await expect(page.getByText(/made new recovery codes/).first()).toBeVisible();
 });

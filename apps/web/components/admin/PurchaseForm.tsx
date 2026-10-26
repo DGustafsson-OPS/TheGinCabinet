@@ -85,7 +85,7 @@ export default function PurchaseForm({
               purchase,
             });
       toast(`Purchase saved: ${bottleCount} bottle${bottleCount === 1 ? "" : "s"} added.`);
-      router.push(`/admin/purchases/${saved.id}`);
+      router.push(`/juniper/purchases/${saved.id}`);
     } catch (err) {
       setError(errorMessage(err));
       setBusy(false);

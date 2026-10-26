@@ -15,33 +15,33 @@ type NavItem = { href: string; label: string; ready: boolean };
 const SECTIONS: { title: string; items: NavItem[] }[] = [
   {
     title: "Overview",
-    items: [{ href: "/admin", label: "Dashboard", ready: true }],
+    items: [{ href: "/juniper", label: "Dashboard", ready: true }],
   },
   {
     title: "Inventory",
     items: [
-      { href: "/admin/gins", label: "Gins", ready: true },
-      { href: "/admin/distilleries", label: "Distilleries", ready: true },
-      { href: "/admin/bottles", label: "Bottles", ready: true },
-      { href: "/admin/purchases", label: "Purchases", ready: true },
-      { href: "/admin/wishlist", label: "Wishlist", ready: true },
+      { href: "/juniper/gins", label: "Gins", ready: true },
+      { href: "/juniper/distilleries", label: "Distilleries", ready: true },
+      { href: "/juniper/bottles", label: "Bottles", ready: true },
+      { href: "/juniper/purchases", label: "Purchases", ready: true },
+      { href: "/juniper/wishlist", label: "Wishlist", ready: true },
     ],
   },
   {
     title: "Editorial",
     items: [
-      { href: "/admin/tastings", label: "Tastings", ready: true },
-      { href: "/admin/reviews", label: "Reviews", ready: true },
-      { href: "/admin/cocktails", label: "Cocktails", ready: true },
-      { href: "/admin/blog", label: "Journal", ready: true },
-      { href: "/admin/media", label: "Media", ready: true },
+      { href: "/juniper/tastings", label: "Tastings", ready: true },
+      { href: "/juniper/reviews", label: "Reviews", ready: true },
+      { href: "/juniper/cocktails", label: "Cocktails", ready: true },
+      { href: "/juniper/blog", label: "Journal", ready: true },
+      { href: "/juniper/media", label: "Media", ready: true },
     ],
   },
   {
     title: "System",
     items: [
-      { href: "/admin/settings", label: "Settings", ready: true },
-      { href: "/admin/audit", label: "Audit log", ready: true },
+      { href: "/juniper/settings", label: "Settings", ready: true },
+      { href: "/juniper/audit", label: "Audit log", ready: true },
     ],
   },
 ];
@@ -55,7 +55,7 @@ export default function AdminSidebar({ displayName, csrfToken }: Props) {
   return (
     <aside className={styles.sidebar}>
       <div className={styles.top}>
-        <Link href="/admin" className={styles.brand}>
+        <Link href="/juniper" className={styles.brand}>
           The Gin Cabinet
         </Link>
         <button
@@ -83,7 +83,7 @@ export default function AdminSidebar({ displayName, csrfToken }: Props) {
                         className={styles.link}
                         aria-current={
                           pathname === item.href ||
-                          (item.href !== "/admin" && pathname.startsWith(item.href + "/"))
+                          (item.href !== "/juniper" && pathname.startsWith(item.href + "/"))
                             ? "page"
                             : undefined
                         }

@@ -17,7 +17,7 @@ test("write, preview and publish an article; visitors read it; then archive it",
   const title = `Visiting the still ${tag}`;
 
   await signInThroughUi(page);
-  await gotoReady(page, "/admin/blog/new");
+  await gotoReady(page, "/juniper/blog/new");
   await page.getByLabel("Title").fill(title);
   await page.getByLabel("Category").selectOption(category.id);
   await page.getByRole("button", { name: "Create draft" }).click();
@@ -84,7 +84,7 @@ test("write, preview and publish an article; visitors read it; then archive it",
   expect(sitemap).toContain(draftUrl);
 
   // Archive from the list with the bulk action.
-  await gotoReady(page, `/admin/blog?search=${encodeURIComponent(tag)}`);
+  await gotoReady(page, `/juniper/blog?search=${encodeURIComponent(tag)}`);
   await page.getByRole("checkbox", { name: `Select ${title}` }).check();
   await page.getByRole("button", { name: "Archive selected (1)" }).click();
   await page.getByRole("dialog").getByRole("button", { name: "Archive" }).click();
@@ -110,7 +110,7 @@ test("schedule an article for later: it stays private until then", async ({ page
   await api.dispose();
 
   await signInThroughUi(page);
-  await gotoReady(page, `/admin/blog/${post.id}/edit`);
+  await gotoReady(page, `/juniper/blog/${post.id}/edit`);
   await page.getByLabel("Publish automatically at").fill("2099-06-01T09:30");
   await page.getByRole("button", { name: "Schedule", exact: true }).click();
   await page.getByRole("dialog").getByRole("button", { name: "Schedule" }).click();
