@@ -19,8 +19,8 @@ export default function AgeRestrictedPage() {
           You&apos;re welcome back when you are.
         </p>
         <p className={styles.small}>
-          Questions about alcohol? <a href="https://www.alkoholhjalpen.se">Alkoholhjälpen</a> offers free,
-          anonymous advice.
+          Questions about alcohol? <a href="https://paihdelinkki.fi">Päihdelinkki</a> offers free,
+          anonymous information and support.
         </p>
       </div>
     </main>
