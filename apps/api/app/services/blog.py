@@ -29,7 +29,6 @@ from app.models import (
     PostStatus,
     RelationKind,
     Review,
-    ReviewStatus,
 )
 from app.models._types import as_utc, utcnow
 from app.schemas.blog import (
@@ -46,7 +45,7 @@ from app.services import audit
 from app.services import cocktails as cocktail_service
 from app.services import editorial as review_service
 from app.services.common import slugify
-from app.services.editorial import media_summary
+from app.services.editorial import media_summary, visible_reviews
 from app.services.public_catalogue import cards as gin_cards
 from app.services.public_catalogue import public_gins
 
@@ -70,14 +69,6 @@ def is_live(post: BlogPost) -> bool:
         post.status == PostStatus.PUBLISHED
         and post.published_at is not None
         and as_utc(post.published_at) <= utcnow()
-    )
-
-
-def _visible_reviews():
-    return (
-        select(Review)
-        .join(Review.gin)
-        .where(Review.status == ReviewStatus.PUBLISHED, GinProduct.public_visible.is_(True))
     )
 
 
@@ -344,7 +335,7 @@ def relation_labels(db: Session, refs: list[tuple[str, uuid.UUID]]) -> dict[tupl
         for gin in db.scalars(select(GinProduct).where(GinProduct.id.in_(ids))):
             result[(RelationKind.GIN, gin.id)] = (gin.display_name, gin.public_visible)
     if ids := by_kind.get(RelationKind.REVIEW):
-        visible = set(db.scalars(_visible_reviews().with_only_columns(Review.id)))
+        visible = set(db.scalars(visible_reviews().with_only_columns(Review.id)))
         for review in db.scalars(select(Review).where(Review.id.in_(ids))):
             result[(RelationKind.REVIEW, review.id)] = (review.title, review.id in visible)
     if ids := by_kind.get(RelationKind.COCKTAIL):
@@ -437,7 +428,7 @@ def _public_cards(db: Session, refs: list[tuple[str, uuid.UUID]]) -> dict[tuple,
         for gin, card in zip(gins, gin_cards(db, list(gins)), strict=True):
             result[(RelationKind.GIN, gin.id)] = card
     if ids := by_kind.get(RelationKind.REVIEW):
-        for review in db.scalars(_visible_reviews().where(Review.id.in_(ids))).unique():
+        for review in db.scalars(visible_reviews().where(Review.id.in_(ids))).unique():
             result[(RelationKind.REVIEW, review.id)] = review_service.public_card(review)
     if ids := by_kind.get(RelationKind.COCKTAIL):
         query = _visible_cocktails().where(CocktailRecipe.id.in_(ids))

@@ -140,3 +140,76 @@ def test_photo_and_delete(api):
 
 def test_admin_routes_need_sign_in(client):
     assert client.get(ADMIN).status_code == 401
+
+
+# ---------------- Gin reviews that link to a tonic ----------------
+
+
+def test_gin_review_links_to_a_tonic(api, client):
+    from tests.test_catalogue import make_gin
+    from tests.test_public_catalogue import publish_review
+
+    tonic = make_tonic(api)
+    gin = make_gin(api, public_visible=True)
+    review = publish_review(api, gin, rating="8")
+
+    # Link the review to the tonic; the editor sees which tonic it is.
+    r = api.patch(
+        f"/api/v1/admin/reviews/{review['id']}",
+        json={"version": review["version"], "tonic_id": tonic["id"]},
+    )
+    assert r.status_code == 200, r.text
+    assert r.json()["linked_tonic"] == {
+        "id": tonic["id"],
+        "slug": tonic["slug"],
+        "display_name": "Fever-Tree Indian Tonic",
+        "public_visible": True,
+    }
+
+    # Visitors: the review links to the tonic, and the tonic lists the review.
+    public_review = client.get(f"/api/v1/public/reviews/{review['slug']}").json()
+    assert public_review["tonic_link"] == {
+        "slug": tonic["slug"],
+        "display_name": "Fever-Tree Indian Tonic",
+    }
+    page = client.get(f"{PUBLIC}/{tonic['slug']}").json()
+    assert [g["slug"] for g in page["gin_reviews"]] == [review["slug"]]
+
+
+def test_unknown_tonic_is_refused(api):
+    from tests.test_catalogue import make_gin
+
+    gin = make_gin(api)
+    r = api.post(
+        "/api/v1/admin/reviews",
+        json={
+            "gin_id": gin["id"],
+            "title": "T",
+            "tonic_id": "00000000-0000-4000-8000-000000000000",
+        },
+    )
+    assert r.status_code == 422
+    assert r.json()["error"]["code"] == "unknown_tonic"
+
+
+def test_private_tonic_is_not_linked_publicly_and_delete_clears_the_link(api, client):
+    from tests.test_catalogue import make_gin
+    from tests.test_public_catalogue import publish_review
+
+    tonic = make_tonic(api, public_visible=False)
+    review = publish_review(api, make_gin(api, public_visible=True), rating="7")
+    review = api.patch(
+        f"/api/v1/admin/reviews/{review['id']}",
+        json={"version": review["version"], "tonic_id": tonic["id"], "tonic": "Our house tonic"},
+    ).json()
+
+    # A private tonic has no public page, so the review shows only the text.
+    public_review = client.get(f"/api/v1/public/reviews/{review['slug']}").json()
+    assert public_review["tonic_link"] is None
+    assert public_review["tonic"] == "Our house tonic"
+
+    # Deleting the tonic keeps the review and its text; only the link goes.
+    assert api.delete(f"{ADMIN}/{tonic['id']}").status_code == 204
+    after = api.get(f"/api/v1/admin/reviews/{review['id']}").json()
+    assert after["tonic_id"] is None and after["linked_tonic"] is None
+    assert after["tonic"] == "Our house tonic"

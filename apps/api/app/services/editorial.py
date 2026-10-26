@@ -29,6 +29,7 @@ from app.schemas.editorial import (
     PublicGinRef,
     PublicReview,
     PublicReviewCard,
+    PublicTonicRef,
     ReviewOut,
 )
 
@@ -107,6 +108,12 @@ def check_cover(db: Session, media_id: uuid.UUID | None) -> None:
     asset = db.get(MediaAsset, media_id)
     if asset is None or asset.deleted_at is not None:
         raise ApiError(422, "unknown_media", "That image doesn't exist in the media library.")
+
+
+def check_tonic(db: Session, tonic_id: uuid.UUID | None) -> None:
+    """A review may link only to a tonic that exists in the tonic list."""
+    if tonic_id is not None and db.get(Tonic, tonic_id) is None:
+        raise ApiError(422, "unknown_tonic", "That tonic isn't in the tonic list.")
 
 
 # ---------------- Reviews ----------------
@@ -215,6 +222,16 @@ def teaser(item: Any) -> str:
     return text[:TEASER_LENGTH].rsplit(" ", 1)[0] + "…"
 
 
+def visible_reviews():
+    """The single definition of "a review the public may see":
+    published, and about a gin that is public."""
+    return (
+        select(Review)
+        .join(Review.gin)
+        .where(Review.status == ReviewStatus.PUBLISHED, GinProduct.public_visible.is_(True))
+    )
+
+
 def public_card(review: Review) -> PublicReviewCard:
     return PublicReviewCard(
         slug=review.slug,
@@ -242,6 +259,13 @@ def public_review(review: Review) -> PublicReview:
         palate=review.palate,
         finish=review.finish,
         tonic=review.tonic,
+        tonic_link=(
+            PublicTonicRef(
+                slug=review.linked_tonic.slug, display_name=review.linked_tonic.display_name
+            )
+            if review.linked_tonic and review.linked_tonic.public_visible
+            else None
+        ),
         garnish=review.garnish,
         verdict=review.verdict,
         seo_title=review.seo_title,

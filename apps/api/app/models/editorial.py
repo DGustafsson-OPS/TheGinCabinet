@@ -10,7 +10,7 @@ import uuid
 from datetime import date, datetime
 from decimal import Decimal
 from enum import StrEnum
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import (
     CheckConstraint,
@@ -30,6 +30,9 @@ from app.models._mixins import Versioned
 from app.models._types import JSONType, UTCDateTime, UUIDType, new_uuid, utcnow
 from app.models.catalogue import GinProduct
 from app.models.user import User
+
+if TYPE_CHECKING:  # only for type hints: models/tonics.py imports this file
+    from app.models.tonics import Tonic
 
 # ---------------- Media ----------------
 
@@ -142,6 +145,7 @@ REVIEW_CONTENT_FIELDS = (
     "palate",
     "finish",
     "tonic",
+    "tonic_id",
     "garnish",
     "verdict",
     "cover_media_id",
@@ -185,6 +189,12 @@ class Review(Versioned, Base):
     palate: Mapped[str | None] = mapped_column(Text, nullable=True)
     finish: Mapped[str | None] = mapped_column(Text, nullable=True)
     tonic: Mapped[str | None] = mapped_column(String(160), nullable=True)
+    # The same tonic picked from our tonic list (optional). The public review
+    # then links to the tonic's page, and the tonic's page lists this review.
+    # Deleting the tonic just clears the link; the text above stays.
+    tonic_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("tonics.id", ondelete="SET NULL"), nullable=True, index=True
+    )
     garnish: Mapped[str | None] = mapped_column(String(160), nullable=True)
     verdict: Mapped[str | None] = mapped_column(Text, nullable=True)
     cover_media_id: Mapped[uuid.UUID | None] = mapped_column(
@@ -197,6 +207,8 @@ class Review(Versioned, Base):
     gin: Mapped[GinProduct] = relationship(lazy="joined")
     author: Mapped[User] = relationship(lazy="joined")
     cover: Mapped[MediaAsset | None] = relationship(lazy="joined")
+    # Not called "tonic": that name is the free-text column above.
+    linked_tonic: Mapped["Tonic | None"] = relationship(lazy="joined")
 
 
 class ReviewRevision(Base):

@@ -19,17 +19,23 @@ const TEXT_FIELDS = [
   "tonic", "garnish", "verdict", "seo_title", "seo_description",
 ] as const;
 type TextField = (typeof TEXT_FIELDS)[number];
-type Values = Record<TextField, string> & { author_id: string; cover_media_id: string };
+type Values = Record<TextField, string> & { author_id: string; cover_media_id: string; tonic_id: string };
 
 function toValues(review: Review): Values {
   const values = Object.fromEntries(TEXT_FIELDS.map((f) => [f, review[f] ?? ""])) as Record<TextField, string>;
-  return { ...values, author_id: review.author.id, cover_media_id: review.cover_media_id ?? "" };
+  return {
+    ...values,
+    author_id: review.author.id,
+    cover_media_id: review.cover_media_id ?? "",
+    tonic_id: review.tonic_id ?? "",
+  };
 }
 
 type MediaOption = MediaSummary & { label: string };
-type Props = { review: Review; authors: Person[]; media: MediaOption[] };
+type TonicOption = { id: string; display_name: string };
+type Props = { review: Review; authors: Person[]; media: MediaOption[]; tonics: TonicOption[] };
 
-export default function ReviewEditor({ review, authors, media }: Props) {
+export default function ReviewEditor({ review, authors, media, tonics }: Props) {
   const router = useRouter();
   const { call, toast } = useAdmin();
   const original = toValues(review);
@@ -235,6 +241,22 @@ export default function ReviewEditor({ review, authors, media }: Props) {
           <div className="field">
             <label htmlFor="tonic">Tonic</label>
             <input id="tonic" value={values.tonic} onChange={set("tonic")} />
+          </div>
+          <div className="field">
+            <label htmlFor="tonic_id">Tonic from our list</label>
+            <select id="tonic_id" value={values.tonic_id} onChange={set("tonic_id")} aria-describedby="tonic_id-hint">
+              <option value="">(none)</option>
+              {tonics.map((tonic) => (
+                <option key={tonic.id} value={tonic.id}>
+                  {tonic.display_name}
+                </option>
+              ))}
+            </select>
+            <span id="tonic_id-hint" className="field-hint">
+              {review.linked_tonic && !review.linked_tonic.public_visible
+                ? "This tonic is hidden from visitors, so the review won't link to it yet."
+                : "Visitors can follow a link to the tonic's page, and the tonic's page lists this review."}
+            </span>
           </div>
           <div className="field">
             <label htmlFor="garnish">Garnish</label>

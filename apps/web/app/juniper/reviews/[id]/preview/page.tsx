@@ -34,6 +34,8 @@ export default async function ReviewPreviewPage({ params }: { params: Params }) 
             ...review,
             author_name: review.author.display_name,
             cover: review.cover_image,
+            // As visitors will see it: linked only if the tonic is public.
+            tonic_link: review.linked_tonic?.public_visible ? review.linked_tonic : null,
             gin: {
               display_name: review.gin.display_name,
               country: gin?.country ?? null,

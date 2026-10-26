@@ -147,6 +147,8 @@ class ReviewIn(BaseModel):
     palate: LongText | None = None
     finish: LongText | None = None
     tonic: str | None = Field(default=None, max_length=160)
+    # Optional link to a tonic in our tonic list.
+    tonic_id: uuid.UUID | None = None
     garnish: str | None = Field(default=None, max_length=160)
     verdict: LongText | None = None
     cover_media_id: uuid.UUID | None = None
@@ -166,6 +168,8 @@ class ReviewPatch(BaseModel):
     palate: LongText | None = None
     finish: LongText | None = None
     tonic: str | None = Field(default=None, max_length=160)
+    # Optional link to a tonic in our tonic list.
+    tonic_id: uuid.UUID | None = None
     garnish: str | None = Field(default=None, max_length=160)
     verdict: LongText | None = None
     cover_media_id: uuid.UUID | None = None
@@ -176,6 +180,17 @@ class ReviewPatch(BaseModel):
 class ReviewStatusChange(BaseModel):
     version: int
     status: ReviewStatus
+
+
+class LinkedTonic(BaseModel):
+    """The tonic a review links to, as the editor shows it."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    slug: str
+    display_name: str
+    public_visible: bool
 
 
 class ReviewOut(BaseModel):
@@ -195,6 +210,8 @@ class ReviewOut(BaseModel):
     palate: str | None
     finish: str | None
     tonic: str | None
+    tonic_id: uuid.UUID | None
+    linked_tonic: LinkedTonic | None
     garnish: str | None
     verdict: str | None
     cover_media_id: uuid.UUID | None
@@ -230,6 +247,11 @@ class PublicGinRef(BaseModel):
     abv: Fixed2
 
 
+class PublicTonicRef(BaseModel):
+    slug: str
+    display_name: str
+
+
 class PublicReviewCard(BaseModel):
     """A review in a public list (spec P04: author, date, score, teaser, photo, gin link)."""
 
@@ -251,6 +273,8 @@ class PublicReview(PublicReviewCard):
     palate: str | None
     finish: str | None
     tonic: str | None
+    # Only set when the linked tonic is public, so its page exists.
+    tonic_link: PublicTonicRef | None = None
     garnish: str | None
     verdict: str | None
     seo_title: str | None

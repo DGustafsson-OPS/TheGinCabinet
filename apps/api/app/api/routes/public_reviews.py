@@ -12,22 +12,13 @@ from sqlalchemy import func, or_, select
 
 from app.api.deps import DbSession
 from app.errors import ApiError
-from app.models import GinProduct, Review, ReviewStatus
+from app.models import GinProduct, Review
 from app.schemas.common import Page, PageParams
 from app.schemas.editorial import PublicReview, PublicReviewCard, SortOrder
 from app.services.common import contains
-from app.services.editorial import public_card, public_review
+from app.services.editorial import public_card, public_review, visible_reviews
 
 router = APIRouter(prefix="/public/reviews", tags=["public: reviews"])
-
-
-def visible_reviews():
-    """The single definition of "a review the public may see"."""
-    return (
-        select(Review)
-        .join(Review.gin)
-        .where(Review.status == ReviewStatus.PUBLISHED, GinProduct.public_visible.is_(True))
-    )
 
 
 @router.get("", response_model=Page[PublicReviewCard])

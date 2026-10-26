@@ -25,7 +25,13 @@ from app.services.common import (
     slugify,
     unique_slug,
 )
-from app.services.editorial import add_revision, change_status, check_cover, review_out
+from app.services.editorial import (
+    add_revision,
+    change_status,
+    check_cover,
+    check_tonic,
+    review_out,
+)
 from app.services.versioning import check_version
 
 router = APIRouter(prefix="/admin/reviews", tags=["admin: reviews"])
@@ -71,6 +77,7 @@ def create_review(body: ReviewIn, admin: CurrentAdminWrite, db: DbSession):
     if body.tasting_id:
         get_or_404(db, Tasting, body.tasting_id, "Tasting")
     check_cover(db, body.cover_media_id)
+    check_tonic(db, body.tonic_id)
     data = body.model_dump()
     data["author_id"] = body.author_id or admin.user.id
     if data["slug"]:
@@ -123,6 +130,8 @@ def update_review(
         get_or_404(db, User, changes["author_id"], "Author")
     if "cover_media_id" in changes:
         check_cover(db, changes["cover_media_id"])
+    if "tonic_id" in changes:
+        check_tonic(db, changes["tonic_id"])
     if changes.get("slug"):
         ensure_slug_free(db, Review, changes["slug"], exclude_id=review.id)
     apply_patch(review, changes, never_empty={"title", "slug", "gin_id", "author_id"})

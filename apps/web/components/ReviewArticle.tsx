@@ -4,6 +4,8 @@
 //
 // Text is shown as text: blank lines become paragraphs, and React escapes
 // everything, so nothing an editor types can run as code on the site.
+import Link from "next/link";
+
 import MediaImage from "@/components/MediaImage";
 import { formatDate } from "@/lib/format";
 import type { MediaSummary } from "@/lib/types";
@@ -22,9 +24,25 @@ export type ReviewArticleData = {
   palate: string | null;
   finish: string | null;
   tonic: string | null;
+  /** The tonic's public page, when the review links to a public tonic. */
+  tonic_link: { slug: string; display_name: string } | null;
   garnish: string | null;
   verdict: string | null;
 };
+
+/** "Fever-Tree Indian Tonic, garnished with lime", with the tonic linked to its page. */
+function PerfectServe({ review }: { review: ReviewArticleData }) {
+  const tonicName = review.tonic || review.tonic_link?.display_name;
+  const tonic = review.tonic_link ? <Link href={`/tonics/${review.tonic_link.slug}`}>{tonicName}</Link> : tonicName;
+  if (!tonic) return <>{review.garnish}</>;
+  return review.garnish ? (
+    <>
+      {tonic}, garnished with {review.garnish}
+    </>
+  ) : (
+    <>{tonic}</>
+  );
+}
 
 function Paragraphs({ text }: { text: string | null }) {
   if (!text?.trim()) return null;
@@ -97,9 +115,9 @@ export default function ReviewArticle({ review }: { review: ReviewArticleData })
         </section>
       )}
 
-      {(review.tonic || review.garnish) && (
+      {(review.tonic || review.tonic_link || review.garnish) && (
         <p className={styles.serve}>
-          <strong>Perfect serve:</strong> {[review.tonic, review.garnish].filter(Boolean).join(", garnished with ")}
+          <strong>Perfect serve:</strong> <PerfectServe review={review} />
         </p>
       )}
 

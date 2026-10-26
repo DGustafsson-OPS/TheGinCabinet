@@ -251,6 +251,8 @@ export type Review = {
   palate: string | null;
   finish: string | null;
   tonic: string | null;
+  tonic_id: string | null;
+  linked_tonic: { id: string; slug: string; display_name: string; public_visible: boolean } | null;
   garnish: string | null;
   verdict: string | null;
   cover_media_id: string | null;
@@ -292,6 +294,8 @@ export type PublicReview = PublicReviewCard & {
   palate: string | null;
   finish: string | null;
   tonic: string | null;
+  /** Set only when the linked tonic is public (its page exists). */
+  tonic_link: { slug: string; display_name: string } | null;
   garnish: string | null;
   verdict: string | null;
   seo_title: string | null;
@@ -616,5 +620,7 @@ export type PublicTonic = PublicTonicCard & {
   flavour_notes: string[];
   description: string | null;
   reviews: { author_name: string; rating: string | null; notes: string | null; pairs_with: string | null; published_at: string | null }[];
+  /** Published gin reviews that name this tonic as the perfect serve. */
+  gin_reviews: PublicReviewCard[];
   updated_at: string;
 };

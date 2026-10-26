@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field, field_validator
 from app.models import TonicReviewStatus, TonicStyle
 from app.schemas.catalogue import ShortText, Slug, _clean_botanicals
 from app.schemas.common import Fixed1, MediaSummary
-from app.schemas.editorial import Person
+from app.schemas.editorial import Person, PublicReviewCard
 
 Rating = Annotated[Decimal, Field(ge=0, le=10, max_digits=3, decimal_places=1)]
 
@@ -126,6 +126,8 @@ class PublicTonic(PublicTonicCard):
     flavour_notes: list[str]
     description: str | None
     reviews: list[PublicTonicReview]
+    # Published gin reviews that name this tonic as the perfect serve.
+    gin_reviews: list[PublicReviewCard] = []
     updated_at: datetime
 
 

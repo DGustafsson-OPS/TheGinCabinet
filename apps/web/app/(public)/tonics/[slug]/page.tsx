@@ -1,5 +1,6 @@
-// One tonic: photo, style, flavour notes, description, and our published
-// reviews with what each tonic pairs well with.
+// One tonic: photo, style, flavour notes, description, our published
+// reviews with what each tonic pairs well with, and the gin reviews that
+// name it as the perfect serve.
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -101,6 +102,27 @@ export default async function TonicPage({ params }: { params: Params }) {
           </ul>
         )}
       </section>
+
+      {tonic.gin_reviews.length > 0 && (
+        <section aria-labelledby="tonic-gins" className={styles.section}>
+          <h2 id="tonic-gins" className={styles.sectionTitle}>
+            Gins we pour it with
+          </h2>
+          <ul className={styles.reviews}>
+            {tonic.gin_reviews.map((review) => (
+              <li key={review.slug} className={styles.review}>
+                <div className={styles.reviewHead}>
+                  <Link href={`/reviews/${review.slug}`}>
+                    <strong>{review.gin.display_name}</strong>
+                  </Link>
+                  {review.rating && <span className="field-hint">{review.rating}/10</span>}
+                </div>
+                <p className={styles.reviewText}>{review.teaser}</p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <p className={styles.section}>
         <Link href="/tonics">← All tonics</Link>

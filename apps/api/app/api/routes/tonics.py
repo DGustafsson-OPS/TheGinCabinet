@@ -11,12 +11,12 @@ from decimal import ROUND_HALF_UP, Decimal
 from typing import Annotated
 
 from fastapi import APIRouter, Depends
-from sqlalchemy import func, or_, select
+from sqlalchemy import func, or_, select, update
 from sqlalchemy.orm import Session
 
 from app.api.deps import CurrentAdmin, CurrentAdminWrite, DbSession
 from app.errors import ApiError
-from app.models import Tonic, TonicReview, TonicReviewStatus, TonicStyle, User
+from app.models import Review, Tonic, TonicReview, TonicReviewStatus, TonicStyle, User
 from app.models._types import utcnow
 from app.schemas.common import Page, PageParams
 from app.schemas.editorial import Person
@@ -41,7 +41,8 @@ from app.services.common import (
     slugify,
     unique_slug,
 )
-from app.services.editorial import check_cover, media_summary
+from app.services.editorial import check_cover, media_summary, visible_reviews
+from app.services.editorial import public_card as review_card
 from app.services.versioning import check_version
 
 router = APIRouter(prefix="/admin", tags=["admin: tonics"])
@@ -226,6 +227,10 @@ def delete_tonic(tonic_id: uuid.UUID, admin: CurrentAdminWrite, db: DbSession):
         actor_id=admin.user.id,
         summary={"title": tonic.display_name, "reviews": len(tonic.reviews)},
     )
+    # Gin reviews that linked to this tonic keep their tonic text; only the
+    # link goes. (PostgreSQL would do this by itself via ON DELETE SET NULL;
+    # doing it here makes every database behave the same.)
+    db.execute(update(Review).where(Review.tonic_id == tonic.id).values(tonic_id=None))
     db.delete(tonic)
     db.commit()
 
@@ -395,6 +400,15 @@ def get_public_tonic(slug: str, db: DbSession):
                 published_at=r.published_at,
             )
             for r in published
+        ],
+        gin_reviews=[
+            review_card(r)
+            for r in db.scalars(
+                visible_reviews()
+                .where(Review.tonic_id == tonic.id)
+                .order_by(Review.published_at.desc())
+                .limit(12)
+            ).unique()
         ],
         updated_at=tonic.updated_at,
     )
