@@ -1,0 +1,31 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+.coverage
+htmlcov/
+
+# --- Node / Next.js (apps/web, later phases) ---
+node_modules/
+.next/
+
+# --- Local data & secrets: NEVER commit these (spec §9 / §10B) ---
+.env
+.env.*
+!.env.example
+*.db
+*.sqlite
+/media/
+apps/api/media/
+backups/
+
+# --- Logs ---
+*.log
+
+# --- Editors / OS ---
+.idea/
+.vscode/
+.DS_Store

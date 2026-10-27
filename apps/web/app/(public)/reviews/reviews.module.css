@@ -1,0 +1,109 @@
+.page {
+  max-width: var(--page-max-width);
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-4) var(--space-7);
+}
+
+.title {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: var(--font-size-h1);
+  margin-bottom: var(--space-2);
+}
+
+.controls {
+  display: grid;
+  gap: var(--space-3);
+  margin: var(--space-5) 0;
+  align-items: end;
+}
+@media (min-width: 768px) {
+  .controls {
+    grid-template-columns: 2fr 1fr auto;
+  }
+  .controls .button {
+    margin-bottom: var(--space-3);
+  }
+}
+
+/* 1 column on phones, 2 on tablets, 3 on desktop (spec §2). */
+.grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-5);
+  grid-template-columns: 1fr;
+}
+@media (min-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (min-width: 1200px) {
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.card {
+  position: relative; /* lets the title link cover the whole card */
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  transition: box-shadow 0.15s ease;
+}
+.card:hover,
+.card:focus-within {
+  box-shadow: var(--shadow-card-hover);
+}
+
+.cardImage {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  background: linear-gradient(160deg, var(--color-forest), var(--color-sage));
+}
+
+.cardBody {
+  padding: var(--space-4) var(--space-5) var(--space-5);
+}
+
+.cardGin {
+  margin: 0;
+  color: var(--color-brass-600);
+  font-size: var(--font-size-small);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.cardTitle {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 1.5rem;
+  margin: var(--space-1) 0 var(--space-2);
+}
+
+.cardLink {
+  color: var(--color-charcoal);
+  text-decoration: none;
+}
+/* Stretch the link's click area over the whole card. */
+.cardLink::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+.cardMeta {
+  margin: 0 0 var(--space-2);
+  font-size: var(--font-size-small);
+  color: var(--color-muted);
+}
+
+.cardTeaser {
+  margin: 0;
+}

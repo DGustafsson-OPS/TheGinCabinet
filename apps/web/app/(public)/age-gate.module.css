@@ -1,0 +1,77 @@
+/* The age gate covers the whole window, above everything else. */
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: var(--space-4);
+  background: rgb(15 23 19 / 82%);
+  backdrop-filter: blur(8px);
+  overflow-y: auto;
+}
+
+/* The page behind the gate: no scrolling until the visitor has answered. */
+.gated {
+  height: 100vh;
+  overflow: hidden;
+}
+
+.panel {
+  max-width: 30rem;
+  width: 100%;
+  padding: var(--space-6) var(--space-5);
+  background: var(--color-forest);
+  color: var(--color-cream);
+  border: 1px solid rgb(199 164 107 / 40%);
+  border-radius: var(--radius-md);
+  box-shadow: 0 24px 60px rgb(0 0 0 / 45%);
+  text-align: center;
+}
+
+.brand {
+  margin: 0 0 var(--space-3);
+  font-size: 0.8rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-brass);
+}
+
+.title {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(1.75rem, 5vw, 2.25rem);
+  margin: 0 0 var(--space-3);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-3);
+  margin: var(--space-5) 0 var(--space-4);
+}
+
+.secondary {
+  background: transparent;
+  color: var(--color-cream);
+  border: 1px solid var(--color-cream);
+}
+
+.small {
+  font-size: var(--font-size-small);
+  opacity: 0.85;
+  margin: 0;
+}
+.small a {
+  color: var(--color-brass);
+}
+
+/* The "sorry" page for visitors who answered No. */
+.restricted {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: var(--space-4);
+  background: #0f1713;
+}

@@ -1,0 +1,66 @@
+# Portable Docker Compose setup (spec §10: "remains portable outside Coolify").
+#
+#   cp infra/.env.example infra/.env        # then edit the values
+#   docker compose -f infra/docker-compose.yml up --build
+#   docker compose -f infra/docker-compose.yml run --rm api python -m app.cli create-admin ...
+#   open http://localhost:3000
+#
+# Only the website is published. The database and the API have NO published
+# port: they're reachable only on the private Docker network, and browsers
+# reach the API through the website's /api path (spec §9, §10B).
+
+name: gin-cabinet
+
+services:
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # One-off job: apply database migrations, then exit (spec §10B step 4).
+  migrate:
+    build: ../apps/api
+    env_file: .env
+    command: ["alembic", "upgrade", "head"]
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  api:
+    build: ../apps/api
+    restart: unless-stopped
+    env_file: .env
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    volumes:
+      - media:/app/media
+
+  web:
+    build:
+      context: ../apps/web
+      args:
+        API_INTERNAL_URL: http://api:8000
+    restart: unless-stopped
+    # Only what the website needs. The API's secrets are NOT passed to it.
+    environment:
+      SITE_URL: ${SITE_URL:-http://localhost:3000}
+    depends_on:
+      api:
+        condition: service_healthy
+    # Published on 127.0.0.1 only, so other machines can't reach it locally.
+    # In Coolify, its proxy publishes this service on your domain with HTTPS.
+    ports:
+      - "127.0.0.1:3000:3000"
+
+volumes:
+  db-data:
+  media:

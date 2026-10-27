@@ -1,0 +1,197 @@
+/* Spec §10A: page shell ~1200 px, reading column ~720 px. */
+.article {
+  max-width: var(--page-max-width);
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-4) var(--space-7);
+}
+
+.masthead,
+.body,
+.tags {
+  max-width: var(--reading-max-width);
+  margin-left: auto;
+  margin-right: auto;
+}
+.kicker {
+  margin: 0 0 var(--space-2);
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.kicker a {
+  color: var(--color-brass-600);
+}
+.title {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(2rem, 5vw, 3.25rem);
+  line-height: 1.1;
+  margin: 0 0 var(--space-3);
+}
+.standfirst {
+  font-size: 1.25rem;
+  line-height: 1.5;
+  margin: 0 0 var(--space-3);
+}
+/* On phones the metadata stacks; on wider screens it sits on one line. */
+.byline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-4);
+  margin: 0 0 var(--space-5);
+  font-size: var(--font-size-small);
+  color: var(--color-muted);
+}
+
+.hero {
+  margin: 0 0 var(--space-6);
+}
+.heroImage {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+}
+.hero figcaption,
+.figure figcaption,
+.quote figcaption {
+  margin-top: var(--space-2);
+  font-size: var(--font-size-small);
+  color: var(--color-muted);
+}
+
+.body {
+  font-size: 1.1rem;
+  line-height: 1.75;
+}
+.body p,
+.body ul,
+.body ol {
+  margin: 0 0 var(--space-4);
+}
+.h2,
+.h3 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  line-height: 1.25;
+  margin: var(--space-6) 0 var(--space-3);
+}
+.h2 {
+  font-size: 1.75rem;
+}
+.h3 {
+  font-size: 1.35rem;
+}
+
+.quote {
+  margin: var(--space-5) 0;
+  padding-left: var(--space-4);
+  border-left: 3px solid var(--color-brass);
+}
+.quote blockquote {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-style: italic;
+}
+.quote blockquote p {
+  margin: 0;
+}
+
+.figure {
+  margin: var(--space-5) 0;
+}
+.inlineImage {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius-sm);
+}
+
+.embed {
+  position: relative;
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  margin: var(--space-5) 0;
+  padding: var(--space-3);
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+.embed:hover,
+.embed:focus-within {
+  box-shadow: var(--shadow-card-hover);
+}
+.embedImage {
+  width: 96px;
+  height: 72px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+}
+.embedKicker {
+  margin: 0 !important;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-brass-600);
+}
+.embedTitle {
+  margin: 0 !important;
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  line-height: 1.3;
+}
+.embedLink {
+  color: var(--color-charcoal);
+  text-decoration: none;
+}
+.embedLink::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+.embedMeta {
+  margin: 0 !important;
+  font-size: var(--font-size-small);
+  color: var(--color-muted);
+  line-height: 1.4;
+}
+
+.tags {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-5);
+}
+.tag {
+  display: inline-block;
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  font-size: var(--font-size-small);
+  color: var(--color-charcoal);
+  text-decoration: none;
+}
+.tag:hover {
+  border-color: var(--color-brass);
+}
+
+.more {
+  margin-top: var(--space-7);
+}
+.moreTitle {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 1.6rem;
+  margin: 0 0 var(--space-4);
+}
+.links {
+  padding-left: var(--space-4);
+  line-height: 2;
+}

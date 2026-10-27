@@ -1,0 +1,72 @@
+.page {
+  max-width: var(--page-max-width);
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-4) var(--space-7);
+}
+
+.title {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: var(--font-size-h1);
+  margin-bottom: var(--space-2);
+}
+
+/* A collapsible filter panel (handy on phones). */
+.filters {
+  margin: var(--space-5) 0;
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 0 var(--space-4);
+}
+.filters summary {
+  min-height: var(--touch-target);
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.form {
+  display: grid;
+  gap: 0 var(--space-4);
+  grid-template-columns: 1fr;
+  padding-bottom: var(--space-4);
+  align-items: start;
+}
+@media (min-width: 768px) {
+  .form {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (min-width: 1200px) {
+  .form {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+.actions {
+  display: flex;
+  gap: var(--space-4);
+  align-items: center;
+  grid-column: 1 / -1;
+}
+
+.chips {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 var(--space-5);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--touch-target);
+  padding: 0 var(--space-4);
+  border-radius: 999px;
+  background: var(--color-forest);
+  color: var(--color-cream);
+  text-decoration: none;
+}

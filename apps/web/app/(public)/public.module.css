@@ -1,0 +1,191 @@
+/* The photo sits on the right; a dark fade on the left keeps the text readable
+   (contrast stays above WCAG AA). The plain forest colour shows while it loads. */
+.hero {
+  background:
+    linear-gradient(90deg, rgb(15 23 19 / 96%) 0%, rgb(15 23 19 / 80%) 38%, rgb(15 23 19 / 10%) 72%),
+    url("/images/hero-copa.jpg") 80% center / cover no-repeat,
+    var(--color-forest);
+  color: var(--color-cream);
+}
+/* On narrow screens the text covers the photo, so darken it evenly. */
+@media (max-width: 767px) {
+  .hero {
+    background:
+      linear-gradient(rgb(15 23 19 / 78%), rgb(15 23 19 / 88%)),
+      url("/images/hero-copa.jpg") 70% center / cover no-repeat,
+      var(--color-forest);
+  }
+}
+
+.heroInner {
+  max-width: var(--page-max-width);
+  margin: 0 auto;
+  padding: var(--space-7) var(--space-4);
+  min-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.eyebrow {
+  color: var(--color-brass);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: var(--font-size-small);
+  margin: 0 0 var(--space-3);
+}
+
+.heroTitle {
+  font-family: var(--font-display);
+  font-size: var(--font-size-h1);
+  font-weight: 500;
+}
+
+.heroText {
+  max-width: 36rem;
+  font-size: 1.125rem;
+  margin: 0 0 var(--space-6);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.section {
+  max-width: var(--reading-max-width);
+  margin: 0 auto;
+  padding: var(--space-7) var(--space-4);
+}
+.section h2 {
+  font-family: var(--font-display);
+  font-size: var(--font-size-h2);
+  font-weight: 500;
+}
+
+.footer {
+  border-top: 1px solid var(--color-border);
+  color: var(--color-muted);
+}
+.footerInner {
+  max-width: var(--page-max-width);
+  margin: 0 auto;
+  padding: var(--space-5) var(--space-4);
+  display: flex;
+  gap: var(--space-5);
+  flex-wrap: wrap;
+}
+
+/* ---------- Home: numbers band ---------- */
+.stats {
+  background: var(--color-forest);
+  color: var(--color-cream);
+  border-top: 1px solid var(--color-forest-700);
+}
+.stats ul {
+  max-width: var(--page-max-width);
+  margin: 0 auto;
+  padding: var(--space-5) var(--space-4);
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-4);
+}
+@media (min-width: 768px) {
+  .stats ul {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+.stats strong {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 2.25rem;
+  font-weight: 500;
+  color: var(--color-brass);
+}
+
+/* ---------- Home: content bands ---------- */
+.band {
+  max-width: var(--page-max-width);
+  margin: 0 auto;
+  padding: var(--space-7) var(--space-4) 0;
+}
+.bandHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+.bandHeader h2 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: var(--font-size-h2);
+}
+.threeUp {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: var(--space-5);
+  grid-template-columns: 1fr;
+}
+@media (min-width: 768px) {
+  .threeUp {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+.tile {
+  position: relative;
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  transition: box-shadow 0.15s ease;
+}
+.tile:hover,
+.tile:focus-within {
+  box-shadow: var(--shadow-card-hover);
+}
+.tileImage {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+}
+.tileBody {
+  padding: var(--space-4);
+}
+.tileBody h3 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 1.375rem;
+  margin: 0 0 var(--space-1);
+}
+.tileKicker {
+  margin: 0;
+  color: var(--color-brass-600);
+  font-size: var(--font-size-small);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.tileLink {
+  color: var(--color-charcoal);
+  text-decoration: none;
+}
+.tileLink::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+.tileMeta {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: var(--font-size-small);
+}
+.featured {
+  max-width: 320px;
+  padding-bottom: var(--space-7);
+}

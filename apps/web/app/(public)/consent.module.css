@@ -1,0 +1,141 @@
+/* The cookie banner sits at the bottom of the window, above the page. */
+.banner {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 900; /* below the age gate (1000) */
+  background: var(--color-forest);
+  color: var(--color-cream);
+  border-top: 1px solid rgb(199 164 107 / 40%);
+  box-shadow: 0 -12px 32px rgb(0 0 0 / 30%);
+}
+
+.inner {
+  max-width: var(--page-max-width);
+  margin: 0 auto;
+  padding: var(--space-4);
+  display: grid;
+  gap: var(--space-3);
+  align-items: center;
+}
+@media (min-width: 900px) {
+  .inner {
+    grid-template-columns: 1fr auto;
+    gap: var(--space-6);
+  }
+}
+
+.title {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 1.35rem;
+  margin: 0 0 var(--space-1);
+}
+
+.text {
+  margin: 0;
+  font-size: var(--font-size-small);
+  line-height: 1.5;
+}
+.text a {
+  color: var(--color-brass);
+}
+
+/* Both buttons look exactly the same: neither answer is nudged. */
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+.actions button {
+  flex: 1 1 10rem;
+}
+@media (min-width: 900px) {
+  .actions {
+    flex-wrap: nowrap;
+  }
+  .actions button {
+    flex: 0 0 auto;
+    min-width: 10rem;
+    white-space: nowrap;
+  }
+}
+
+/* Leave room at the bottom of the page so the banner never hides the footer. */
+.spacer {
+  height: 9rem;
+}
+@media (min-width: 900px) {
+  .spacer {
+    height: 6rem;
+  }
+}
+
+
+/* "Choose cookies": the per-category switches, under the banner's text. */
+.more {
+  grid-column: 1 / -1;
+}
+.more summary {
+  cursor: pointer;
+  color: var(--color-brass);
+  text-decoration: underline;
+  width: fit-content;
+}
+.more[open] summary {
+  margin-bottom: var(--space-3);
+}
+
+.choices {
+  display: grid;
+  gap: var(--space-3);
+  justify-items: start;
+}
+.fieldset {
+  border: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-3);
+}
+.category {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-3);
+  align-items: start;
+}
+.category input {
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-top: 0.15rem;
+}
+.categoryTitle {
+  font-weight: 600;
+}
+.always {
+  font-weight: 400;
+  opacity: 0.8;
+}
+.categoryText {
+  margin: var(--space-1) 0 0;
+  font-size: var(--font-size-small);
+}
+
+/* The Cookie settings page: the choices in a card, quick buttons below. */
+.settingsPanel {
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-5);
+  margin: var(--space-4) 0 var(--space-6);
+  display: grid;
+  gap: var(--space-4);
+}
+.quick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
+}

@@ -1,0 +1,113 @@
+# Continuous Integration for the Next.js website.
+#   check: lint, type-check, production build, Docker image build
+#   e2e:   real browser tests against the real API and PostgreSQL
+name: Web
+
+on:
+  push:
+    paths: ["apps/web/**", "apps/api/**", ".github/workflows/web.yml"]
+  pull_request:
+    paths: ["apps/web/**", "apps/api/**", ".github/workflows/web.yml"]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+      - name: Install
+        run: npm ci
+      - name: Lint
+        run: npm run lint
+      - name: Type-check
+        run: npm run typecheck
+      - name: Build
+        run: npm run build
+      - name: Docker image builds
+        run: docker build -t gin-cabinet-web .
+
+  e2e:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: gin
+          POSTGRES_PASSWORD: ci-only-password
+          POSTGRES_DB: gin_e2e
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U gin -d gin_e2e"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      GC_DATABASE_URL: postgresql+psycopg://gin:ci-only-password@localhost:5432/gin_e2e
+      E2E_USERNAME: e2e-admin
+      E2E_PASSWORD: ci-only-e2e-passphrase
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+
+      - name: Start the API with a test admin
+        working-directory: apps/api
+        run: |
+          pip install -e .
+          alembic upgrade head
+          # The CLI asks for the password twice; feed it from the env variable.
+          printf '%s\n%s\n' "$E2E_PASSWORD" "$E2E_PASSWORD" \
+            | python -m app.cli create-admin --username "$E2E_USERNAME" \
+                --email e2e@example.com --display-name "E2E Admin" > cli-output.txt
+          secret=$(awk '/Key:/ {print $2}' cli-output.txt)
+          rm cli-output.txt
+          echo "::add-mask::$secret"            # hide it in the logs
+          echo "E2E_TOTP_SECRET=$secret" >> "$GITHUB_ENV"
+          nohup uvicorn app.main:app --port 8000 > api.log 2>&1 &
+
+      - name: Build and start the website
+        working-directory: apps/web
+        run: |
+          npm ci
+          npm run build
+          cp -r .next/static .next/standalone/.next/ && cp -r public .next/standalone/
+          GA_MEASUREMENT_ID=G-E2ETEST1 PORT=3000 HOSTNAME=127.0.0.1 nohup node .next/standalone/server.js > web.log 2>&1 &
+
+      - name: Wait until both are healthy
+        run: |
+          for i in $(seq 1 30); do
+            curl -sf localhost:8000/health && curl -sf localhost:3000/health && exit 0
+            sleep 1
+          done
+          echo "Servers did not start"; exit 1
+
+      - name: Install the browser
+        working-directory: apps/web
+        run: npx playwright install --with-deps chromium
+
+      - name: Browser tests
+        working-directory: apps/web
+        run: npx playwright test
+
+      - name: Keep the report and server logs if something failed
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-report
+          path: |
+            apps/web/playwright-report
+            apps/web/test-results
+            apps/api/api.log
+            apps/web/web.log
+          retention-days: 7
