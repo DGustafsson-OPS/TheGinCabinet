@@ -83,10 +83,6 @@
   font-weight: 600;
   width: fit-content;
 }
-.more summary:hover,
-.more summary:focus-visible {
-  text-decoration: underline;
-}
 .more[open] summary {
   margin-bottom: var(--space-3);
 }
