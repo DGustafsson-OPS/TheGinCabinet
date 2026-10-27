@@ -417,7 +417,7 @@ def post_card(post: BlogPost) -> PublicPostCard:
     )
 
 
-def _public_cards(db: Session, refs: list[tuple[str, uuid.UUID]]) -> dict[tuple, Any]:
+def public_cards(db: Session, refs: list[tuple[str, uuid.UUID]]) -> dict[tuple, Any]:
     """(kind, id) -> public card, for the referenced items visitors may see."""
     result: dict[tuple, Any] = {}
     by_kind: dict[str, list[uuid.UUID]] = {}
@@ -441,9 +441,23 @@ def _public_cards(db: Session, refs: list[tuple[str, uuid.UUID]]) -> dict[tuple,
 
 
 def public_body(db: Session, post: BlogPost, cards: dict[tuple, Any]) -> list[dict[str, Any]]:
-    """Blocks ready to show: images and cards filled in, hidden items dropped."""
+    return public_blocks(db, post.body_blocks or [], cards)
+
+
+def card_refs(blocks: list[dict[str, Any]]) -> list[tuple[str, uuid.UUID]]:
+    """(kind, id) of every card block, e.g. to fetch them with ``public_cards``."""
+    return [(b["kind"], uuid.UUID(str(b["id"]))) for b in blocks if b["type"] == "card"]
+
+
+def public_blocks(
+    db: Session, blocks: list[dict[str, Any]], cards: dict[tuple, Any]
+) -> list[dict[str, Any]]:
+    """Blocks ready to show: images and cards filled in, hidden items dropped.
+
+    Shared by Journal articles and Gin guide pages.
+    """
     body = []
-    for block in post.body_blocks or []:
+    for block in blocks:
         if block["type"] == "image":
             image = media_summary(db.get(MediaAsset, uuid.UUID(str(block["media_id"]))))
             if image is None:
@@ -492,7 +506,7 @@ def public_post(db: Session, post: BlogPost) -> PublicPost:
     block_refs = [
         (b["kind"], uuid.UUID(str(b["id"]))) for b in post.body_blocks or [] if b["type"] == "card"
     ]
-    cards = _public_cards(db, rel_refs + block_refs)
+    cards = public_cards(db, rel_refs + block_refs)
 
     def related(kind: RelationKind) -> list:
         return [cards[(k, i)] for k, i in rel_refs if k == kind and (k, i) in cards]

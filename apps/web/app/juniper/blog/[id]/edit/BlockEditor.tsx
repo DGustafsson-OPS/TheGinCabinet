@@ -118,7 +118,7 @@ export default function BlockEditor({ idPrefix, blocks, onChange, newKey, media,
                     <label htmlFor={id("main")}>Text</label>
                     <textarea id={id("main")} value={block.text} onChange={(e) => update(index, { text: e.target.value })} aria-describedby={id("hint")} />
                     <span id={id("hint")} className="field-hint">
-                      Links: [label](https://example.com) or [label](/collection).
+                      **bold**, *italic*, links: [label](https://example.com) or [label](/collection).
                     </span>
                   </div>
                 )}

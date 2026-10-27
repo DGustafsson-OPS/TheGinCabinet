@@ -44,7 +44,7 @@ export default async function PublicLayout({ children }: { children: React.React
       {analyticsOn && gaId && <GoogleAnalytics id={gaId} nonce={nonce} />}
       {/* `inert`: nothing behind the gate can be clicked, focused or read aloud. */}
       <div inert={!ageConfirmed} className={ageConfirmed ? undefined : gate.gated}>
-        <PublicHeader />
+        <PublicHeader showGuide={site?.has_guide ?? false} />
         <main id="main">{children}</main>
         <footer className={styles.footer}>
           <div className={styles.footerInner}>

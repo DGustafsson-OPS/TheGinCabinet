@@ -44,6 +44,7 @@ from app.models.editorial import (
     ReviewStatus,
     Tasting,
 )
+from app.models.guide import GuidePage
 from app.models.purchases import Purchase, PurchaseLine
 from app.models.settings import SETTINGS_ID, SiteSettings
 from app.models.site_content import ContactMessage, PageText
@@ -52,6 +53,7 @@ from app.models.user import MAX_ACCOUNTS, MAX_ADMINS, User, UserRole
 from app.models.wishlist import WishlistItem, WishlistStatus
 
 __all__ = [
+    "GuidePage",
     "Tonic",
     "TonicReview",
     "TonicReviewStatus",

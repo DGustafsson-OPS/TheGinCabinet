@@ -560,6 +560,7 @@ export type PublicSite = Omit<SiteSettings, "logo_media_id" | "default_gin_publi
   texts: Record<string, string>;
   /** The contact form is switched on (Cloudflare Turnstile keys set). */
   contact_form: boolean;
+  has_guide: boolean;
 };
 
 export type PageText = {
@@ -677,4 +678,39 @@ export type PublicTonic = PublicTonicCard & {
   /** Published gin reviews that name this tonic as the perfect serve. */
   gin_reviews: PublicReviewCard[];
   updated_at: string;
+};
+
+// ---------------- Gin guide ----------------
+
+/** A Gin guide page as the admin editor sees it. */
+export type GuidePage = {
+  id: string;
+  slug: string;
+  title: string;
+  summary: string | null;
+  body_blocks: PostBlock[];
+  hero_media_id: string | null;
+  hero_image: MediaSummary | null;
+  hero_credit: string | null;
+  seo_title: string | null;
+  seo_description: string | null;
+  position: number;
+  published: boolean;
+  published_at: string | null;
+  edited_by: Person | null;
+  version: number;
+  created_at: string;
+  updated_at: string;
+};
+
+export type PublicGuideCard = { slug: string; title: string; summary: string | null; image: MediaSummary | null };
+
+export type PublicGuidePage = PublicGuideCard & {
+  body: PublicBlock[];
+  hero_credit: string | null;
+  seo_title: string | null;
+  seo_description: string | null;
+  updated_at: string;
+  previous: PublicGuideCard | null;
+  next: PublicGuideCard | null;
 };
