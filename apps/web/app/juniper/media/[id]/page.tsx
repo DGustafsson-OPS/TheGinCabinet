@@ -6,7 +6,7 @@ import { notFound } from "next/navigation";
 import MediaImage from "@/components/MediaImage";
 import { formatDateTime } from "@/lib/format";
 import { adminNames, apiGet, requireStaff } from "@/lib/server-api";
-import type { Media } from "@/lib/types";
+import type { Media, MediaFolder } from "@/lib/types";
 
 import MediaEditForm from "./MediaEditForm";
 import styles from "../media.module.css";
@@ -18,16 +18,20 @@ type Params = Promise<{ id: string }>;
 export default async function MediaItemPage({ params }: { params: Params }) {
   await requireStaff();
   const { id } = await params;
-  const [{ data: media }, names] = await Promise.all([apiGet<Media>(`/admin/media/${id}`), adminNames()]);
+  const [{ data: media }, names, folders] = await Promise.all([
+    apiGet<Media>(`/admin/media/${id}`),
+    adminNames(),
+    apiGet<MediaFolder[]>("/admin/media/folders"),
+  ]);
   if (!media) notFound();
 
   return (
     <>
-      <Link className="back-link" href="/juniper/media">
-        ← Media library
+      <Link className="back-link" href={media.folder ? `/juniper/media?folder=${encodeURIComponent(media.folder)}` : "/juniper/media"}>
+        ← {media.folder ?? "Media library"}
       </Link>
       <div className="page-header">
-        <h1>{media.original_filename ?? "Image"}</h1>
+        <h1>{media.name ?? media.original_filename ?? "Image"}</h1>
       </div>
       <div className={styles.layout}>
         <div className="card">
@@ -35,7 +39,8 @@ export default async function MediaItemPage({ params }: { params: Params }) {
           <p className="field-hint">
             {media.width} × {media.height} px · {media.mime} · {Math.round(media.size_bytes / 1024)} KB
             <br />
-            Uploaded {formatDateTime(media.created_at)}
+            {media.original_filename && <>Uploaded as {media.original_filename} · </>}
+            {formatDateTime(media.created_at)}
             {media.uploaded_by_id && names.get(media.uploaded_by_id) && ` by ${names.get(media.uploaded_by_id)}`}
           </p>
           <h2 style={{ fontSize: "var(--font-size-h3)" }}>Used in</h2>
@@ -50,7 +55,7 @@ export default async function MediaItemPage({ params }: { params: Params }) {
           )}
         </div>
         <div className="card">
-          <MediaEditForm key={media.version} media={media} />
+          <MediaEditForm key={media.version} media={media} folders={(folders.data ?? []).map((f) => f.path)} />
         </div>
       </div>
     </>

@@ -11,6 +11,7 @@ import { useEffect, useRef } from "react";
 
 import MediaImage from "@/components/MediaImage";
 import ConfirmButton from "@/components/admin/ConfirmButton";
+import PhotoUpload from "@/components/admin/PhotoUpload";
 import type { MediaOption } from "@/lib/media-options";
 import type { PostBlock, RelationKind } from "@/lib/types";
 
@@ -57,10 +58,12 @@ type Props = {
   onChange: (blocks: BlockRow[]) => void;
   newKey: () => string;
   media: MediaOption[];
+  /** A photo uploaded from an image block; the article editor adds it to everyone's list. */
+  onPhotoUploaded: (photo: MediaOption) => void;
   refs: RefOptions;
 };
 
-export default function BlockEditor({ idPrefix, blocks, onChange, newKey, media, refs }: Props) {
+export default function BlockEditor({ idPrefix, blocks, onChange, newKey, media, refs, onPhotoUploaded }: Props) {
   // After adding a block, move keyboard focus into it.
   const focusKey = useRef<string | null>(null);
   useEffect(() => {
@@ -155,6 +158,12 @@ export default function BlockEditor({ idPrefix, blocks, onChange, newKey, media,
                           </option>
                         ))}
                       </select>
+                      <PhotoUpload
+                        onUploaded={(p) => {
+                          onPhotoUploaded(p);
+                          update(index, { media_id: p.id });
+                        }}
+                      />
                     </div>
                     <div className="field">
                       <label htmlFor={id("caption")}>Caption (optional)</label>

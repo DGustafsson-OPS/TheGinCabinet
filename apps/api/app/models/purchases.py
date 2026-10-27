@@ -1,7 +1,7 @@
 """Purchases and their lines (spec §5 A04, §7).
 
-One ``Purchase`` is one receipt ("Systembolaget, 3 March"). It has one or
-more ``PurchaseLine`` rows ("2 x Tanqueray 700 ml at 299.00 SEK"). Saving a
+One ``Purchase`` is one receipt ("Alko, 3 March"). It has one or
+more ``PurchaseLine`` rows ("2 x Tanqueray 700 ml at 29.90 EUR"). Saving a
 line with quantity 2 creates 2 separate ``Bottle`` rows.
 """
 
@@ -24,7 +24,7 @@ class Purchase(Versioned, Base):
     id: Mapped[uuid.UUID] = mapped_column(UUIDType, primary_key=True, default=new_uuid)
     purchased_on: Mapped[date] = mapped_column(Date)  # ISO date (spec §7)
     retailer: Mapped[str] = mapped_column(String(160))
-    # ISO 4217 code, e.g. "SEK", "EUR", "GBP".
+    # ISO 4217 code, e.g. "EUR", "SEK", "GBP".
     currency: Mapped[str] = mapped_column(String(3))
     reference: Mapped[str | None] = mapped_column(String(120), nullable=True)
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)

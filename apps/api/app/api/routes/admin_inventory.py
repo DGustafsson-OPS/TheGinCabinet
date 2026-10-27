@@ -253,7 +253,22 @@ def update_purchase(
         changes=changes,
         current=purchase_out(purchase),
     )
+    line_prices = changes.pop("line_prices", None) or []
     apply_patch(purchase, changes, never_empty={"purchased_on", "retailer", "currency"})
+    lines = {line.id: line for line in purchase.lines}
+    for item in line_prices:
+        line = lines.get(item["id"])
+        if line is None:
+            raise ApiError(422, "unknown_line", "That line isn't part of this purchase.")
+        was_gift, now_gift = line.unit_price is None, item["unit_price"] is None
+        line.unit_price = item["unit_price"]
+        if was_gift != now_gift:
+            # The bottles' "where it came from" follows: a gift, or bought.
+            for bottle in db.scalars(select(Bottle).where(Bottle.purchase_line_id == line.id)):
+                if bottle.source in ("gift", "purchase"):
+                    bottle.source = "gift" if now_gift else "purchase"
+    if line_prices:
+        changes["line_prices"] = len(line_prices)
     audit.record(
         db,
         action="purchase.update",
@@ -310,6 +325,11 @@ def create_wishlist_item(body: WishlistIn, admin: CurrentAdminWrite, db: DbSessi
     db.commit()
     db.refresh(item)
     return item
+
+
+@router.get("/wishlist/{item_id}", response_model=WishlistOut)
+def get_wishlist_item(item_id: uuid.UUID, admin: CurrentAdmin, db: DbSession):
+    return get_or_404(db, WishlistItem, item_id, "Wishlist item")
 
 
 @router.patch("/wishlist/{item_id}", response_model=WishlistOut)

@@ -1,6 +1,6 @@
 // Small display helpers shared by admin pages.
 
-/** "1299.00" + "SEK" → "SEK 1,299.00". Decimal strings from the API stay exact until here. */
+/** "1299.00" + "EUR" → "€1,299.00". Decimal strings from the API stay exact until here. */
 export function formatMoney(amount: string | null | undefined, currency: string | null): string {
   if (amount == null || !currency) return "–";
   try {

@@ -118,6 +118,12 @@ Progress against the delivery phases in
 | Page texts | Admin → Page texts: home intro/eyebrow/empty state, About intro/body/contact, contact page intro, footer. Defaults in `services/page_texts.py`; simple formatting (`##`, lists, `**bold**`, links), rendered safely by `FormattedText`. The old "About page text" setting moved here |
 | Contact form + Cloudflare Turnstile | `/contact`, verified server-side, 5/hour per IP (hashed), honeypot field, Admin → Messages (admins only), deleted after a year. Off unless both Turnstile keys are set |
 | Links not underlined | Underline only on hover/focus; links inside text are semi-bold so they don't rely on colour alone (WCAG 1.4.1) |
+| Edit everything | Distilleries (`/juniper/distilleries/{id}`), purchases (date, shop, currency, reference, notes and each line's price; gin/size/quantity stay fixed because they created bottles), wishlist items (a dropped one can be put back). Tastings stay editable by their author only |
+| Photos and gins added in place | "Upload a new photo…" in the gin, tonic, review, cocktail, Journal and logo forms; "Add a new gin…" in the purchase form (brand, name, ABV; the rest later) |
+| Ratings in admin | Gin list and gin page show the average published review rating and our tasting average, with shortcuts to rate |
+| EUR by default | Purchases and wishlist default to EUR; any 3-letter currency can still be typed (suggestions: EUR, SEK, NOK, DKK, GBP, USD). Päihdelinkki link points to the English site |
+| Media library folders and bulk edit | Each image has a name (from the file name at upload) and an optional folder path like `Gins/Hernö` (migration 0013; no folders table: a folder exists while an image is in it). Browse by folder, upload into the open folder, rename/move a folder with its subfolders, and for ticked images: move, rename as a numbered series, set the credit, delete (images in use are skipped and listed). Pickers show "Folder › Name — description" |
+| Form layout | Two-column admin forms use `minmax(0, 1fr)` so a long dropdown can't push a column out of the card |
 
 ## Phase 8 – Launch QA ⬜
 Security review, accessibility audit, performance, backup/restore test,

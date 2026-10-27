@@ -11,6 +11,7 @@ import { errorMessage, useAdmin } from "@/components/admin/AdminProvider";
 import ConfirmButton from "@/components/admin/ConfirmButton";
 import ConflictPanel from "@/components/admin/ConflictPanel";
 import ReviewStatusBadge from "@/components/admin/ReviewStatusBadge";
+import PhotoUpload from "@/components/admin/PhotoUpload";
 import { ApiError } from "@/lib/api-client";
 import type { ConflictDetails, MediaSummary, Person, Review, ReviewStatus } from "@/lib/types";
 
@@ -35,7 +36,10 @@ type MediaOption = MediaSummary & { label: string };
 type TonicOption = { id: string; display_name: string };
 type Props = { review: Review; authors: Person[]; media: MediaOption[]; tonics: TonicOption[] };
 
-export default function ReviewEditor({ review, authors, media, tonics }: Props) {
+export default function ReviewEditor({ review, authors, media: library, tonics }: Props) {
+  // Photos uploaded from this form (PhotoUpload) join the library's list.
+  const [uploaded, setUploaded] = useState<MediaOption[]>([]);
+  const media = [...uploaded, ...library];
   const router = useRouter();
   const { call, toast } = useAdmin();
   const original = toValues(review);
@@ -277,9 +281,13 @@ export default function ReviewEditor({ review, authors, media, tonics }: Props) 
             {cover && (
               <MediaImage media={cover} sizes="320px" className="cover-preview" />
             )}
-            <span className="field-hint">
-              Upload images in the <Link href="/juniper/media">media library</Link>.
-            </span>
+            <PhotoUpload
+              label="Upload a new cover image"
+              onUploaded={(p) => {
+                setUploaded((list) => [p, ...list]);
+                setValues((v) => ({ ...v, cover_media_id: p.id }));
+              }}
+            />
           </div>
 
           <div className="field">

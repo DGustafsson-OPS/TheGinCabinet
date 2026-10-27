@@ -17,10 +17,12 @@ type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 export default async function ReviewsPage({ searchParams }: { searchParams: SearchParams }) {
   await requireStaff();
   const raw = await searchParams;
-  const filters = { search: param(raw.search), status: param(raw.status) };
+  const filters = { search: param(raw.search), status: param(raw.status), gin_id: param(raw.gin_id) };
   const query = new URLSearchParams({ page: param(raw.page) ?? "1", page_size: "25" });
   if (filters.search) query.set("search", filters.search);
   if (filters.status) query.set("status", filters.status);
+  // From a gin's page ("Its reviews"): only that gin's reviews.
+  if (filters.gin_id) query.set("gin_id", filters.gin_id);
   const { data } = await apiGet<Page<Review>>(`/admin/reviews?${query}`);
 
   return (
@@ -52,8 +54,8 @@ export default async function ReviewsPage({ searchParams }: { searchParams: Sear
         </p>
       ) : data.items.length === 0 ? (
         <div className="table-wrap empty-state">
-          <p>No reviews {filters.search || filters.status ? "match" : "yet"}.</p>
-          {(filters.search || filters.status) && <Link href="/juniper/reviews">Clear the filters</Link>}
+          <p>No reviews {filters.search || filters.status || filters.gin_id ? "match" : "yet"}.</p>
+          {(filters.search || filters.status || filters.gin_id) && <Link href="/juniper/reviews">Clear the filters</Link>}
         </div>
       ) : (
         <>

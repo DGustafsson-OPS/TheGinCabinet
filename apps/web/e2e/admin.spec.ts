@@ -47,8 +47,7 @@ test("two-step sign-in, dashboard numbers, mobile menu and sign-out", async ({ p
     },
   });
   expect(purchase.status()).toBe(201);
-  const expected = await (await api.get("/api/v1/admin/dashboard")).json();
-  await api.dispose();
+  const before = await (await api.get("/api/v1/admin/dashboard")).json();
 
   // Step 1 → step 2: the code box must start empty (regression test).
   await gotoReady(page, "/login");
@@ -62,12 +61,23 @@ test("two-step sign-in, dashboard numbers, mobile menu and sign-out", async ({ p
   await page.getByRole("button", { name: "Sign in" }).click();
   await expect(page).toHaveURL(/\/juniper$/);
 
-  // The tiles show what the API reports.
+  // The tiles show what the API reports. Tests running alongside may add
+  // gins and bottles meanwhile, so each number must lie between the API's
+  // figures from just before and just after the page was shown.
   await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible();
   const tile = (label: string) => page.locator(".card").filter({ hasText: label });
-  await expect(tile("Unique gins")).toContainText(String(expected.unique_gins));
-  await expect(tile("Bottles in the cabinet")).toContainText(String(expected.physical_bottles));
-  await expect(tile("Open bottles")).toContainText(String(expected.open_bottles));
+  const after = await (await api.get("/api/v1/admin/dashboard")).json();
+  await api.dispose();
+  for (const [label, key] of [
+    ["Unique gins", "unique_gins"],
+    ["Bottles in the cabinet", "physical_bottles"],
+    ["Open bottles", "open_bottles"],
+  ]) {
+    const shown = Number(await tile(label).locator("p").last().innerText());
+    const [low, high] = [before[key], after[key]].sort((a: number, b: number) => a - b);
+    expect(shown, label).toBeGreaterThanOrEqual(low);
+    expect(shown, label).toBeLessThanOrEqual(high);
+  }
   await expect(tile("Inventory value")).toContainText("SEK");
 
   // Mobile: the sidebar collapses behind a Menu button.
@@ -113,7 +123,7 @@ test("every admin page sends signed-out visitors to the login page", async ({ pa
     "/juniper/purchases/new", "/juniper/purchases/x", "/juniper/wishlist", "/juniper/wishlist/x/convert",
     "/juniper/media", "/juniper/media/x", "/juniper/tastings", "/juniper/tastings/new", "/juniper/tastings/x",
     "/juniper/reviews", "/juniper/reviews/new", "/juniper/reviews/x", "/juniper/reviews/x/preview",
-    "/juniper/pages", "/juniper/messages", "/juniper/not-allowed",
+    "/juniper/pages", "/juniper/messages", "/juniper/not-allowed", "/juniper/distilleries/x", "/juniper/wishlist/x",
     "/juniper/reviews/x/revisions", "/juniper/cocktails", "/juniper/cocktails/new", "/juniper/cocktails/x",
     "/juniper/blog", "/juniper/blog/new", "/juniper/blog/categories", "/juniper/blog/x/edit", "/juniper/blog/x/preview",
     "/juniper/blog/x/revisions", "/juniper/settings", "/juniper/audit", "/juniper/tonics",

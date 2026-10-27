@@ -65,11 +65,15 @@ export default async function DistilleriesPage({ searchParams }: { searchParams:
                 {data.items.map((d) => (
                   <tr key={d.id}>
                     <td>
-                      <Link href={`/juniper/gins?distillery=${d.id}`}>{d.name}</Link>
+                      <Link href={`/juniper/distilleries/${d.id}`}>{d.name}</Link>
                     </td>
                     <td>{d.country ?? "–"}</td>
                     <td>{d.region ?? "–"}</td>
-                    <td className="num">{d.gin_count}</td>
+                    <td className="num">
+                      <Link href={`/juniper/gins?distillery=${d.id}`} aria-label={`${d.gin_count} gins from ${d.name}`}>
+                        {d.gin_count}
+                      </Link>
+                    </td>
                     <td>
                       {d.website ? (
                         // External links are marked and open safely (spec P08).

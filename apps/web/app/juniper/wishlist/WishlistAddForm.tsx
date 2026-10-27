@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { errorMessage, useAdmin } from "@/components/admin/AdminProvider";
+import CurrencyOptions, { CURRENCY_LIST_ID } from "@/components/admin/CurrencyOptions";
 import type { GinSummary } from "@/lib/types";
 
 export default function WishlistAddForm({ gins }: { gins: GinSummary[] }) {
@@ -73,7 +74,8 @@ export default function WishlistAddForm({ gins }: { gins: GinSummary[] }) {
         </div>
         <div className="field">
           <label htmlFor="w-currency">Currency</label>
-          <input id="w-currency" name="currency" defaultValue="SEK" maxLength={3} />
+          <input id="w-currency" name="currency" list={CURRENCY_LIST_ID} defaultValue="EUR" maxLength={3} />
+          <CurrencyOptions />
         </div>
         <div className="field span-2">
           <label htmlFor="w-notes">Notes</label>

@@ -44,6 +44,11 @@ class MediaAsset(Versioned, Base):
     # The stored file name: random, never the uploader's original name (spec §9).
     storage_key: Mapped[str] = mapped_column(String(80), unique=True)
     original_filename: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    # A readable name for the library ("Hernö Navy Strength bottle"). Starts as
+    # the uploaded file's name, tidied up; can be changed at any time.
+    name: Mapped[str | None] = mapped_column(String(160), nullable=True)
+    # Where it's filed: "Gins/Hernö" (a "/" makes a subfolder). None = not filed.
+    folder: Mapped[str | None] = mapped_column(String(255), nullable=True, index=True)
     mime: Mapped[str] = mapped_column(String(40))
     width: Mapped[int] = mapped_column(Integer)
     height: Mapped[int] = mapped_column(Integer)

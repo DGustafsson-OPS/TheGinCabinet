@@ -175,3 +175,28 @@ def test_changes_are_audited(api):
     assert [e["action"] for e in events] == ["gin.update", "gin.create"]
     assert events[0]["summary"]["fields"] == ["abv"]
     assert events[0]["actor_name"] == "Anna"
+
+
+def test_admin_gin_shows_review_and_tasting_ratings(api):
+    from tests.test_public_catalogue import publish_review
+
+    gin = make_gin(api, public_visible=True)  # a review can only be published for a public gin
+    publish_review(api, gin, rating="8", title="Good")
+    api.post("/api/v1/admin/reviews", json={"gin_id": gin["id"], "title": "Draft", "rating": "2"})
+    for rating in ("6", "7"):
+        api.post(
+            "/api/v1/admin/tastings",
+            json={"gin_id": gin["id"], "tasted_on": "2026-10-20", "rating": rating},
+        )
+
+    one = api.get(f"/api/v1/admin/gins/{gin['id']}").json()
+    # Only published reviews count for the public figure; drafts don't.
+    assert (one["review_rating"], one["review_count"]) == ("8.0", 1)
+    assert (one["tasting_rating"], one["tasting_count"]) == ("6.5", 2)
+    listed = api.get("/api/v1/admin/gins").json()["items"]
+    row = next(g for g in listed if g["id"] == gin["id"])
+    assert row["review_rating"] == "8.0" and row["tasting_rating"] == "6.5"
+
+    # A gin without any: no rating, zero counts.
+    other = api.get(f"/api/v1/admin/gins/{make_gin(api, name='Other')['id']}").json()
+    assert (other["review_rating"], other["review_count"]) == (None, 0)

@@ -8,6 +8,7 @@ import { useState } from "react";
 
 import MediaImage from "@/components/MediaImage";
 import { errorMessage, useAdmin } from "@/components/admin/AdminProvider";
+import PhotoUpload from "@/components/admin/PhotoUpload";
 import { ApiError } from "@/lib/api-client";
 import type { MediaOption } from "@/lib/media-options";
 import type { SiteSettings } from "@/lib/types";
@@ -26,7 +27,10 @@ const toValues = (s: SiteSettings): Values => ({
   default_gin_public: s.default_gin_public,
 });
 
-export default function SiteSettingsForm({ settings, media }: { settings: SiteSettings; media: MediaOption[] }) {
+export default function SiteSettingsForm({ settings, media: library }: { settings: SiteSettings; media: MediaOption[] }) {
+  // Photos uploaded from this form (PhotoUpload) join the library's list.
+  const [uploaded, setUploaded] = useState<MediaOption[]>([]);
+  const media = [...uploaded, ...library];
   const router = useRouter();
   const { call, toast } = useAdmin();
   const [values, setValues] = useState<Values>(() => toValues(settings));
@@ -104,6 +108,13 @@ export default function SiteSettingsForm({ settings, media }: { settings: SiteSe
               </option>
             ))}
           </select>
+          <PhotoUpload
+            label="Upload a new logo"
+            onUploaded={(p) => {
+              setUploaded((list) => [p, ...list]);
+              setValues((v) => ({ ...v, logo_media_id: p.id }));
+            }}
+          />
           {logo && <MediaImage media={{ ...logo, alt: "" }} sizes="160px" className="photo-thumb" />}
         </div>
         <p className="field-hint span-2">

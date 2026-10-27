@@ -51,6 +51,50 @@ export default async function GinPage({ params }: { params: Params }) {
         />
       </div>
 
+      <section aria-labelledby="ratings-title" className="card" style={{ marginTop: "var(--space-6)" }}>
+        <h2 id="ratings-title" style={{ fontSize: "var(--font-size-h3)" }}>
+          Ratings
+        </h2>
+        <dl className="rating-facts">
+          <dt>Public rating</dt>
+          <dd>
+            {gin.data.review_rating ? (
+              <>
+                <strong>{gin.data.review_rating}</strong>/10 from {gin.data.review_count} published review
+                {gin.data.review_count === 1 ? "" : "s"}
+              </>
+            ) : (
+              "No published reviews yet"
+            )}
+          </dd>
+          <dt>Our tastings (private)</dt>
+          <dd>
+            {gin.data.tasting_rating ? (
+              <>
+                <strong>{gin.data.tasting_rating}</strong>/10 from {gin.data.tasting_count} tasting
+                {gin.data.tasting_count === 1 ? "" : "s"}
+              </>
+            ) : (
+              "No rated tastings yet"
+            )}
+          </dd>
+        </dl>
+        <p className="field-hint">
+          A gin is rated in its reviews (shown on the website) and tastings (private notes), each out of 10.
+        </p>
+        <div className="form-actions">
+          <Link className="button button-secondary" href={`/juniper/tastings/new?gin=${id}`}>
+            Record a tasting
+          </Link>
+          <Link className="button button-secondary" href={`/juniper/reviews/new?gin=${id}`}>
+            Write a review
+          </Link>
+          <Link className="button button-secondary" href={`/juniper/reviews?gin_id=${id}`}>
+            Its reviews
+          </Link>
+        </div>
+      </section>
+
       <section aria-labelledby="bottles-title" style={{ marginTop: "var(--space-6)" }}>
         <h2 id="bottles-title" style={{ fontSize: "var(--font-size-h3)" }}>
           Bottles ({gin.data.bottles_in_cabinet} in the cabinet)

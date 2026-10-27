@@ -20,7 +20,7 @@ from typing import Annotated
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.models import GinStyle
-from app.schemas.common import Fixed2, MediaSummary
+from app.schemas.common import Fixed1, Fixed2, MediaSummary
 
 SLUG_PATTERN = r"^[a-z0-9]+(?:-[a-z0-9]+)*$"
 
@@ -162,6 +162,12 @@ class GinOut(GinSummary):
     images: list[MediaSummary] = []
     bottles_in_cabinet: int = 0
     bottles_total: int = 0
+    # Average of the published reviews (what visitors see) and of the private
+    # tastings, each out of 10, with how many there are.
+    review_rating: Fixed1 | None = None
+    review_count: int = 0
+    tasting_rating: Fixed1 | None = None
+    tasting_count: int = 0
     version: int
     created_at: datetime
     updated_at: datetime

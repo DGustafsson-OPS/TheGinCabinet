@@ -9,6 +9,7 @@ import MediaImage from "@/components/MediaImage";
 import ConflictPanel from "@/components/admin/ConflictPanel";
 import { errorMessage, useAdmin } from "@/components/admin/AdminProvider";
 import ConfirmButton from "@/components/admin/ConfirmButton";
+import PhotoUpload from "@/components/admin/PhotoUpload";
 import { ApiError } from "@/lib/api-client";
 import { humanize } from "@/lib/format";
 import {
@@ -76,8 +77,11 @@ function toPayload(values: Values): Record<string, unknown> {
 type MediaOption = MediaSummary & { label: string };
 type Props = { gin?: Gin; distilleries: DistillerySummary[]; media: MediaOption[] };
 
-export default function GinForm({ gin, distilleries, media }: Props) {
+export default function GinForm({ gin, distilleries, media: library }: Props) {
   const router = useRouter();
+  // Photos uploaded from this form (PhotoUpload) join the library's list.
+  const [uploaded, setUploaded] = useState<MediaOption[]>([]);
+  const media = [...uploaded, ...library];
   const { call, toast } = useAdmin();
   const [values, setValues] = useState<Values>(() => toValues(gin));
   const [version, setVersion] = useState(gin?.version ?? 0);
@@ -169,11 +173,17 @@ export default function GinForm({ gin, distilleries, media }: Props) {
       <div className="form-grid">
         <div className="field">
           <label htmlFor="brand">Brand</label>
-          <input id="brand" value={values.brand} onChange={set("brand")} required />
+          <input id="brand" value={values.brand} onChange={set("brand")} required aria-describedby="brand-hint" />
+          <span id="brand-hint" className="field-hint">
+            Who makes it, e.g. &quot;Hernö&quot; or &quot;Kyrö&quot;.
+          </span>
         </div>
         <div className="field">
           <label htmlFor="name">Name</label>
-          <input id="name" value={values.name} onChange={set("name")} required />
+          <input id="name" value={values.name} onChange={set("name")} required aria-describedby="name-hint" />
+          <span id="name-hint" className="field-hint">
+            Which of their gins, e.g. &quot;Juniper Cask&quot; or &quot;Napue&quot;. Shown as brand + name.
+          </span>
         </div>
         <div className="field">
           <label htmlFor="edition">Edition</label>
@@ -288,6 +298,13 @@ export default function GinForm({ gin, distilleries, media }: Props) {
                 ))}
             </select>
           </div>
+          <PhotoUpload
+            label="Upload a new photo"
+            onUploaded={(photo) => {
+              setUploaded((list) => [photo, ...list]);
+              setValues((v) => ({ ...v, image_ids: [...v.image_ids, photo.id] }));
+            }}
+          />
         </fieldset>
         <div className="field-checkbox span-2">
           <input

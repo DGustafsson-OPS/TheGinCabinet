@@ -24,15 +24,10 @@ export default async function NewPurchasePage({ searchParams }: { searchParams: 
       <div className="page-header">
         <h1>Record purchase</h1>
       </div>
-      {gins.length === 0 ? (
-        <p className="alert alert-warning">
-          Add the gin to the catalogue first. <Link href="/juniper/gins/new">Add a gin</Link>
-        </p>
-      ) : (
-        <div className="card">
-          <PurchaseForm gins={gins} initialLine={preselected ? { gin_id: preselected } : undefined} />
-        </div>
-      )}
+      {/* An empty catalogue is fine: the form can add a gin on the spot. */}
+      <div className="card">
+        <PurchaseForm gins={gins} initialLine={preselected ? { gin_id: preselected } : undefined} />
+      </div>
     </>
   );
 }

@@ -82,6 +82,9 @@ export default async function GinsPage({ searchParams }: { searchParams: SearchP
                   <th scope="col" className="num">
                     Bottles
                   </th>
+                  <th scope="col" className="num">
+                    Rating
+                  </th>
                   <th scope="col">Public site</th>
                 </tr>
               </thead>
@@ -102,6 +105,20 @@ export default async function GinsPage({ searchParams }: { searchParams: SearchP
                           {" "}
                           / {gin.bottles_total}
                         </span>
+                      )}
+                    </td>
+                    <td className="num">
+                      {gin.review_rating ? (
+                        <span title={`Average of ${gin.review_count} published review${gin.review_count === 1 ? "" : "s"}`}>
+                          {gin.review_rating}
+                        </span>
+                      ) : (
+                        "–"
+                      )}
+                      {gin.tasting_rating && (
+                        <div className="field-hint" title={`Average of ${gin.tasting_count} tasting${gin.tasting_count === 1 ? "" : "s"}`}>
+                          tastings {gin.tasting_rating}
+                        </div>
                       )}
                     </td>
                     <td>
