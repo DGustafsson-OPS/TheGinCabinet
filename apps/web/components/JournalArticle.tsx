@@ -7,7 +7,7 @@ import GinGrid from "@/components/GinGrid";
 import InlineText from "@/components/InlineText";
 import MediaImage from "@/components/MediaImage";
 import { PostGrid } from "@/components/PostCard";
-import { formatDate } from "@/lib/format";
+import { formatDate, formatStrength } from "@/lib/format";
 import type { PublicBlock, PublicPost } from "@/lib/types";
 
 import styles from "./JournalArticle.module.css";
@@ -20,7 +20,7 @@ function EmbeddedCard({ block }: { block: Extract<PublicBlock, { type: "card" }>
           href: `/gins/${block.card.slug}`,
           kicker: "Gin",
           title: block.card.display_name,
-          meta: [block.card.country, `${block.card.abv} %`].filter(Boolean).join(" · "),
+          meta: [block.card.country, formatStrength(block.card.abv)].filter(Boolean).join(" · "),
         }
       : block.kind === "review"
         ? {

@@ -68,6 +68,9 @@ test("the public site shows public gins with their reviews and cocktails, and no
 
   // Collection: filter by the test country with the real form.
   await gotoReady(page, "/collection");
+  // Strength filters use the wording on Finnish/EU labels ("% vol").
+  await expect(page.getByLabel("Alcohol from (% vol)")).toBeVisible();
+  await expect(page.getByLabel("Alcohol up to (% vol)")).toBeVisible();
   await page.getByLabel("Country").selectOption(country);
   await page.getByRole("button", { name: "Show gins" }).click();
   await expect(page).toHaveURL(/country=/);
@@ -82,6 +85,7 @@ test("the public site shows public gins with their reviews and cocktails, and no
   await gotoReady(page, `/gins/${gin.slug}`);
   await expect(page.getByRole("heading", { level: 1, name: `Visible Gin ${tag}` })).toBeVisible();
   await expect(page.getByRole("img", { name: `Bottle ${tag}` })).toBeVisible();
+  await expect(page.locator("main")).toContainText("41.5\u00a0%\u00a0vol"); // the API sends "41.50"
   // The gin's own status comes first; related gins further down have badges too.
   await expect(page.getByText("In the cabinet", { exact: true }).first()).toBeVisible();
   await expect(page.getByRole("link", { name: `Review ${tag}` })).toBeVisible();

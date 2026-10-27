@@ -8,7 +8,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import MediaImage from "@/components/MediaImage";
-import { formatAmount, humanize, param } from "@/lib/format";
+import { formatAmount, formatStrength, humanize, param } from "@/lib/format";
 import { SITE_URL, publicGet } from "@/lib/public-api";
 import type { PublicCocktail } from "@/lib/types";
 
@@ -186,7 +186,7 @@ export default async function CocktailPage({ params, searchParams }: { params: P
                       <Link href={`/gins/${gin.slug}`}>{gin.display_name}</Link>
                     </strong>
                     <div className="field-hint">
-                      {[gin.country, `${gin.abv} %`].filter(Boolean).join(" · ")}
+                      {[gin.country, formatStrength(gin.abv)].filter(Boolean).join(" · ")}
                     </div>
                     {gin.pairing_note && <p style={{ margin: "var(--space-2) 0 0" }}>{gin.pairing_note}</p>}
                   </li>

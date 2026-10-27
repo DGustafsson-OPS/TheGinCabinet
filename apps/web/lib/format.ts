@@ -59,3 +59,15 @@ export function formatAmount(quantity: string | null, unit: string): string {
   const plural = Number(quantity) !== 1 && PLURALS[unit];
   return `${quantity} ${plural || unit}`;
 }
+
+/**
+ * Alcohol strength as written on Finnish and EU labels: "41.5 % vol".
+ * The API sends "41.50"; trailing zeros go ("40.00" → "40 % vol"). The
+ * spaces are non-breaking, so the number never wraps away from "% vol".
+ */
+export function formatStrength(abv: string | number | null | undefined): string {
+  if (abv === null || abv === undefined || abv === "") return "";
+  const value = Number(abv);
+  if (!Number.isFinite(value)) return "";
+  return `${String(Number(value.toFixed(2)))} % vol`;
+}
