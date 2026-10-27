@@ -38,6 +38,8 @@ class MediaOut(BaseModel):
     id: uuid.UUID
     url: str = ""
     original_filename: str | None
+    name: str | None
+    folder: str | None
     mime: str
     width: int
     height: int
@@ -55,10 +57,45 @@ class MediaOut(BaseModel):
 
 class MediaPatch(BaseModel):
     version: int
+    name: str | None = Field(default=None, max_length=160)
+    folder: str | None = Field(default=None, max_length=300)  # "" = not in a folder
     alt: str | None = Field(default=None, max_length=500)
     decorative: bool | None = None
     credit: str | None = Field(default=None, max_length=200)
     rights: str | None = Field(default=None, max_length=200)
+
+
+class MediaBulk(BaseModel):
+    """One change to many images at once (Media → tick several → action)."""
+
+    ids: list[uuid.UUID] = Field(min_length=1, max_length=200)
+    action: Literal["move", "rename", "credit", "delete"]
+    folder: str | None = Field(default=None, max_length=300)  # move: "" = not in a folder
+    # rename: "Hernö bottle" -> "Hernö bottle 1", "Hernö bottle 2", ... (in the order sent)
+    base_name: str | None = Field(default=None, max_length=150)
+    start: int = Field(default=1, ge=0, le=100_000)
+    credit: str | None = Field(default=None, max_length=200)  # credit: "" clears it
+
+
+class BulkSkipped(BaseModel):
+    id: uuid.UUID
+    name: str | None
+    reason: str
+
+
+class MediaBulkResult(BaseModel):
+    changed: int
+    skipped: list[BulkSkipped] = []
+
+
+class MediaFolder(BaseModel):
+    path: str
+    count: int  # images filed directly in this folder (not its subfolders)
+
+
+class FolderRename(BaseModel):
+    from_path: str = Field(min_length=1, max_length=300)
+    to_path: str = Field(default="", max_length=300)  # "" = move its images out of folders
 
 
 # ---------------- Tastings ----------------

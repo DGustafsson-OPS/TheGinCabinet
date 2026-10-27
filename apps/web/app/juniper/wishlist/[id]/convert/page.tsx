@@ -44,7 +44,7 @@ export default async function ConvertWishlistPage({ params }: { params: Params }
           gins={ginOptions}
           mode={{ kind: "convert", wishlistItemId: item.id, version: item.version }}
           initialLine={{ gin_id: item.gin?.id ?? "", unit_price: item.target_price ?? "" }}
-          defaultCurrency={item.currency ?? "SEK"}
+          defaultCurrency={item.currency ?? "EUR"}
         />
       </div>
     </>

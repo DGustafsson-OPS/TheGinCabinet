@@ -21,7 +21,7 @@ def _check_currency(value: str | None) -> str | None:
         return None
     value = value.strip().upper()
     if len(value) != 3 or not value.isalpha():
-        raise ValueError("must be a 3-letter currency code such as SEK or EUR")
+        raise ValueError("must be a 3-letter currency code such as EUR or SEK")
     return value
 
 
@@ -126,8 +126,16 @@ class PurchaseIn(BaseModel):
     _currency = field_validator("currency")(_check_currency)
 
 
+class LinePrice(BaseModel):
+    """A corrected price for one purchase line (None = a gift / unknown)."""
+
+    id: uuid.UUID
+    unit_price: Money | None
+
+
 class PurchasePatch(BaseModel):
-    """Lines are fixed once saved, because they already created bottles."""
+    """A purchase's details and its line prices can be corrected. Which gin,
+    the size and the number of bottles are fixed: they created the bottles."""
 
     version: int
     purchased_on: date | None = None
@@ -135,6 +143,7 @@ class PurchasePatch(BaseModel):
     currency: str | None = None
     reference: str | None = Field(default=None, max_length=120)
     notes: str | None = Field(default=None, max_length=5_000)
+    line_prices: list[LinePrice] | None = Field(default=None, max_length=50)
 
     _currency = field_validator("currency")(_check_currency)
 

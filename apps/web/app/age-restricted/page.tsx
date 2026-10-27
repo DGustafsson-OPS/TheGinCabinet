@@ -23,7 +23,7 @@ export default async function AgeRestrictedPage() {
           You&apos;re welcome back when you are.
         </p>
         <p className={styles.small}>
-          Questions about alcohol? <a href="https://paihdelinkki.fi">Päihdelinkki</a> offers free,
+          Questions about alcohol? <a href="https://paihdelinkki.fi/en/">Päihdelinkki</a> offers free,
           anonymous information and support.
         </p>
       </div>

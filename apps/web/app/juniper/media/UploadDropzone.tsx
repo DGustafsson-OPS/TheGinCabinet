@@ -12,7 +12,8 @@ import styles from "./media.module.css";
 
 const ACCEPTED = ["image/jpeg", "image/png", "image/webp"];
 
-export default function UploadDropzone() {
+/** `folder`: new images are filed there (the folder being viewed). */
+export default function UploadDropzone({ folder }: { folder?: string }) {
   const router = useRouter();
   const { upload, toast } = useAdmin();
   const input = useRef<HTMLInputElement>(null);
@@ -31,6 +32,7 @@ export default function UploadDropzone() {
       }
       const form = new FormData();
       form.append("file", file);
+      if (folder) form.append("folder", folder);
       try {
         await upload<Media>("/admin/media", form);
         done++;
@@ -40,7 +42,7 @@ export default function UploadDropzone() {
     }
     setBusy(false);
     if (done > 0) {
-      toast(`${done} image${done === 1 ? "" : "s"} uploaded. Add alt text to each.`);
+      toast(`${done} image${done === 1 ? "" : "s"} uploaded${folder ? ` to ${folder}` : ""}. Add alt text to each.`);
       router.refresh();
     }
   }
@@ -71,7 +73,8 @@ export default function UploadDropzone() {
         </button>
       </p>
       <p className="field-hint">
-        JPEG, PNG or WebP. Location data and other hidden details are removed automatically.
+        JPEG, PNG or WebP{folder ? `, filed in ${folder}` : ""}. Location data and other hidden details are removed
+        automatically.
       </p>
       <label className="visually-hidden" htmlFor="upload-input">
         Upload images

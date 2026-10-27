@@ -12,6 +12,7 @@ import { errorMessage, useAdmin } from "@/components/admin/AdminProvider";
 import ConfirmButton from "@/components/admin/ConfirmButton";
 import ConflictPanel from "@/components/admin/ConflictPanel";
 import Tabs from "@/components/admin/Tabs";
+import PhotoUpload from "@/components/admin/PhotoUpload";
 import { ApiError } from "@/lib/api-client";
 import { humanize } from "@/lib/format";
 import {
@@ -112,7 +113,10 @@ const toSteps = (c: Cocktail, tag = "init"): StepRow[] => c.steps.map((t, i) => 
 const toGinRows = (c: Cocktail, tag = "init"): GinRow[] =>
   c.gins.map((g, i) => ({ key: `${tag}-${i}`, gin_id: g.gin.id, priority: String(g.priority), pairing_note: g.pairing_note ?? "" }));
 
-export default function CocktailEditor({ cocktail, gins, media, knownIngredients }: Props) {
+export default function CocktailEditor({ cocktail, gins, media: library, knownIngredients }: Props) {
+  // Photos uploaded from this form (PhotoUpload) join the library's list.
+  const [uploaded, setUploaded] = useState<Props["media"]>([]);
+  const media = [...uploaded, ...library];
   const router = useRouter();
   const formId = useId(); // prefix for element ids, unique per editor
   const counter = useRef(0);
@@ -398,9 +402,12 @@ export default function CocktailEditor({ cocktail, gins, media, knownIngredients
         ))}
       </select>
       {cover && <MediaImage media={cover} className="cover-preview" sizes="320px" />}
-      <span className="field-hint">
-        Upload photos in the <Link href="/juniper/media">media library</Link>.
-      </span>
+      <PhotoUpload
+        onUploaded={(p) => {
+          setUploaded((list) => [p, ...list]);
+          setBasics((b) => ({ ...b, cover_media_id: p.id }));
+        }}
+      />
     </div>
   );
 

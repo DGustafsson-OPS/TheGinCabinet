@@ -7,6 +7,8 @@ import { useId, useRef, useState } from "react";
 
 import { errorMessage, useAdmin } from "@/components/admin/AdminProvider";
 import ConfirmButton from "@/components/admin/ConfirmButton";
+import CurrencyOptions, { CURRENCY_LIST_ID } from "@/components/admin/CurrencyOptions";
+import QuickAddGin from "@/components/admin/QuickAddGin";
 import { formatMoney, today } from "@/lib/format";
 import type { GinSummary, Purchase } from "@/lib/types";
 
@@ -28,10 +30,10 @@ function emptyLine(key: string, initial: Partial<Omit<Line, "key">> = {}): Line 
 }
 
 export default function PurchaseForm({
-  gins,
+  gins: catalogue,
   mode = { kind: "create" },
   initialLine,
-  defaultCurrency = "SEK",
+  defaultCurrency = "EUR",
 }: Props) {
   const router = useRouter();
   const { call, toast } = useAdmin();
@@ -42,6 +44,9 @@ export default function PurchaseForm({
   const added = useRef(0);
   const [lines, setLines] = useState<Line[]>(() => [emptyLine("init", initialLine)]);
   const [currency, setCurrency] = useState(defaultCurrency);
+  // Gins added from this form, listed first so they're easy to spot.
+  const [addedGins, setAddedGins] = useState<GinSummary[]>([]);
+  const gins = [...addedGins, ...catalogue];
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -104,12 +109,13 @@ export default function PurchaseForm({
         </div>
         <div className="field">
           <label htmlFor="retailer">Shop</label>
-          <input id="retailer" name="retailer" required placeholder="e.g. Systembolaget" />
+          <input id="retailer" name="retailer" required placeholder="e.g. Alko" />
         </div>
         <div className="field">
           <label htmlFor="currency">Currency</label>
           <input
             id="currency"
+            list={CURRENCY_LIST_ID}
             value={currency}
             onChange={(event) => setCurrency(event.target.value)}
             maxLength={3}
@@ -117,8 +123,9 @@ export default function PurchaseForm({
             aria-describedby="currency-hint"
           />
           <span id="currency-hint" className="field-hint">
-            3-letter code: SEK, EUR, GBP…
+            3-letter code: EUR, SEK, GBP… Pick from the list or type another.
           </span>
+          <CurrencyOptions />
         </div>
         <div className="field">
           <label htmlFor="reference">Receipt or order number</label>
@@ -148,6 +155,12 @@ export default function PurchaseForm({
                     </option>
                   ))}
                 </select>
+                <QuickAddGin
+                  onAdded={(gin) => {
+                    setAddedGins((current) => [gin, ...current]);
+                    updateLine(line.key, "gin_id", gin.id);
+                  }}
+                />
               </div>
               <div className="field">
                 <label htmlFor={`${formId}-size-${line.key}`}>

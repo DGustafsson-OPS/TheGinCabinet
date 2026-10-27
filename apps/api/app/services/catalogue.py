@@ -1,13 +1,25 @@
 """Rules for the gin catalogue: identity, botanicals and counts (spec §5 A02)."""
 
 import uuid
+from decimal import Decimal
 from typing import Any
 
 from sqlalchemy import case, func, select
 from sqlalchemy.orm import Session
 
 from app.errors import ApiError
-from app.models import IN_CABINET, Botanical, Bottle, Distillery, GinImage, GinProduct, MediaAsset
+from app.models import (
+    IN_CABINET,
+    Botanical,
+    Bottle,
+    Distillery,
+    GinImage,
+    GinProduct,
+    MediaAsset,
+    Review,
+    ReviewStatus,
+    Tasting,
+)
 from app.schemas.catalogue import GinOut
 from app.schemas.common import MediaSummary
 from app.services.common import (
@@ -147,21 +159,62 @@ def bottle_counts(db: Session, gin_ids: list[uuid.UUID]) -> dict[uuid.UUID, tupl
     return {gin_id: (int(in_cabinet or 0), int(total)) for gin_id, in_cabinet, total in rows}
 
 
+Scores = dict[str, Any]
+
+
+def _averages(db: Session, column, gin_column, ids, *where) -> dict[uuid.UUID, tuple[Decimal, int]]:
+    rows = db.execute(
+        select(gin_column, func.avg(column), func.count())
+        .where(gin_column.in_(ids), column.is_not(None), *where)
+        .group_by(gin_column)
+    ).all()
+    return {gid: (Decimal(avg).quantize(Decimal("0.1")), int(n)) for gid, avg, n in rows}
+
+
+def gin_scores(db: Session, gin_ids: list[uuid.UUID]) -> dict[uuid.UUID, Scores]:
+    """For each gin: the average rating of its published reviews (the public
+    figure) and of its tastings (private), with counts. Two queries in all."""
+    if not gin_ids:
+        return {}
+    reviews = _averages(
+        db, Review.rating, Review.gin_id, gin_ids, Review.status == ReviewStatus.PUBLISHED
+    )
+    tastings = _averages(db, Tasting.rating, Tasting.gin_id, gin_ids)
+    scores: dict[uuid.UUID, Scores] = {}
+    for gid in gin_ids:
+        r_avg, r_n = reviews.get(gid, (None, 0))
+        t_avg, t_n = tastings.get(gid, (None, 0))
+        scores[gid] = {
+            "review_rating": r_avg,
+            "review_count": r_n,
+            "tasting_rating": t_avg,
+            "tasting_count": t_n,
+        }
+    return scores
+
+
 def gin_images(gin: GinProduct) -> list[MediaSummary]:
     """The gin's photos as MediaSummary, skipping any deleted image."""
     return [s for s in (media_summary(image.media) for image in gin.images) if s is not None]
 
 
-def gin_out(gin: GinProduct, counts: tuple[int, int] = (0, 0)) -> GinOut:
+def gin_out(
+    gin: GinProduct, counts: tuple[int, int] = (0, 0), scores: Scores | None = None
+) -> GinOut:
     out = GinOut.model_validate(gin)
     return out.model_copy(
         update={
             "bottles_in_cabinet": counts[0],
             "bottles_total": counts[1],
             "images": gin_images(gin),
+            **(scores or {}),
         }
     )
 
 
 def gin_out_with_counts(db: Session, gin: GinProduct) -> GinOut:
-    return gin_out(gin, bottle_counts(db, [gin.id]).get(gin.id, (0, 0)))
+    return gin_out(
+        gin,
+        bottle_counts(db, [gin.id]).get(gin.id, (0, 0)),
+        gin_scores(db, [gin.id]).get(gin.id),
+    )

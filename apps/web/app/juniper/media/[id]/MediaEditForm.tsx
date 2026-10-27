@@ -8,9 +8,11 @@ import ConfirmButton from "@/components/admin/ConfirmButton";
 import { ApiError } from "@/lib/api-client";
 import type { Media } from "@/lib/types";
 
-export default function MediaEditForm({ media }: { media: Media }) {
+export default function MediaEditForm({ media, folders }: { media: Media; folders: string[] }) {
   const router = useRouter();
   const { call, toast } = useAdmin();
+  const [name, setName] = useState(media.name ?? "");
+  const [folder, setFolder] = useState(media.folder ?? "");
   const [alt, setAlt] = useState(media.alt ?? "");
   const [decorative, setDecorative] = useState(media.decorative);
   const [credit, setCredit] = useState(media.credit ?? "");
@@ -25,6 +27,8 @@ export default function MediaEditForm({ media }: { media: Media }) {
     try {
       await call(`/admin/media/${media.id}`, "PATCH", {
         version: media.version,
+        name: name.trim() || null,
+        folder: folder.trim(),
         alt: alt.trim() || null,
         decorative,
         credit: credit.trim() || null,
@@ -57,6 +61,25 @@ export default function MediaEditForm({ media }: { media: Media }) {
   return (
     <form onSubmit={save}>
       <div role="alert">{error && <p className="alert alert-error">{error}</p>}</div>
+      <div className="field">
+        <label htmlFor="name">Name</label>
+        <input id="name" value={name} onChange={(event) => setName(event.target.value)} maxLength={160} aria-describedby="name-hint" />
+        <span id="name-hint" className="field-hint">
+          For finding it in the library, e.g. &quot;Hernö Navy Strength bottle&quot;. Not shown to visitors.
+        </span>
+      </div>
+      <div className="field">
+        <label htmlFor="folder">Folder</label>
+        <input id="folder" list="folder-options" value={folder} onChange={(event) => setFolder(event.target.value)} maxLength={300} aria-describedby="folder-hint" />
+        <datalist id="folder-options">
+          {folders.map((path) => (
+            <option key={path} value={path} />
+          ))}
+        </datalist>
+        <span id="folder-hint" className="field-hint">
+          Pick one or type a new one. Use / for a subfolder: Gins/Hernö. Leave empty for no folder.
+        </span>
+      </div>
       <div className="field">
         <label htmlFor="alt">Alt text</label>
         <textarea

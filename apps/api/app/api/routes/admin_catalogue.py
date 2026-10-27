@@ -24,6 +24,7 @@ from app.services.catalogue import (
     create_gin,
     gin_out,
     gin_out_with_counts,
+    gin_scores,
 )
 from app.services.common import (
     apply_patch,
@@ -172,8 +173,10 @@ def list_gins(
         .offset(paging.offset)
         .limit(paging.page_size)
     ).all()
-    counts = bottle_counts(db, [g.id for g in gins])
-    items = [gin_out(g, counts.get(g.id, (0, 0))) for g in gins]
+    ids = [g.id for g in gins]
+    counts = bottle_counts(db, ids)
+    scores = gin_scores(db, ids)
+    items = [gin_out(g, counts.get(g.id, (0, 0)), scores.get(g.id)) for g in gins]
     return Page[GinOut](items=items, meta=paging.meta(total))
 
 

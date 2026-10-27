@@ -125,6 +125,7 @@ input[type="radio"] {
 /* ---------- Forms ---------- */
 .field {
   display: grid;
+  min-width: 0; /* let long dropdowns shorten instead of widening the form */
   gap: var(--space-1);
   margin-bottom: var(--space-3); /* 12px form-row rhythm */
 }
@@ -208,6 +209,8 @@ input[type="radio"] {
 }
 .field select,
 .field textarea {
+  min-width: 0;
+  max-width: 100%;
   min-height: var(--touch-target);
   padding: var(--space-2) var(--space-3);
   border: 1px solid var(--color-border);
@@ -303,12 +306,15 @@ input[type="radio"] {
 .form-grid {
   display: grid;
   gap: 0 var(--space-4);
-  grid-template-columns: 1fr;
+  /* minmax(0, 1fr), not 1fr: a plain 1fr column can't shrink below its widest
+     content, so a dropdown with long option names pushed the other column out
+     of the card. */
+  grid-template-columns: minmax(0, 1fr);
   align-items: start; /* a hint under one field must not stretch its neighbour */
 }
 @media (min-width: 768px) {
   .form-grid {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .form-grid .span-2 {
     grid-column: span 2;
@@ -431,4 +437,35 @@ input[type="radio"] {
 .turnstile-box {
   min-height: 65px;
   margin: var(--space-3) 0 var(--space-4);
+}
+
+/* "Upload a new photo" inside forms (components/admin/PhotoUpload.tsx). */
+.photo-upload {
+  margin-top: var(--space-2);
+}
+.photo-upload > summary {
+  cursor: pointer;
+  color: var(--color-brass-600);
+  font-weight: 600;
+  width: fit-content;
+}
+.photo-upload > summary:hover,
+.photo-upload > summary:focus-visible {
+  text-decoration: underline;
+}
+.photo-upload[open] {
+  padding: var(--space-3);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+/* Ratings box on an admin gin page. */
+.rating-facts {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-2) var(--space-4);
+  margin: 0 0 var(--space-3);
+}
+.rating-facts dd {
+  margin: 0;
 }

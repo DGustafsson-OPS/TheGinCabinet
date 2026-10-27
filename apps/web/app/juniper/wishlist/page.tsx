@@ -78,7 +78,7 @@ export default async function WishlistPage({ searchParams }: { searchParams: Sea
                   <tr key={item.id}>
                     <td>{PRIORITY[item.priority]}</td>
                     <td>
-                      {item.gin ? <Link href={`/juniper/gins/${item.gin.id}`}>{item.text}</Link> : item.text}
+                      <Link href={`/juniper/wishlist/${item.id}`}>{item.text}</Link>
                     </td>
                     <td className="num">{formatMoney(item.target_price, item.currency)}</td>
                     <td>{item.notes ?? "–"}</td>

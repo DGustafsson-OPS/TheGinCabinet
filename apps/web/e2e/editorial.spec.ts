@@ -16,6 +16,7 @@ const TINY_PNG = Buffer.from(
 test("tasting → review → publish → withdraw", async ({ page, browser, baseURL }) => {
   const { api, csrf } = await signedInApi(baseURL!);
   const gin = await createGin(api, csrf, { brand: "Editorial", name: `Gin ${unique()}` });
+  const coverName = `cover ${unique()}`; // the file name becomes the image's name
   const altText = `Bottle photo ${unique()}`;
   const title = `A meadow in a glass ${unique()}`;
 
@@ -23,9 +24,10 @@ test("tasting → review → publish → withdraw", async ({ page, browser, base
 
   // 1. Upload a cover image and describe it.
   await gotoReady(page, "/juniper/media");
-  await page.locator("#upload-input").setInputFiles({ name: "cover.png", mimeType: "image/png", buffer: TINY_PNG });
+  await page.locator("#upload-input").setInputFiles({ name: `${coverName.replace(" ", "_")}.png`, mimeType: "image/png", buffer: TINY_PNG });
   await expect(toasts(page)).toContainText("1 image uploaded");
-  await page.getByRole("link", { name: /No alt text/ }).first().click();
+  // Other tests upload too, so open this one by its name.
+  await page.getByRole("link", { name: new RegExp(`^${coverName}.*No alt text`) }).click();
   await page.getByLabel("Alt text").fill(altText);
   await page.getByRole("button", { name: "Save", exact: true }).click();
   await expect(toasts(page)).toContainText("Saved.");
@@ -45,7 +47,7 @@ test("tasting → review → publish → withdraw", async ({ page, browser, base
   await expect(page.getByLabel("Nose")).toHaveValue("Meadowsweet and pine");
   await expect(page.getByLabel("Rating (0–10)")).toHaveValue("8.5");
   await page.getByLabel("Verdict").fill("Buy two bottles.");
-  await page.getByLabel("Cover image").selectOption({ label: altText });
+  await page.getByLabel("Cover image").selectOption({ label: `${coverName} — ${altText}` }); // name — description
   await page.getByRole("button", { name: "Save changes" }).click();
   await expect(toasts(page)).toContainText("Saved.");
 

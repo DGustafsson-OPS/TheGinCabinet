@@ -1,4 +1,4 @@
-// One purchase: its lines and totals (spec §5 A04).
+// One purchase: edit its details and line prices; its lines and totals (spec §5 A04).
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -6,6 +6,8 @@ import { notFound } from "next/navigation";
 import { formatDate, formatMoney } from "@/lib/format";
 import { adminNames, apiGet, requireAdmin } from "@/lib/server-api";
 import type { Purchase } from "@/lib/types";
+
+import PurchaseEditForm from "./PurchaseEditForm";
 
 export const metadata: Metadata = { title: "Purchase" };
 
@@ -31,18 +33,11 @@ export default async function PurchasePage({ params }: { params: Params }) {
         </h1>
       </div>
 
-      <div className="card" style={{ marginBottom: "var(--space-4)" }}>
-        <dl style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: "var(--space-2) var(--space-4)", margin: 0 }}>
-          <dt>Receipt / order</dt>
-          <dd style={{ margin: 0 }}>{purchase.reference ?? "–"}</dd>
-          <dt>Recorded by</dt>
-          <dd style={{ margin: 0 }}>
-            {(purchase.created_by_id && names.get(purchase.created_by_id)) ?? "–"}
-          </dd>
-          <dt>Notes</dt>
-          <dd style={{ margin: 0 }}>{purchase.notes ?? "–"}</dd>
-        </dl>
-      </div>
+      <p className="field-hint">
+        Recorded by {(purchase.created_by_id && names.get(purchase.created_by_id)) ?? "–"}.
+      </p>
+      {/* `key`: after each save the page reloads and the form starts fresh. */}
+      <PurchaseEditForm key={purchase.version} purchase={purchase} />
 
       <div className="table-wrap">
         <table className="table">

@@ -2,12 +2,12 @@
 // Add or edit a tonic. Without `tonic` it creates (POST), with it it edits
 // (PATCH, with the version check that protects against two people saving at once).
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import MediaImage from "@/components/MediaImage";
 import { errorMessage, useAdmin } from "@/components/admin/AdminProvider";
+import PhotoUpload from "@/components/admin/PhotoUpload";
 import { ApiError } from "@/lib/api-client";
 import { humanize } from "@/lib/format";
 import type { MediaOption } from "@/lib/media-options";
@@ -42,7 +42,10 @@ const toPayload = (v: Values) => ({
   public_visible: v.public_visible,
 });
 
-export default function TonicForm({ tonic, media }: { tonic?: Tonic; media: MediaOption[] }) {
+export default function TonicForm({ tonic, media: library }: { tonic?: Tonic; media: MediaOption[] }) {
+  // Photos uploaded from this form (PhotoUpload) join the library's list.
+  const [uploaded, setUploaded] = useState<MediaOption[]>([]);
+  const media = [...uploaded, ...library];
   const router = useRouter();
   const { call, toast } = useAdmin();
   const [values, setValues] = useState<Values>(() => toValues(tonic));
@@ -130,9 +133,12 @@ export default function TonicForm({ tonic, media }: { tonic?: Tonic; media: Medi
               </option>
             ))}
           </select>
-          <span className="field-hint">
-            Upload photos in the <Link href="/juniper/media">media library</Link>.
-          </span>
+          <PhotoUpload
+            onUploaded={(p) => {
+              setUploaded((list) => [p, ...list]);
+              setValues((v) => ({ ...v, image_media_id: p.id }));
+            }}
+          />
           {photo && <MediaImage media={{ ...photo, alt: "" }} sizes="160px" className="photo-thumb" />}
         </div>
         <div className="field">

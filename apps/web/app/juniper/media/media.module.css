@@ -75,3 +75,77 @@
     align-items: start;
   }
 }
+
+/* Library: folder list on the left, images on the right (stacked on phones). */
+.library {
+  display: grid;
+  gap: var(--space-5);
+}
+@media (min-width: 900px) {
+  .library {
+    grid-template-columns: 220px minmax(0, 1fr);
+    align-items: start;
+  }
+}
+.folders ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-1);
+}
+.folders a[aria-current="page"] {
+  font-weight: 700;
+  color: var(--color-charcoal);
+}
+.folderHead {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+.subfolders {
+  list-style: none;
+  padding: 0;
+  margin: var(--space-4) 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.subfolders a {
+  display: inline-block;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-white);
+}
+
+/* Selecting images for bulk changes. */
+.selectBar {
+  display: flex;
+  gap: var(--space-4);
+  align-items: center;
+  margin-bottom: var(--space-3);
+}
+.bulk {
+  margin-bottom: var(--space-4);
+}
+.tile,
+.tileSelected {
+  position: relative;
+}
+.tileSelected {
+  background: var(--color-white);
+  border: 2px solid var(--color-brass-600);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+.tick {
+  position: absolute;
+  top: var(--space-2);
+  left: var(--space-2);
+  width: 1.25rem;
+  height: 1.25rem;
+  z-index: 1;
+}

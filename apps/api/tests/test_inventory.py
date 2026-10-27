@@ -227,3 +227,67 @@ def test_wishlist_needs_gin_or_text(api):
     assert r.status_code == 201
     r = api.patch(f"{WISHLIST}/{r.json()['id']}", json={"version": 1, "status": "dropped"})
     assert r.json()["status"] == "dropped"
+
+
+def test_correct_a_purchase_and_its_line_prices(api):
+    gin = make_gin(api)
+    purchase = buy(
+        api,
+        [
+            {"gin_id": gin["id"], "size_ml": 700, "quantity": 2, "unit_price": "349.00"},
+            {"gin_id": gin["id"], "size_ml": 50},  # a gift
+        ],
+    )
+    paid, gift = purchase["lines"]
+
+    r = api.patch(
+        f"{PURCHASES}/{purchase['id']}",
+        json={
+            "version": purchase["version"],
+            "retailer": "Alko",
+            "line_prices": [
+                {"id": paid["id"], "unit_price": "359.90"},  # a typo fixed
+                {"id": gift["id"], "unit_price": "12.00"},  # not a gift after all
+            ],
+        },
+    )
+    assert r.status_code == 200, r.text
+    fixed = r.json()
+    assert fixed["retailer"] == "Alko"
+    assert fixed["total"] == "731.80"  # 2 × 359.90 + 12.00
+    assert fixed["bottles_without_price"] == 0
+    # The gin, size and number of bottles are unchanged.
+    assert [(line["size_ml"], line["quantity"]) for line in fixed["lines"]] == [(700, 2), (50, 1)]
+    sources = sorted(b["source"] for b in bottles_of(api, gin["id"]))
+    assert sources == ["purchase", "purchase", "purchase"]  # the former gift follows
+
+    # A line from another purchase is refused.
+    other = buy(api, [{"gin_id": gin["id"], "size_ml": 500, "unit_price": "10"}])
+    r = api.patch(
+        f"{PURCHASES}/{purchase['id']}",
+        json={
+            "version": fixed["version"],
+            "line_prices": [{"id": other["lines"][0]["id"], "unit_price": "1.00"}],
+        },
+    )
+    assert r.json()["error"]["code"] == "unknown_line"
+
+
+def test_edit_a_wishlist_item_and_bring_back_a_dropped_one(api):
+    item = api.post(WISHLIST, json={"text": "Ki No Bi", "priority": 3}).json()
+    assert api.get(f"{WISHLIST}/{item['id']}").json()["text"] == "Ki No Bi"
+
+    r = api.patch(
+        f"{WISHLIST}/{item['id']}",
+        json={"version": item["version"], "text": "Ki No Bi Kyoto Dry", "priority": 1},
+    )
+    item = r.json()
+    assert (item["text"], item["priority"]) == ("Ki No Bi Kyoto Dry", 1)
+
+    item = api.patch(
+        f"{WISHLIST}/{item['id']}", json={"version": item["version"], "status": "dropped"}
+    ).json()
+    item = api.patch(
+        f"{WISHLIST}/{item['id']}", json={"version": item["version"], "status": "wanted"}
+    ).json()
+    assert item["status"] == "wanted"

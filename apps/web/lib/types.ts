@@ -103,6 +103,12 @@ export type Gin = GinSummary & {
   images: MediaSummary[];
   bottles_in_cabinet: number;
   bottles_total: number;
+  /** Average of the published reviews (the public figure), out of 10. */
+  review_rating: string | null;
+  review_count: number;
+  /** Average of the private tastings, out of 10. */
+  tasting_rating: string | null;
+  tasting_count: number;
   version: number;
   created_at: string;
   updated_at: string;
@@ -197,6 +203,10 @@ export type Media = {
   id: string;
   url: string;
   original_filename: string | null;
+  /** A readable name for the library, e.g. "Hernö Navy Strength bottle". */
+  name: string | null;
+  /** Where it's filed, e.g. "Gins/Hernö" ("/" separates subfolders); null = not filed. */
+  folder: string | null;
   mime: string;
   width: number;
   height: number;
@@ -210,6 +220,10 @@ export type Media = {
   created_at: string;
   used_by: string[];
 };
+
+export type MediaFolder = { path: string; count: number };
+
+export type MediaBulkResult = { changed: number; skipped: { id: string; name: string | null; reason: string }[] };
 
 export type MediaSummary = { id: string; url: string; alt: string | null; width: number; height: number };
 

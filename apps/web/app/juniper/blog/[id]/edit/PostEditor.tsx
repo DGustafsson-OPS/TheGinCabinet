@@ -23,6 +23,7 @@ import ConflictPanel from "@/components/admin/ConflictPanel";
 import PostStatusBadge from "@/components/admin/PostStatusBadge";
 import Tabs from "@/components/admin/Tabs";
 import UnsavedChangesGuard from "@/components/admin/UnsavedChangesGuard";
+import PhotoUpload from "@/components/admin/PhotoUpload";
 import { ApiError } from "@/lib/api-client";
 import { clearLocalCopy, parseLocalCopy, readLocalCopyRaw, writeLocalCopy } from "@/lib/local-copy";
 import type { MediaOption } from "@/lib/media-options";
@@ -86,7 +87,10 @@ type Props = {
   refs: RefOptions;
 };
 
-export default function PostEditor({ post, categories, authors, media, refs }: Props) {
+export default function PostEditor({ post, categories, authors, media: library, refs }: Props) {
+  // Photos uploaded from this form (PhotoUpload) join the library's list.
+  const [uploaded, setUploaded] = useState<MediaOption[]>([]);
+  const media = [...uploaded, ...library];
   const router = useRouter();
   const idPrefix = useId();
   const counter = useRef(0);
@@ -300,6 +304,12 @@ export default function PostEditor({ post, categories, authors, media, refs }: P
         <span id={id(`${field}-hint`)} className="field-hint">
           {hint}
         </span>
+        <PhotoUpload
+          onUploaded={(p) => {
+            setUploaded((list) => [p, ...list]);
+            setFields((f) => ({ ...f, [field]: p.id }));
+          }}
+        />
         {chosen && <MediaImage media={{ ...chosen, alt: "" }} sizes="320px" className="cover-preview" />}
       </div>
     );
@@ -513,7 +523,7 @@ export default function PostEditor({ post, categories, authors, media, refs }: P
               id: "body",
               label: "Article",
               content: (
-                <BlockEditor idPrefix={idPrefix} blocks={blocks} onChange={setBlocks} newKey={newKey} media={media} refs={refs} />
+                <BlockEditor idPrefix={idPrefix} blocks={blocks} onChange={setBlocks} newKey={newKey} media={media} refs={refs} onPhotoUploaded={(p) => setUploaded((list) => [p, ...list])} />
               ),
             },
             {

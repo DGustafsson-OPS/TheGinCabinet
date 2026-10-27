@@ -81,12 +81,12 @@ test("record a purchase with a gift line, then follow a bottle through its life"
   await page.getByRole("button", { name: "Add another line" }).click();
   await page.getByLabel("Gin (line 2)").selectOption(gin.id);
   await page.getByLabel("Size (ml) on line 2").fill("50");
-  await expect(page.getByText("3 bottles · SEK 599.00")).toBeVisible(); // running total
+  await expect(page.getByText("3 bottles · €599.00")).toBeVisible(); // running total
   await page.getByRole("button", { name: "Save purchase" }).click();
 
   // The purchase page shows the total, with the gift excluded.
   await expect(page.getByRole("heading", { level: 1, name: /E2E Bottle Shop/ })).toBeVisible();
-  await expect(page.locator("tfoot")).toContainText("SEK 599.00");
+  await expect(page.locator("tfoot")).toContainText("€599.00");
   await expect(page.getByText("1 bottle has no price")).toBeVisible();
 
   // The gin now has 3 bottles; open the first 700 ml one.
