@@ -191,7 +191,7 @@ password manager. Leave **"Make it publicly available"** off.
      right file permissions for the image's non-root user).
    * Environment: the API variables from [§4](#api-application).
    * Deploy. Watch the log: you'll see the migrations
-     (`Running upgrade … -> 0007`) and then `Uvicorn running`. It turns
+     (`Running upgrade … -> 0011`, the latest migration) and then `Uvicorn running`. It turns
      healthy once `/health` reports the database is reachable.
 7. **Web application:** add a second application from the same repository.
    * Build pack: **Dockerfile**; base directory `/apps/web`.
