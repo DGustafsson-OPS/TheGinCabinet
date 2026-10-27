@@ -117,7 +117,7 @@ Progress against the delivery phases in
 | Edit someone else's account | Display name (no password), email, role, access (your password). Audited, and the person sees a notice. Accounts in use are switched off, never deleted |
 | Page texts | Admin → Page texts: home intro/eyebrow/empty state, About intro/body/contact, contact page intro, footer. Defaults in `services/page_texts.py`; simple formatting (`##`, lists, `**bold**`, links), rendered safely by `FormattedText`. The old "About page text" setting moved here |
 | Contact form + Cloudflare Turnstile | `/contact`, verified server-side, 5/hour per IP (hashed), honeypot field, Admin → Messages (admins only), deleted after a year. Off unless both Turnstile keys are set |
-| Links not underlined | Underline only on hover/focus; links inside text are semi-bold so they don't rely on colour alone (WCAG 1.4.1) |
+| Links not underlined | Never underlined, not even on hover; links inside text are semi-bold so they don't rely on colour alone (WCAG 1.4.1), and keyboard focus shows the focus ring |
 | Edit everything | Distilleries (`/juniper/distilleries/{id}`), purchases (date, shop, currency, reference, notes and each line's price; gin/size/quantity stay fixed because they created bottles), wishlist items (a dropped one can be put back). Tastings stay editable by their author only |
 | Photos and gins added in place | "Upload a new photo…" in the gin, tonic, review, cocktail, Journal and logo forms; "Add a new gin…" in the purchase form (brand, name, ABV; the rest later) |
 | Ratings in admin | Gin list and gin page show the average published review rating and our tasting average, with shortcuts to rate |

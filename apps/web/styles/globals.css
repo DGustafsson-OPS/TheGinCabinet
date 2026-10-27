@@ -27,19 +27,15 @@ h3 {
   margin: 0 0 var(--space-4);
 }
 
-/* Links are not underlined. So they still stand out without relying on
-   colour alone (WCAG 1.4.1), links inside running text are semi-bold, and
-   every link shows an underline while hovered or focused with the keyboard. */
+/* Links are never underlined, not even on hover. So they still stand out
+   without relying on colour alone (WCAG 1.4.1), links inside running text
+   are semi-bold. Keyboard users see the focus ring (:focus-visible below). */
 a {
   color: var(--color-brass-600);
   text-decoration: none;
 }
 :where(p, li, dd, td, blockquote, figcaption, label, .field-hint) > a {
   font-weight: 600;
-}
-a:not(.button):hover,
-a:not(.button):focus-visible {
-  text-decoration: underline;
 }
 
 img {
@@ -387,10 +383,6 @@ input[type="radio"] {
   text-decoration: none;
   cursor: pointer;
 }
-.link-button:hover:not(:disabled),
-.link-button:focus-visible {
-  text-decoration: underline;
-}
 .link-button:disabled {
   color: var(--color-muted);
   cursor: default;
@@ -448,10 +440,6 @@ input[type="radio"] {
   color: var(--color-brass-600);
   font-weight: 600;
   width: fit-content;
-}
-.photo-upload > summary:hover,
-.photo-upload > summary:focus-visible {
-  text-decoration: underline;
 }
 .photo-upload[open] {
   padding: var(--space-3);

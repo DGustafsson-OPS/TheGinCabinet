@@ -59,7 +59,7 @@ test("tasting → review → publish → withdraw", async ({ page, browser, base
 
   // 4. Ready → Publish is refused while the gin is private, with reasons.
   await page.getByRole("button", { name: "Mark ready" }).click();
-  await expect(page.getByText("Ready to publish")).toBeVisible();
+  await expect(page.getByText("Ready to publish", { exact: true })).toBeVisible(); // the badge, not the "Marked ready…" toast
   await page.getByRole("button", { name: "Publish" }).click();
   await page.getByRole("dialog").getByRole("button", { name: "Publish now" }).click();
   await expect(page.getByText("Not ready to publish yet")).toBeVisible();
