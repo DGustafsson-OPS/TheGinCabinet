@@ -3,7 +3,7 @@
 import Link from "next/link";
 
 import MediaImage from "@/components/MediaImage";
-import { humanize } from "@/lib/format";
+import { formatStrength, humanize } from "@/lib/format";
 import type { PublicGinCard } from "@/lib/types";
 
 import styles from "./GinCard.module.css";
@@ -31,7 +31,7 @@ export default function GinCard({ gin }: { gin: PublicGinCard }) {
           </Link>
         </h3>
         <p className={styles.meta}>
-          {[gin.country, humanize(gin.style), `${gin.abv} %`].filter(Boolean).join(" · ")}
+          {[gin.country, humanize(gin.style), formatStrength(gin.abv)].filter(Boolean).join(" · ")}
         </p>
         {gin.rating && (
           <p className={styles.rating}>

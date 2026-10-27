@@ -49,8 +49,8 @@ export default async function CollectionPage({ searchParams }: { searchParams: S
     style: (v) => humanize(v),
     country: (v) => v,
     botanical: (v) => `With ${v}`,
-    abv_min: (v) => `From ${v} %`,
-    abv_max: (v) => `Up to ${v} %`,
+    abv_min: (v) => `Alcohol from ${v} % vol`,
+    abv_max: (v) => `Alcohol up to ${v} % vol`,
     min_rating: (v) => `Rated ${v}+`,
   };
 
@@ -104,11 +104,11 @@ export default async function CollectionPage({ searchParams }: { searchParams: S
             </select>
           </div>
           <div className="field">
-            <label htmlFor="abv_min">ABV from (%)</label>
+            <label htmlFor="abv_min">Alcohol from (% vol)</label>
             <input id="abv_min" name="abv_min" type="number" min={0} max={100} step="0.1" defaultValue={filters.abv_min} />
           </div>
           <div className="field">
-            <label htmlFor="abv_max">ABV up to (%)</label>
+            <label htmlFor="abv_max">Alcohol up to (% vol)</label>
             <input id="abv_max" name="abv_max" type="number" min={0} max={100} step="0.1" defaultValue={filters.abv_max} />
           </div>
           <div className="field">

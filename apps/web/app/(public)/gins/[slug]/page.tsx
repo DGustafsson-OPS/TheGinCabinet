@@ -1,5 +1,5 @@
 // P03 Gin detail (spec §4): photos with thumbnails, name, distillery,
-// country, ABV, botanicals, collection status, reviews, cocktails, related gins.
+// country, alcohol content, botanicals, collection status, reviews, cocktails, related gins.
 // Private gins are a 404; prices and bottle counts are never shown.
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -7,7 +7,7 @@ import { notFound } from "next/navigation";
 
 import GinGrid from "@/components/GinGrid";
 import MediaImage from "@/components/MediaImage";
-import { formatDate, humanize, param } from "@/lib/format";
+import { formatDate, formatStrength, humanize, param } from "@/lib/format";
 import { SITE_URL, publicGet } from "@/lib/public-api";
 import type { PublicGin } from "@/lib/types";
 
@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   if (!gin) return { title: "Gin not found" };
   const description =
     gin.description?.slice(0, 160) ??
-    `${gin.display_name}: a ${humanize(gin.style).toLowerCase()} gin${gin.country ? ` from ${gin.country}` : ""}, ${gin.abv} % ABV.`;
+    `${gin.display_name}: a ${humanize(gin.style).toLowerCase()} gin${gin.country ? ` from ${gin.country}` : ""}, ${formatStrength(gin.abv)}.`;
   return {
     title: gin.display_name,
     description,
@@ -116,7 +116,7 @@ export default async function GinPage({ params, searchParams }: { params: Params
               <strong>Style</strong> {humanize(gin.style)}
             </li>
             <li>
-              <strong>Strength</strong> {gin.abv} % ABV
+              <strong>Alcohol</strong> {formatStrength(gin.abv)}
             </li>
             {gin.rating && (
               <li>

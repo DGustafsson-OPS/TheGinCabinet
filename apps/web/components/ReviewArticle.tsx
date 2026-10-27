@@ -7,7 +7,7 @@
 import Link from "next/link";
 
 import MediaImage from "@/components/MediaImage";
-import { formatDate } from "@/lib/format";
+import { formatDate, formatStrength } from "@/lib/format";
 import type { MediaSummary } from "@/lib/types";
 
 import styles from "./ReviewArticle.module.css";
@@ -75,7 +75,7 @@ export default function ReviewArticle({ review }: { review: ReviewArticleData })
         <p className={styles.eyebrow}>
           Review · {review.gin.display_name}
           {review.gin.country && ` · ${review.gin.country}`}
-          {review.gin.abv && ` · ${review.gin.abv} %`}
+          {review.gin.abv && ` · ${formatStrength(review.gin.abv)}`}
         </p>
         <h1 className={styles.title}>{review.title}</h1>
         <p className={styles.byline}>
