@@ -6,7 +6,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy import func, or_, select
 
-from app.api.deps import CurrentAdmin, CurrentAdminWrite, DbSession
+from app.api.deps import CurrentAdminWrite, CurrentStaff, DbSession
 from app.models import Botanical, Distillery, GinProduct, GinStyle
 from app.schemas.catalogue import (
     DistilleryIn,
@@ -55,7 +55,7 @@ def _distillery_out(db: DbSession, distillery: Distillery) -> DistilleryOut:
 
 @router.get("/distilleries", response_model=Page[DistilleryOut])
 def list_distilleries(
-    admin: CurrentAdmin,
+    admin: CurrentStaff,
     db: DbSession,
     paging: Annotated[PageParams, Depends()],
     search: str | None = None,
@@ -97,7 +97,7 @@ def create_distillery(body: DistilleryIn, admin: CurrentAdminWrite, db: DbSessio
 
 
 @router.get("/distilleries/{distillery_id}", response_model=DistilleryOut)
-def get_distillery(distillery_id: uuid.UUID, admin: CurrentAdmin, db: DbSession):
+def get_distillery(distillery_id: uuid.UUID, admin: CurrentStaff, db: DbSession):
     return _distillery_out(db, get_or_404(db, Distillery, distillery_id, "Distillery"))
 
 
@@ -140,7 +140,7 @@ def update_distillery(
 
 @router.get("/gins", response_model=Page[GinOut])
 def list_gins(
-    admin: CurrentAdmin,
+    admin: CurrentStaff,
     db: DbSession,
     paging: Annotated[PageParams, Depends()],
     search: str | None = None,
@@ -194,7 +194,7 @@ def create_gin_route(body: GinIn, admin: CurrentAdminWrite, db: DbSession):
 
 
 @router.get("/gins/{gin_id}", response_model=GinOut)
-def get_gin(gin_id: uuid.UUID, admin: CurrentAdmin, db: DbSession):
+def get_gin(gin_id: uuid.UUID, admin: CurrentStaff, db: DbSession):
     return gin_out_with_counts(db, get_or_404(db, GinProduct, gin_id, "Gin"))
 
 
@@ -227,6 +227,6 @@ def update_gin(
 
 
 @router.get("/botanicals", response_model=list[str])
-def list_botanicals(admin: CurrentAdmin, db: DbSession):
+def list_botanicals(admin: CurrentStaff, db: DbSession):
     """All known botanical names, for autocomplete in the gin form."""
     return db.scalars(select(Botanical.name).order_by(Botanical.name)).all()

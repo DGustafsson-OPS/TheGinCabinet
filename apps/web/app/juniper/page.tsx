@@ -7,8 +7,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { describeEvent } from "@/lib/audit";
-import { apiGet, requireAdmin } from "@/lib/server-api";
-import type { Dashboard, InventoryValue } from "@/lib/types";
+import { apiGet, requireStaff } from "@/lib/server-api";
+import type { Dashboard, InventoryValue, Role } from "@/lib/types";
 
 import styles from "./dashboard.module.css";
 
@@ -30,21 +30,56 @@ function formatWhen(iso: string): string {
 
 // Shortcuts to the things added most often. Each is a plain link to the
 // page that already does the job, so there is nothing new to keep in sync.
+// `editors: true` = shown to editors too.
 const QUICK_ACTIONS = [
   { href: "/juniper/gins/new", label: "Add gin" },
   { href: "/juniper/purchases/new", label: "Record purchase" },
   { href: "/juniper/bottles/new", label: "Add bottle" },
-  { href: "/juniper/tastings/new", label: "New tasting" },
-  { href: "/juniper/reviews/new", label: "New review" },
-  { href: "/juniper/cocktails/new", label: "New cocktail" },
-  { href: "/juniper/blog/new", label: "New article" },
-  { href: "/juniper/tonics/new", label: "Add tonic" },
-  { href: "/juniper/media", label: "Upload photos" },
+  { href: "/juniper/tastings/new", label: "New tasting", editors: true },
+  { href: "/juniper/reviews/new", label: "New review", editors: true },
+  { href: "/juniper/cocktails/new", label: "New cocktail", editors: true },
+  { href: "/juniper/blog/new", label: "New article", editors: true },
+  { href: "/juniper/tonics/new", label: "Add tonic", editors: true },
+  { href: "/juniper/media", label: "Upload photos", editors: true },
 ];
 
+function QuickActions({ role }: { role: Role }) {
+  return (
+    <nav aria-labelledby="quick-title" className={styles.quick}>
+      <h2 id="quick-title" className="visually-hidden">
+        Quick actions
+      </h2>
+      <ul>
+        {QUICK_ACTIONS.filter((action) => role === "admin" || action.editors).map((action) => (
+          <li key={action.href}>
+            <Link href={action.href} className="button button-secondary">
+              {action.label}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  );
+}
+
 export default async function DashboardPage() {
-  const session = await requireAdmin();
-  const { data } = await apiGet<Dashboard>("/admin/dashboard");
+  const session = await requireStaff();
+  if (session.user.role !== "admin") {
+    // Editors: content shortcuts only. Inventory figures are for admins.
+    return (
+      <>
+        <header className={styles.header}>
+          <h1>Dashboard</h1>
+          <p className={styles.welcome}>Welcome back, {session.user.display_name}.</p>
+        </header>
+        <QuickActions role="editor" />
+      </>
+    );
+  }
+  const [{ data }, { data: inbox }] = await Promise.all([
+    apiGet<Dashboard>("/admin/dashboard"),
+    apiGet<{ unread: number }>("/admin/messages/unread-count"),
+  ]);
 
   return (
     <>
@@ -53,20 +88,14 @@ export default async function DashboardPage() {
         <p className={styles.welcome}>Welcome back, {session.user.display_name}.</p>
       </header>
 
-      <nav aria-labelledby="quick-title" className={styles.quick}>
-        <h2 id="quick-title" className="visually-hidden">
-          Quick actions
-        </h2>
-        <ul>
-          {QUICK_ACTIONS.map((action) => (
-            <li key={action.href}>
-              <Link href={action.href} className="button button-secondary">
-                {action.label}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </nav>
+      <QuickActions role="admin" />
+      {inbox && inbox.unread > 0 && (
+        <p className="alert alert-info">
+          <Link href="/juniper/messages">
+            {inbox.unread} new message{inbox.unread === 1 ? "" : "s"} from the contact form
+          </Link>
+        </p>
+      )}
 
       {!data ? (
         <p className="alert alert-error" role="alert">

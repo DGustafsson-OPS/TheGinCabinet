@@ -6,11 +6,15 @@ export type ApiErrorBody = {
   error: { code: string; message: string; details: unknown };
 };
 
+/** "admin": everything. "editor": content only (see apps/api/app/models/user.py). */
+export type Role = "admin" | "editor";
+
 export type User = {
   id: string;
   username: string;
   display_name: string;
   email: string;
+  role: Role;
 };
 
 export type Session = {
@@ -533,18 +537,47 @@ export type SiteSettings = {
   logo_media_id: string | null;
   logo: MediaSummary | null;
   default_gin_public: boolean;
-  about_text: string | null;
   version: number;
   updated_at: string;
 };
 
-export type PublicSite = Omit<SiteSettings, "logo_media_id" | "default_gin_public" | "version" | "updated_at">;
+export type PublicSite = Omit<SiteSettings, "logo_media_id" | "default_gin_public" | "version" | "updated_at"> & {
+  /** The editable page texts (Admin → Page texts), defaults filled in. */
+  texts: Record<string, string>;
+  /** The contact form is switched on (Cloudflare Turnstile keys set). */
+  contact_form: boolean;
+};
+
+export type PageText = {
+  key: string;
+  page: string;
+  label: string;
+  hint: string;
+  formatted: boolean;
+  max_length: number;
+  default: string;
+  value: string;
+  customised: boolean;
+  version: number;
+  updated_at: string | null;
+  updated_by: string | null;
+};
+
+export type ContactMessage = {
+  id: string;
+  name: string;
+  email: string;
+  message: string;
+  created_at: string;
+  read_at: string | null;
+};
 
 export type Profile = {
   id: string;
   username: string;
   email: string;
   display_name: string;
+  role: Role;
   last_login_at: string | null;
   recovery_codes_left: number;
   mfa_setup_pending: boolean;
@@ -556,10 +589,17 @@ export type AdminAccount = {
   username: string;
   display_name: string;
   email: string;
+  role: Role;
   enabled: boolean;
   last_login_at: string | null;
+  invite_pending: boolean;
+  invite_expires_at: string | null;
   is_you: boolean;
 };
+
+export type InviteOut = { account: AdminAccount; invite_path: string; expires_at: string };
+
+export type InviteInfo = { username: string; display_name: string; role: Role; expires_at: string };
 
 export type ConsentStats = {
   days: number;

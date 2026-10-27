@@ -2,6 +2,7 @@
 // Website settings (spec A10): public branding, metadata, contact details and
 // the default visibility of new gins.
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -13,7 +14,7 @@ import type { SiteSettings } from "@/lib/types";
 
 type Values = {
   site_name: string; tagline: string; meta_description: string; contact_email: string;
-  logo_media_id: string; default_gin_public: boolean; about_text: string;
+  logo_media_id: string; default_gin_public: boolean;
 };
 
 const toValues = (s: SiteSettings): Values => ({
@@ -23,7 +24,6 @@ const toValues = (s: SiteSettings): Values => ({
   contact_email: s.contact_email ?? "",
   logo_media_id: s.logo_media_id ?? "",
   default_gin_public: s.default_gin_public,
-  about_text: s.about_text ?? "",
 });
 
 export default function SiteSettingsForm({ settings, media }: { settings: SiteSettings; media: MediaOption[] }) {
@@ -55,7 +55,6 @@ export default function SiteSettingsForm({ settings, media }: { settings: SiteSe
         contact_email: text(values.contact_email),
         logo_media_id: values.logo_media_id || null,
         default_gin_public: values.default_gin_public,
-        about_text: text(values.about_text),
       });
       toast("Website settings saved.");
       router.refresh(); // the page reloads; `key` then starts this form fresh
@@ -107,13 +106,9 @@ export default function SiteSettingsForm({ settings, media }: { settings: SiteSe
           </select>
           {logo && <MediaImage media={{ ...logo, alt: "" }} sizes="160px" className="photo-thumb" />}
         </div>
-        <div className="field span-2">
-          <label htmlFor="about_text">About page text</label>
-          <textarea id="about_text" value={values.about_text} onChange={set("about_text")} rows={6} aria-describedby="about-hint" />
-          <span id="about-hint" className="field-hint">
-            Shown at the top of the About page. Separate paragraphs with an empty line.
-          </span>
-        </div>
+        <p className="field-hint span-2">
+          The wording on the home and About pages is edited under <Link href="/juniper/pages">Page texts</Link>.
+        </p>
         <div className="field-checkbox span-2">
           <input id="default_gin_public" type="checkbox" checked={values.default_gin_public} onChange={set("default_gin_public")} />
           <label htmlFor="default_gin_public">New gins are public by default</label>

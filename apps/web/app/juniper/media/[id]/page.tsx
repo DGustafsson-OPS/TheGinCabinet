@@ -5,7 +5,7 @@ import { notFound } from "next/navigation";
 
 import MediaImage from "@/components/MediaImage";
 import { formatDateTime } from "@/lib/format";
-import { adminNames, apiGet, requireAdmin } from "@/lib/server-api";
+import { adminNames, apiGet, requireStaff } from "@/lib/server-api";
 import type { Media } from "@/lib/types";
 
 import MediaEditForm from "./MediaEditForm";
@@ -16,7 +16,7 @@ export const metadata: Metadata = { title: "Image" };
 type Params = Promise<{ id: string }>;
 
 export default async function MediaItemPage({ params }: { params: Params }) {
-  await requireAdmin();
+  await requireStaff();
   const { id } = await params;
   const [{ data: media }, names] = await Promise.all([apiGet<Media>(`/admin/media/${id}`), adminNames()]);
   if (!media) notFound();

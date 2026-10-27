@@ -5,7 +5,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { mediaOptions } from "@/lib/media-options";
-import { apiGet, requireAdmin } from "@/lib/server-api";
+import { apiGet, requireStaff } from "@/lib/server-api";
 import type { AdminName, Category, Cocktail, Gin, Media, Page, Post, Review } from "@/lib/types";
 
 import type { RefOptions } from "./BlockEditor";
@@ -16,7 +16,7 @@ export const metadata: Metadata = { title: "Edit article" };
 type Params = Promise<{ id: string }>;
 
 export default async function EditPostPage({ params }: { params: Params }) {
-  await requireAdmin();
+  await requireStaff();
   const { id } = await params;
   const [post, categories, authors, media, gins, reviews, cocktails, posts] = await Promise.all([
     apiGet<Post>(`/admin/blog/${id}`),

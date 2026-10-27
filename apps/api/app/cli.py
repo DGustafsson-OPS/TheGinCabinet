@@ -23,12 +23,10 @@ from sqlalchemy import func, select
 
 from app.config import get_settings
 from app.db import SessionLocal
-from app.models import RecoveryCode, User
+from app.models import MAX_ADMINS, RecoveryCode, User, UserRole
 from app.security import crypto, mfa
 from app.security.passwords import hash_password, password_problems
 from app.services import audit, sessions
-
-MAX_ADMINS = 2  # spec §1: "Two distinct users with equal privileges"
 
 
 def _prompt_password(username: str) -> str:
@@ -76,9 +74,13 @@ def _get_user(db, username: str) -> User:
 
 def create_admin(args: argparse.Namespace) -> None:
     with SessionLocal() as db:
-        count = db.scalar(select(func.count()).select_from(User)) or 0
-        if count >= MAX_ADMINS:
-            sys.exit(f"There are already {MAX_ADMINS} admins; V1 allows no more.")
+        admins = db.scalar(
+            select(func.count()).select_from(User).where(User.role == UserRole.ADMIN)
+        )
+        if (admins or 0) >= MAX_ADMINS:
+            sys.exit(
+                f"There are already {MAX_ADMINS} admins. Editors are invited from the website."
+            )
         username = args.username.strip().lower()
         if db.scalar(select(User).where(User.username == username)):
             sys.exit(f"Username {username!r} is taken.")
@@ -90,6 +92,7 @@ def create_admin(args: argparse.Namespace) -> None:
             email=args.email.strip().lower(),
             display_name=args.display_name.strip(),
             password_hash=hash_password(_prompt_password(username)),
+            role=UserRole.ADMIN,
         )
         db.add(user)
         db.flush()  # sends the INSERT now, so user.id is available below

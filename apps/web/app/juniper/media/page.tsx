@@ -6,7 +6,7 @@ import MediaImage from "@/components/MediaImage";
 import Pagination from "@/components/admin/Pagination";
 import SearchBox from "@/components/admin/SearchBox";
 import { param } from "@/lib/format";
-import { apiGet, requireAdmin } from "@/lib/server-api";
+import { apiGet, requireStaff } from "@/lib/server-api";
 import type { Media, Page } from "@/lib/types";
 
 import UploadDropzone from "./UploadDropzone";
@@ -17,7 +17,7 @@ export const metadata: Metadata = { title: "Media" };
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
 export default async function MediaPage({ searchParams }: { searchParams: SearchParams }) {
-  await requireAdmin();
+  await requireStaff();
   const raw = await searchParams;
   const search = param(raw.search);
   const query = new URLSearchParams({ page: param(raw.page) ?? "1", page_size: "24" });

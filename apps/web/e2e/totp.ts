@@ -64,3 +64,8 @@ export async function freshCode(secret: string): Promise<string> {
   writeFileSync(stateFile(secret), String(step));
   return totp(secret, step * PERIOD_MS);
 }
+
+/** Record that the current code was just used (e.g. typed while setting up an account). */
+export function markUsed(secret: string): void {
+  writeFileSync(stateFile(secret), String(Math.floor(Date.now() / PERIOD_MS)));
+}

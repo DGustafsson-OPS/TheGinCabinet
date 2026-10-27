@@ -6,7 +6,7 @@ import FilterSelect from "@/components/admin/FilterSelect";
 import Pagination from "@/components/admin/Pagination";
 import SearchBox from "@/components/admin/SearchBox";
 import { formatDateTime, humanize, param } from "@/lib/format";
-import { apiGet, requireAdmin } from "@/lib/server-api";
+import { apiGet, requireStaff } from "@/lib/server-api";
 import type { Cocktail, Page } from "@/lib/types";
 
 export const metadata: Metadata = { title: "Cocktails" };
@@ -14,7 +14,7 @@ export const metadata: Metadata = { title: "Cocktails" };
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
 export default async function CocktailsPage({ searchParams }: { searchParams: SearchParams }) {
-  await requireAdmin();
+  await requireStaff();
   const raw = await searchParams;
   const filters = { search: param(raw.search), status: param(raw.status) };
   const query = new URLSearchParams({ page: param(raw.page) ?? "1", page_size: "25" });

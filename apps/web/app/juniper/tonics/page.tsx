@@ -7,7 +7,7 @@ import FilterSelect from "@/components/admin/FilterSelect";
 import Pagination from "@/components/admin/Pagination";
 import SearchBox from "@/components/admin/SearchBox";
 import { humanize, param } from "@/lib/format";
-import { apiGet, requireAdmin } from "@/lib/server-api";
+import { apiGet, requireStaff } from "@/lib/server-api";
 import { type Page, TONIC_STYLES, type Tonic } from "@/lib/types";
 
 export const metadata: Metadata = { title: "Tonics" };
@@ -15,7 +15,7 @@ export const metadata: Metadata = { title: "Tonics" };
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
 export default async function TonicsPage({ searchParams }: { searchParams: SearchParams }) {
-  await requireAdmin();
+  await requireStaff();
   const raw = await searchParams;
   const filters = { search: param(raw.search), style: param(raw.style) };
   const query = new URLSearchParams({ page: param(raw.page) ?? "1", page_size: "25" });

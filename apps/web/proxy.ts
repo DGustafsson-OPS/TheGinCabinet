@@ -12,6 +12,7 @@ export function proxy(request: NextRequest) {
     nonce,
     dev: process.env.NODE_ENV === "development",
     analytics: gaMeasurementId() !== null,
+    turnstile: Boolean(process.env.TURNSTILE_SITE_KEY?.trim()),
   });
 
   // Next.js reads the nonce from the *request's* CSP header while rendering,

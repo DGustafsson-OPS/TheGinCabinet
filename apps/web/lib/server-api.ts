@@ -44,13 +44,29 @@ export const getSession = cache(async (): Promise<Session> => {
   );
 });
 
-/** Use at the top of every admin page: sends visitors who aren't signed in to /login. */
-export async function requireAdmin(): Promise<Session & { user: NonNullable<Session["user"]> }> {
+type SignedIn = Session & { user: NonNullable<Session["user"]> };
+
+/**
+ * For pages editors may use too (content: Journal, reviews, cocktails…).
+ * Sends visitors who aren't signed in to /login.
+ */
+export async function requireStaff(): Promise<SignedIn> {
   const session = await getSession();
   if (!session.authenticated || !session.user) {
     redirect("/login");
   }
-  return session as Session & { user: NonNullable<Session["user"]> };
+  return session as SignedIn;
+}
+
+/**
+ * The default for every admin-area page: admins only. Editors are sent to a
+ * page explaining that it's for admins. (The API checks the same thing on
+ * every request, so this is about a clear page, not the only lock.)
+ */
+export async function requireAdmin(): Promise<SignedIn> {
+  const session = await requireStaff();
+  if (session.user.role !== "admin") redirect("/juniper/not-allowed");
+  return session;
 }
 
 /** id → display name for every admin, to show "by Anna" next to history entries. */

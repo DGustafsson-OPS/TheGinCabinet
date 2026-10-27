@@ -17,9 +17,16 @@ from app.errors import ApiError
 from app.models import AuthSession, RecoveryCode, User
 from app.models._types import utcnow
 from app.schemas.auth import LoginRequest, LoginResponse, MfaVerifyRequest, SessionOut, UserOut
+from app.schemas.settings import (
+    InviteComplete,
+    InviteInfo,
+    InvitePassword,
+    MfaSetupOut,
+    RecoveryCodesOut,
+)
 from app.security import crypto, mfa
-from app.security.passwords import verify_password
-from app.services import audit, sessions, throttle
+from app.security.passwords import hash_password, password_problems, verify_password
+from app.services import accounts, audit, sessions, throttle
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -186,7 +193,11 @@ def _session_out(user: User, session: AuthSession) -> SessionOut:
     return SessionOut(
         authenticated=True,
         user=UserOut(
-            id=user.id, username=user.username, display_name=user.display_name, email=user.email
+            id=user.id,
+            username=user.username,
+            display_name=user.display_name,
+            email=user.email,
+            role=user.role,
         ),
         csrf_token=session.csrf_token,
         expires_at=session.expires_at,
@@ -224,3 +235,71 @@ def logout(request: Request, db: DbSession, session: OptionalSession):
         db.commit()
     _clear_session_cookie(response)
     return response
+
+
+# ---------------- Accepting an invitation ----------------
+# The link's secret is the only proof needed here: it's 256 random bits,
+# works once and expires (see services/accounts.py).
+
+
+@router.get("/invite/{token}", response_model=InviteInfo)
+def get_invite(token: str, db: DbSession):
+    user = accounts.find_invite(db, token)
+    return InviteInfo(
+        username=user.username,
+        display_name=user.display_name,
+        role=user.role,
+        expires_at=user.invite_expires_at,
+    )
+
+
+def _check_password(password: str, username: str) -> None:
+    problems = password_problems(password, username)
+    if problems:
+        raise ApiError(422, "weak_password", "Choose a stronger password.", problems)
+
+
+@router.post("/invite/{token}/mfa", response_model=MfaSetupOut)
+def start_invite_mfa(token: str, body: InvitePassword, db: DbSession):
+    """Check the chosen password, then give a new authenticator key (replacing
+    any earlier try). Nothing is saved as the password yet."""
+    user = accounts.find_invite(db, token)
+    _check_password(body.password, user.username)
+    secret = mfa.new_totp_secret()
+    user.totp_pending_encrypted = crypto.encrypt(secret)
+    db.commit()
+    return MfaSetupOut(
+        secret=secret, uri=mfa.provisioning_uri(secret, user.username, get_settings().totp_issuer)
+    )
+
+
+@router.post("/invite/{token}/complete", response_model=RecoveryCodesOut)
+def complete_invite(token: str, body: InviteComplete, request: Request, db: DbSession):
+    """Choose a password and prove the authenticator works; the account is then ready."""
+    user = accounts.find_invite(db, token)
+    if user.totp_pending_encrypted is None:
+        raise ApiError(409, "no_mfa_setup", "Set up your authenticator app first.")
+    _check_password(body.password, user.username)
+    step = mfa.totp_step(crypto.decrypt(user.totp_pending_encrypted), body.code)
+    if step is None:
+        raise ApiError(422, "invalid_mfa_code", "That code is not valid. Check your app's code.")
+    user.password_hash = hash_password(body.password)
+    user.totp_secret_encrypted = user.totp_pending_encrypted
+    user.totp_pending_encrypted = None
+    user.totp_last_step = step  # this code is used up; signing in needs the next one
+    user.invite_token_hash = None
+    user.invite_expires_at = None
+    user.enabled = True
+    codes = mfa.new_recovery_codes()
+    for code in codes:
+        db.add(RecoveryCode(user_id=user.id, code_hash=mfa.hash_recovery_code(code)))
+    audit.record(
+        db,
+        action="user.invite_accepted",
+        entity_type="user",
+        entity_id=user.id,
+        actor_id=user.id,
+        ip_address=client_ip(request),
+    )
+    db.commit()
+    return RecoveryCodesOut(codes=codes)

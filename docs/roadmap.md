@@ -108,6 +108,17 @@ Progress against the delivery phases in
 | In-page dialogs only; every removal confirmed | No browser popups anywhere (`alert`/`confirm`/"Leave site?"). Every Remove/Delete/Discard asks first in an in-page dialog. Unsaved Journal edits: in-page "Leave without saving?" for links, and a restorable local copy for reloads and closed tabs |
 | Content-Security-Policy | `proxy.ts` + `lib/csp.ts`: a fresh script nonce per page, `'strict-dynamic'`, GA hosts only when GA is configured; tested against a smuggled `<script>` |
 
+## After launch ✅
+
+| Item | Notes |
+| --- | --- |
+| Editor role | `users.role` admin/editor (migration 0012). Editors: Journal, reviews, tastings, cocktails, tonics, media, page texts; read-only gins. Not: inventory, prices, settings, messages, accounts, audit. API default is admin-only (`CurrentAdmin`); content routes opt in with `CurrentStaff` |
+| Invitations | Admin → Settings → People: one-time link (7 days, only its hash stored); the person chooses their own password and authenticator. New link / cancel for unused invitations. At most 2 admins, 10 accounts |
+| Edit someone else's account | Display name (no password), email, role, access (your password). Audited, and the person sees a notice. Accounts in use are switched off, never deleted |
+| Page texts | Admin → Page texts: home intro/eyebrow/empty state, About intro/body/contact, contact page intro, footer. Defaults in `services/page_texts.py`; simple formatting (`##`, lists, `**bold**`, links), rendered safely by `FormattedText`. The old "About page text" setting moved here |
+| Contact form + Cloudflare Turnstile | `/contact`, verified server-side, 5/hour per IP (hashed), honeypot field, Admin → Messages (admins only), deleted after a year. Off unless both Turnstile keys are set |
+| Links not underlined | Underline only on hover/focus; links inside text are semi-bold so they don't rely on colour alone (WCAG 1.4.1) |
+
 ## Phase 8 – Launch QA ⬜
 Security review, accessibility audit, performance, backup/restore test,
 Coolify runbook walk-through.

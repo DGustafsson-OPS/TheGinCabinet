@@ -59,6 +59,16 @@ class Settings(BaseSettings):
     # Name shown in authenticator apps next to the 6-digit code.
     totp_issuer: str = "The Gin Cabinet"
 
+    # Contact form. It's switched on by setting the Cloudflare Turnstile secret
+    # key (Cloudflare dashboard → Turnstile); the matching *site* key goes to
+    # the web app as TURNSTILE_SITE_KEY. Without it the form is hidden.
+    turnstile_secret_key: str = ""
+    turnstile_verify_url: str = "https://challenges.cloudflare.com/turnstile/v0/siteverify"
+    # At most this many messages per hour from one IP address.
+    contact_per_hour: int = 5
+    # Messages are deleted automatically after this many days.
+    contact_retention_days: int = 365
+
     # The background job that publishes scheduled articles and tidies old
     # sign-in records. Tests switch it off and call it directly instead.
     scheduler_enabled: bool = True

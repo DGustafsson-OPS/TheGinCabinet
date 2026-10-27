@@ -14,13 +14,11 @@ test("edit the website settings, see them on the About page, check the audit log
 
   // Website tab (the first one).
   await page.getByLabel("Public contact email").fill(contact);
-  await page.getByLabel("About page text").fill("We started with one bottle.\n\nNow there are many.");
   await page.getByRole("button", { name: "Save website settings" }).click();
   await expect(toasts(page)).toContainText("Website settings saved.");
 
   const visitor = await browser.newPage();
   await gotoReady(visitor, "/about");
-  await expect(visitor.getByText("We started with one bottle.")).toBeVisible();
   await expect(visitor.getByRole("link", { name: contact })).toHaveAttribute("href", `mailto:${contact}`);
   await visitor.close();
 
@@ -35,8 +33,8 @@ test("edit the website settings, see them on the About page, check the audit log
   await expect(recovery.getByText("shown only this once")).toBeVisible();
   await expect(recovery.locator("ol li")).toHaveCount(10);
 
-  // The admins tab lists the account; the audit log records the changes.
-  await page.getByRole("tab", { name: "Admins" }).click();
+  // The People tab lists the account; the audit log records the changes.
+  await page.getByRole("tab", { name: "People" }).click();
   await expect(page.getByRole("cell", { name: /\(you\)/ })).toBeVisible();
   await gotoReady(page, "/juniper/audit");
   await expect(page.getByText(/changed the website settings/).first()).toBeVisible();

@@ -1,8 +1,9 @@
 # The Gin Cabinet
 
 A shared gin collection website: public gin profiles, reviews, cocktail recipes
-and the Gin Journal blog, plus a private admin area for two administrators to
-manage inventory, tastings and editorial content.
+and the Gin Journal blog, plus a private admin area where two administrators
+manage inventory, tastings and editorial content, with invited editors for the
+content side.
 
 The full product and technical specification lives in
 [`docs/specification-v1.1.md`](docs/specification-v1.1.md).

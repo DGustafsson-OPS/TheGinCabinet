@@ -6,7 +6,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy import func, select
 
-from app.api.deps import CurrentAdmin, CurrentAdminWrite, DbSession
+from app.api.deps import CurrentStaff, CurrentStaffWrite, DbSession
 from app.errors import ApiError
 from app.models import Bottle, GinProduct, Tasting
 from app.schemas.common import Page, PageParams
@@ -31,7 +31,7 @@ def _check_bottle(db: DbSession, bottle_id: uuid.UUID | None, gin_id: uuid.UUID)
 
 @router.get("", response_model=Page[TastingOut])
 def list_tastings(
-    admin: CurrentAdmin,
+    admin: CurrentStaff,
     db: DbSession,
     paging: Annotated[PageParams, Depends()],
     gin_id: uuid.UUID | None = None,
@@ -54,7 +54,7 @@ def list_tastings(
 
 
 @router.post("", response_model=TastingOut, status_code=201)
-def create_tasting(body: TastingIn, admin: CurrentAdminWrite, db: DbSession):
+def create_tasting(body: TastingIn, admin: CurrentStaffWrite, db: DbSession):
     get_or_404(db, GinProduct, body.gin_id, "Gin")
     _check_bottle(db, body.bottle_id, body.gin_id)
     # The signed-in admin is always the author (spec A05).
@@ -75,7 +75,7 @@ def create_tasting(body: TastingIn, admin: CurrentAdminWrite, db: DbSession):
 
 
 @router.get("/{tasting_id}", response_model=TastingOut)
-def get_tasting(tasting_id: uuid.UUID, admin: CurrentAdmin, db: DbSession):
+def get_tasting(tasting_id: uuid.UUID, admin: CurrentStaff, db: DbSession):
     return get_or_404(db, Tasting, tasting_id, "Tasting")
 
 
@@ -83,7 +83,7 @@ def get_tasting(tasting_id: uuid.UUID, admin: CurrentAdmin, db: DbSession):
 def update_tasting(
     tasting_id: uuid.UUID,
     body: TastingPatch,
-    admin: CurrentAdminWrite,
+    admin: CurrentStaffWrite,
     db: DbSession,
     force: Force = False,
 ):

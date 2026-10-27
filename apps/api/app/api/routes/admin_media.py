@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, File, Form, Query, UploadFile
 from fastapi.responses import FileResponse
 from sqlalchemy import func, or_, select
 
-from app.api.deps import CurrentAdmin, CurrentAdminWrite, DbSession
+from app.api.deps import CurrentStaff, CurrentStaffWrite, DbSession
 from app.config import get_settings
 from app.errors import ApiError
 from app.models import MediaAsset
@@ -34,7 +34,7 @@ def _get_live(db: DbSession, media_id: uuid.UUID) -> MediaAsset:
 
 @router.post("", response_model=MediaOut, status_code=201)
 def upload(
-    admin: CurrentAdminWrite,
+    admin: CurrentStaffWrite,
     db: DbSession,
     file: Annotated[UploadFile, File(description="JPEG, PNG or WebP")],
     alt: Annotated[str | None, Form(max_length=500)] = None,
@@ -71,7 +71,7 @@ def upload(
 
 @router.get("", response_model=Page[MediaOut])
 def list_media(
-    admin: CurrentAdmin,
+    admin: CurrentStaff,
     db: DbSession,
     paging: Annotated[PageParams, Depends()],
     search: str | None = None,
@@ -93,7 +93,7 @@ def list_media(
 
 
 @router.get("/{media_id}", response_model=MediaOut)
-def get_media(media_id: uuid.UUID, admin: CurrentAdmin, db: DbSession):
+def get_media(media_id: uuid.UUID, admin: CurrentStaff, db: DbSession):
     return media_out(db, _get_live(db, media_id))
 
 
@@ -101,7 +101,7 @@ def get_media(media_id: uuid.UUID, admin: CurrentAdmin, db: DbSession):
 def update_media(
     media_id: uuid.UUID,
     body: MediaPatch,
-    admin: CurrentAdminWrite,
+    admin: CurrentStaffWrite,
     db: DbSession,
     force: Force = False,
 ):
@@ -129,7 +129,7 @@ def update_media(
 
 
 @router.delete("/{media_id}", status_code=204)
-def delete_media(media_id: uuid.UUID, admin: CurrentAdminWrite, db: DbSession):
+def delete_media(media_id: uuid.UUID, admin: CurrentStaffWrite, db: DbSession):
     """Soft-delete an image, but only when nothing uses it (spec A09)."""
     asset = _get_live(db, media_id)
     used_by = media_usage(db, asset.id)

@@ -1,7 +1,7 @@
 // Shell for every admin page (at /juniper, not the guessable /admin): forest sidebar + warm-white workspace (spec §2).
 //
 // The layout only *displays* who is signed in. The real access check happens
-// in each page via requireAdmin(), because Next.js layouts don't re-run on
+// in each page via requireAdmin() or requireStaff(), because Next.js layouts don't re-run on
 // every navigation (see the Next.js authentication guide).
 import type { Metadata } from "next";
 
@@ -25,7 +25,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   return (
     <AdminProvider csrfToken={session.csrf_token}>
       <div className={styles.shell}>
-        <AdminSidebar displayName={session.user.display_name} csrfToken={session.csrf_token} />
+        <AdminSidebar displayName={session.user.display_name} csrfToken={session.csrf_token} role={session.user.role} />
         <main id="main" className={styles.workspace}>
           {children}
         </main>

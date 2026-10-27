@@ -76,7 +76,9 @@ class AdminFixture:
         return pyotp.TOTP(self.totp_secret).at(step * mfa.TOTP_PERIOD)
 
 
-def make_admin(db, username: str = "anna", email: str = "anna@example.com") -> AdminFixture:
+def make_admin(
+    db, username: str = "anna", email: str = "anna@example.com", role: str = "admin"
+) -> AdminFixture:
     secret = mfa.new_totp_secret()
     user = User(
         username=username,
@@ -84,6 +86,7 @@ def make_admin(db, username: str = "anna", email: str = "anna@example.com") -> A
         display_name=username.title(),
         password_hash=hash_password(PASSWORD),
         totp_secret_encrypted=crypto.encrypt(secret),
+        role=role,
     )
     db.add(user)
     db.flush()

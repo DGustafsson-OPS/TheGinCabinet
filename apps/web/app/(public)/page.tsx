@@ -6,32 +6,32 @@ import Link from "next/link";
 import GinCard from "@/components/GinCard";
 import MediaImage from "@/components/MediaImage";
 import { formatDate, humanize } from "@/lib/format";
-import { publicGet } from "@/lib/public-api";
+import { getSite, publicGet, siteText } from "@/lib/public-api";
 import type { Page, PublicCocktailCard, PublicGinCard, PublicReviewCard, PublicStats } from "@/lib/types";
 
 import styles from "./public.module.css";
 
 export default async function HomePage() {
-  const [stats, reviews, cocktails, topGins] = await Promise.all([
+  const [site, stats, reviews, cocktails, topGins] = await Promise.all([
+    getSite(),
     publicGet<PublicStats>("/stats"),
     publicGet<Page<PublicReviewCard>>("/reviews?page_size=3"),
     publicGet<Page<PublicCocktailCard>>("/cocktails?page_size=3"),
     publicGet<Page<PublicGinCard>>("/gins?sort=rating&page_size=1"),
   ]);
   const featured = topGins?.items[0];
+  // The wording is edited in Admin → Page texts.
+  const text = (key: string) => siteText(site, key);
 
   return (
     <>
       <section className={styles.hero} aria-labelledby="hero-title">
         <div className={styles.heroInner}>
-          <p className={styles.eyebrow}>A shared collection</p>
+          <p className={styles.eyebrow}>{text("home.eyebrow")}</p>
           <h1 id="hero-title" className={styles.heroTitle}>
             The Gin Cabinet
           </h1>
-          <p className={styles.heroText}>
-            Tasting notes, honest reviews and cocktails from a cabinet of gins collected by two
-            friends.
-          </p>
+          <p className={styles.heroText}>{text("home.intro")}</p>
           <div className={styles.actions}>
             <Link className="button button-primary" href="/collection">
               Explore gins
@@ -130,11 +130,8 @@ export default async function HomePage() {
 
       {!stats?.gins && (
         <section className={styles.section} aria-labelledby="soon-title">
-          <h2 id="soon-title">The cabinet is being stocked</h2>
-          <p>
-            The public collection, reviews and cocktail library open soon. Every bottle here is
-            catalogued and tasted before it appears on the site.
-          </p>
+          <h2 id="soon-title">{text("home.empty_title")}</h2>
+          <p>{text("home.empty_text")}</p>
         </section>
       )}
     </>

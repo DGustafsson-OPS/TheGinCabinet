@@ -6,7 +6,7 @@ import { notFound } from "next/navigation";
 
 import ReviewArticle from "@/components/ReviewArticle";
 import ReviewStatusBadge from "@/components/admin/ReviewStatusBadge";
-import { apiGet, requireAdmin } from "@/lib/server-api";
+import { apiGet, requireStaff } from "@/lib/server-api";
 import type { Gin, Review } from "@/lib/types";
 
 export const metadata: Metadata = { title: "Preview review" };
@@ -14,7 +14,7 @@ export const metadata: Metadata = { title: "Preview review" };
 type Params = Promise<{ id: string }>;
 
 export default async function ReviewPreviewPage({ params }: { params: Params }) {
-  await requireAdmin();
+  await requireStaff();
   const { id } = await params;
   const { data: review } = await apiGet<Review>(`/admin/reviews/${id}`);
   if (!review) notFound();

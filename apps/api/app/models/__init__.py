@@ -46,8 +46,9 @@ from app.models.editorial import (
 )
 from app.models.purchases import Purchase, PurchaseLine
 from app.models.settings import SETTINGS_ID, SiteSettings
+from app.models.site_content import ContactMessage, PageText
 from app.models.tonics import Tonic, TonicReview, TonicReviewStatus, TonicStyle
-from app.models.user import User
+from app.models.user import MAX_ACCOUNTS, MAX_ADMINS, User, UserRole
 from app.models.wishlist import WishlistItem, WishlistStatus
 
 __all__ = [
@@ -95,14 +96,19 @@ __all__ = [
     "BottleEvent",
     "BottleStatus",
     "Collection",
+    "ContactMessage",
     "Distillery",
     "GinProduct",
     "GinStyle",
     "LoginAttempt",
+    "PageText",
     "Purchase",
     "PurchaseLine",
     "RecoveryCode",
+    "MAX_ACCOUNTS",
+    "MAX_ADMINS",
     "User",
+    "UserRole",
     "WishlistItem",
     "WishlistStatus",
     "gin_botanicals",
