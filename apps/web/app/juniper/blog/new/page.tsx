@@ -1,9 +1,9 @@
 // Start an article with a title (and optionally a category), then write it
-// in the editor. A server page, so requireAdmin() can send visitors to /login.
+// in the editor. A server page, so requireStaff() can send visitors to /login.
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { apiGet, requireAdmin } from "@/lib/server-api";
+import { apiGet, requireStaff } from "@/lib/server-api";
 import type { Category } from "@/lib/types";
 
 import NewPostForm from "./NewPostForm";
@@ -11,7 +11,7 @@ import NewPostForm from "./NewPostForm";
 export const metadata: Metadata = { title: "New article" };
 
 export default async function NewPostPage() {
-  await requireAdmin();
+  await requireStaff();
   const { data: categories } = await apiGet<Category[]>("/admin/blog/categories");
   return (
     <>

@@ -113,6 +113,7 @@ test("every admin page sends signed-out visitors to the login page", async ({ pa
     "/juniper/purchases/new", "/juniper/purchases/x", "/juniper/wishlist", "/juniper/wishlist/x/convert",
     "/juniper/media", "/juniper/media/x", "/juniper/tastings", "/juniper/tastings/new", "/juniper/tastings/x",
     "/juniper/reviews", "/juniper/reviews/new", "/juniper/reviews/x", "/juniper/reviews/x/preview",
+    "/juniper/pages", "/juniper/messages", "/juniper/not-allowed",
     "/juniper/reviews/x/revisions", "/juniper/cocktails", "/juniper/cocktails/new", "/juniper/cocktails/x",
     "/juniper/blog", "/juniper/blog/new", "/juniper/blog/categories", "/juniper/blog/x/edit", "/juniper/blog/x/preview",
     "/juniper/blog/x/revisions", "/juniper/settings", "/juniper/audit", "/juniper/tonics",

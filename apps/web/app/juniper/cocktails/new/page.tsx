@@ -1,16 +1,16 @@
 // Start a recipe with just a name, then fill in the details in the editor.
-// A server page, so requireAdmin() can send signed-out visitors to /login.
+// A server page, so requireStaff() can send signed-out visitors to /login.
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { requireAdmin } from "@/lib/server-api";
+import { requireStaff } from "@/lib/server-api";
 
 import NewCocktailForm from "./NewCocktailForm";
 
 export const metadata: Metadata = { title: "New recipe" };
 
 export default async function NewCocktailPage() {
-  await requireAdmin();
+  await requireStaff();
   return (
     <>
       <Link className="back-link" href="/juniper/cocktails">

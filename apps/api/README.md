@@ -116,7 +116,7 @@ Browser                                   API
 | CSRF token + Origin check | `api/deps.py` | Other sites can't act as you |
 | Login throttling | `services/throttle.py` | Slows password/code guessing |
 | Audit events | `services/audit.py` | Who did what, when |
-| No sign-up endpoint | `cli.py` | Max two admins, created from the server |
+| No sign-up endpoint | `cli.py`, `services/accounts.py` | Admins created on the server (max two); others invited by an admin with a one-time link (max ten accounts) |
 
 ## 5. The API at a glance
 

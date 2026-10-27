@@ -21,9 +21,11 @@ export type CspOptions = {
   dev?: boolean;
   /** Allow Google Analytics to send page views (it still loads only after consent). */
   analytics?: boolean;
+  /** Allow Cloudflare Turnstile's check box (an iframe) on the contact page. */
+  turnstile?: boolean;
 };
 
-export function buildCsp({ nonce, dev = false, analytics = false }: CspOptions): string {
+export function buildCsp({ nonce, dev = false, analytics = false, turnstile = false }: CspOptions): string {
   const ga = analytics ? GOOGLE_ANALYTICS : [];
   const directives: Record<string, string[]> = {
     // Anything not listed below: only from this site.
@@ -43,6 +45,8 @@ export function buildCsp({ nonce, dev = false, analytics = false }: CspOptions):
     "object-src": ["'none'"],
     "base-uri": ["'self'"],
     "form-action": ["'self'"],
+    // Frames inside our pages: only Turnstile's check box, when it's set up.
+    "frame-src": turnstile ? ["https://challenges.cloudflare.com"] : ["'none'"],
     // Nobody may show this site inside their own page (clickjacking).
     "frame-ancestors": ["'none'"],
   };

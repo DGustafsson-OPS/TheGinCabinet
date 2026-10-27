@@ -7,7 +7,7 @@ import Pagination from "@/components/admin/Pagination";
 import ReviewStatusBadge from "@/components/admin/ReviewStatusBadge";
 import SearchBox from "@/components/admin/SearchBox";
 import { formatDateTime, param } from "@/lib/format";
-import { apiGet, requireAdmin } from "@/lib/server-api";
+import { apiGet, requireStaff } from "@/lib/server-api";
 import type { Page, Review } from "@/lib/types";
 
 export const metadata: Metadata = { title: "Reviews" };
@@ -15,7 +15,7 @@ export const metadata: Metadata = { title: "Reviews" };
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
 export default async function ReviewsPage({ searchParams }: { searchParams: SearchParams }) {
-  await requireAdmin();
+  await requireStaff();
   const raw = await searchParams;
   const filters = { search: param(raw.search), status: param(raw.status) };
   const query = new URLSearchParams({ page: param(raw.page) ?? "1", page_size: "25" });

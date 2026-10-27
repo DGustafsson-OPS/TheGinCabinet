@@ -6,7 +6,7 @@ import { notFound } from "next/navigation";
 
 import JournalArticle from "@/components/JournalArticle";
 import PostStatusBadge from "@/components/admin/PostStatusBadge";
-import { apiGet, requireAdmin } from "@/lib/server-api";
+import { apiGet, requireStaff } from "@/lib/server-api";
 import type { Post, PublicPost } from "@/lib/types";
 
 export const metadata: Metadata = { title: "Preview article" };
@@ -14,7 +14,7 @@ export const metadata: Metadata = { title: "Preview article" };
 type Params = Promise<{ id: string }>;
 
 export default async function PostPreviewPage({ params }: { params: Params }) {
-  await requireAdmin();
+  await requireStaff();
   const { id } = await params;
   const [{ data: post }, { data: preview }] = await Promise.all([
     apiGet<Post>(`/admin/blog/${id}`),

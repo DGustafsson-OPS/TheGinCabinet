@@ -6,7 +6,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy import func, select
 
-from app.api.deps import CurrentAdmin, CurrentAdminWrite, DbSession
+from app.api.deps import CurrentStaff, CurrentStaffWrite, DbSession
 from app.errors import ApiError
 from app.models import CocktailRecipe, CocktailStatus, Ingredient
 from app.models._types import utcnow
@@ -45,7 +45,7 @@ TRANSITIONS = {
 
 
 @router.get("/ingredients", response_model=list[IngredientOut])
-def list_ingredients(admin: CurrentAdmin, db: DbSession, search: str | None = None):
+def list_ingredients(admin: CurrentStaff, db: DbSession, search: str | None = None):
     """The reusable ingredient list, for autocomplete in the recipe form."""
     query = select(Ingredient).order_by(Ingredient.name)
     if search:
@@ -55,7 +55,7 @@ def list_ingredients(admin: CurrentAdmin, db: DbSession, search: str | None = No
 
 @router.get("/cocktails", response_model=Page[CocktailOut])
 def list_cocktails(
-    admin: CurrentAdmin,
+    admin: CurrentStaff,
     db: DbSession,
     paging: Annotated[PageParams, Depends()],
     status: CocktailStatus | None = None,
@@ -76,7 +76,7 @@ def list_cocktails(
 
 
 @router.post("/cocktails", response_model=CocktailOut, status_code=201)
-def create_cocktail(body: CocktailIn, admin: CurrentAdminWrite, db: DbSession):
+def create_cocktail(body: CocktailIn, admin: CurrentStaffWrite, db: DbSession):
     check_cover(db, body.cover_media_id)
     data = body.model_dump()
     lists = {key: data.pop(key) for key in LIST_FIELDS}
@@ -102,7 +102,7 @@ def create_cocktail(body: CocktailIn, admin: CurrentAdminWrite, db: DbSession):
 
 
 @router.get("/cocktails/{recipe_id}", response_model=CocktailOut)
-def get_cocktail(recipe_id: uuid.UUID, admin: CurrentAdmin, db: DbSession):
+def get_cocktail(recipe_id: uuid.UUID, admin: CurrentStaff, db: DbSession):
     return cocktail_out(get_or_404(db, CocktailRecipe, recipe_id, "Cocktail"))
 
 
@@ -110,7 +110,7 @@ def get_cocktail(recipe_id: uuid.UUID, admin: CurrentAdmin, db: DbSession):
 def update_cocktail(
     recipe_id: uuid.UUID,
     body: CocktailPatch,
-    admin: CurrentAdminWrite,
+    admin: CurrentStaffWrite,
     db: DbSession,
     force: Force = False,
 ):
@@ -150,7 +150,7 @@ def update_cocktail(
 
 @router.post("/cocktails/{recipe_id}/status", response_model=CocktailOut)
 def set_cocktail_status(
-    recipe_id: uuid.UUID, body: CocktailStatusChange, admin: CurrentAdminWrite, db: DbSession
+    recipe_id: uuid.UUID, body: CocktailStatusChange, admin: CurrentStaffWrite, db: DbSession
 ):
     recipe = get_or_404(db, CocktailRecipe, recipe_id, "Cocktail")
     check_version(
@@ -189,7 +189,7 @@ def set_cocktail_status(
 
 @router.post("/cocktails/{recipe_id}/publish", response_model=CocktailOut)
 def publish_cocktail(
-    recipe_id: uuid.UUID, body: CocktailStatusChange, admin: CurrentAdminWrite, db: DbSession
+    recipe_id: uuid.UUID, body: CocktailStatusChange, admin: CurrentStaffWrite, db: DbSession
 ):
     """Spec §8 shortcut: the same as /status with status "published"."""
     body = CocktailStatusChange(version=body.version, status=CocktailStatus.PUBLISHED)

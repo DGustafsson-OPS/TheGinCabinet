@@ -6,7 +6,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy import func, or_, select
 
-from app.api.deps import CurrentAdmin, CurrentAdminWrite, DbSession
+from app.api.deps import CurrentStaff, CurrentStaffWrite, DbSession
 from app.models import GinProduct, Review, ReviewRevision, ReviewStatus, Tasting, User
 from app.schemas.common import Page, PageParams
 from app.schemas.editorial import (
@@ -41,7 +41,7 @@ Force = Annotated[bool, Query(description="Overwrite even if the record changed 
 
 @router.get("", response_model=Page[ReviewOut])
 def list_reviews(
-    admin: CurrentAdmin,
+    admin: CurrentStaff,
     db: DbSession,
     paging: Annotated[PageParams, Depends()],
     status: ReviewStatus | None = None,
@@ -69,7 +69,7 @@ def list_reviews(
 
 
 @router.post("", response_model=ReviewOut, status_code=201)
-def create_review(body: ReviewIn, admin: CurrentAdminWrite, db: DbSession):
+def create_review(body: ReviewIn, admin: CurrentStaffWrite, db: DbSession):
     """Start a review as a draft (spec §6 "start editorial draft for gin")."""
     gin = get_or_404(db, GinProduct, body.gin_id, "Gin")
     if body.author_id:
@@ -101,7 +101,7 @@ def create_review(body: ReviewIn, admin: CurrentAdminWrite, db: DbSession):
 
 
 @router.get("/{review_id}", response_model=ReviewOut)
-def get_review(review_id: uuid.UUID, admin: CurrentAdmin, db: DbSession):
+def get_review(review_id: uuid.UUID, admin: CurrentStaff, db: DbSession):
     """Also used for the editor's preview of the public page."""
     return review_out(get_or_404(db, Review, review_id, "Review"))
 
@@ -110,7 +110,7 @@ def get_review(review_id: uuid.UUID, admin: CurrentAdmin, db: DbSession):
 def update_review(
     review_id: uuid.UUID,
     body: ReviewPatch,
-    admin: CurrentAdminWrite,
+    admin: CurrentStaffWrite,
     db: DbSession,
     force: Force = False,
 ):
@@ -155,7 +155,7 @@ def update_review(
 
 @router.post("/{review_id}/status", response_model=ReviewOut)
 def set_review_status(
-    review_id: uuid.UUID, body: ReviewStatusChange, admin: CurrentAdminWrite, db: DbSession
+    review_id: uuid.UUID, body: ReviewStatusChange, admin: CurrentStaffWrite, db: DbSession
 ):
     """Move a review through draft → ready → published → archived."""
     review = get_or_404(db, Review, review_id, "Review")
@@ -183,7 +183,7 @@ def set_review_status(
 
 @router.post("/{review_id}/publish", response_model=ReviewOut)
 def publish_review(
-    review_id: uuid.UUID, body: ReviewStatusChange, admin: CurrentAdminWrite, db: DbSession
+    review_id: uuid.UUID, body: ReviewStatusChange, admin: CurrentStaffWrite, db: DbSession
 ):
     """Spec §8 shortcut: the same as /status with status "published"."""
     body = ReviewStatusChange(version=body.version, status=ReviewStatus.PUBLISHED)
@@ -191,7 +191,7 @@ def publish_review(
 
 
 @router.get("/{review_id}/revisions", response_model=list[RevisionOut])
-def list_revisions(review_id: uuid.UUID, admin: CurrentAdmin, db: DbSession):
+def list_revisions(review_id: uuid.UUID, admin: CurrentStaff, db: DbSession):
     get_or_404(db, Review, review_id, "Review")
     return db.scalars(
         select(ReviewRevision)

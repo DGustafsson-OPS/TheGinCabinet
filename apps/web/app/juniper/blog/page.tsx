@@ -6,7 +6,7 @@ import FilterSelect from "@/components/admin/FilterSelect";
 import Pagination from "@/components/admin/Pagination";
 import SearchBox from "@/components/admin/SearchBox";
 import { param } from "@/lib/format";
-import { apiGet, requireAdmin } from "@/lib/server-api";
+import { apiGet, requireStaff } from "@/lib/server-api";
 import type { AdminName, Category, Page, Post } from "@/lib/types";
 
 import PostTable from "./PostTable";
@@ -16,7 +16,7 @@ export const metadata: Metadata = { title: "Journal" };
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
 export default async function JournalAdminPage({ searchParams }: { searchParams: SearchParams }) {
-  await requireAdmin();
+  await requireStaff();
   const raw = await searchParams;
   const filters = {
     search: param(raw.search),

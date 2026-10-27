@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { apiGet, requireAdmin } from "@/lib/server-api";
+import { apiGet, requireStaff } from "@/lib/server-api";
 import { mediaOptions } from "@/lib/media-options";
 import type { AdminName, Media, Page, Review, Tonic } from "@/lib/types";
 
@@ -13,7 +13,7 @@ export const metadata: Metadata = { title: "Edit review" };
 type Params = Promise<{ id: string }>;
 
 export default async function ReviewPage({ params }: { params: Params }) {
-  await requireAdmin();
+  await requireStaff();
   const { id } = await params;
   const [{ data: review }, authors, media, tonics] = await Promise.all([
     apiGet<Review>(`/admin/reviews/${id}`),

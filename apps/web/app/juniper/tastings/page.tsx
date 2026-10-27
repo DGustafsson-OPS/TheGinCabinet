@@ -5,7 +5,7 @@ import Link from "next/link";
 import FilterSelect from "@/components/admin/FilterSelect";
 import Pagination from "@/components/admin/Pagination";
 import { formatDate, param } from "@/lib/format";
-import { apiGet, requireAdmin } from "@/lib/server-api";
+import { apiGet, requireStaff } from "@/lib/server-api";
 import type { AdminName, Page, Tasting } from "@/lib/types";
 
 export const metadata: Metadata = { title: "Tastings" };
@@ -13,7 +13,7 @@ export const metadata: Metadata = { title: "Tastings" };
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
 export default async function TastingsPage({ searchParams }: { searchParams: SearchParams }) {
-  await requireAdmin();
+  await requireStaff();
   const raw = await searchParams;
   const author = param(raw.author);
   const query = new URLSearchParams({ page: param(raw.page) ?? "1", page_size: "25" });

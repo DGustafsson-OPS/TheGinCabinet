@@ -50,6 +50,11 @@ jobs:
       GC_DATABASE_URL: postgresql+psycopg://gin:ci-only-password@localhost:5432/gin_e2e
       E2E_USERNAME: e2e-admin
       E2E_PASSWORD: ci-only-e2e-passphrase
+      # Cloudflare Turnstile's public *test* keys (not secrets): the widget
+      # always shows, and the server-side check always fails, so the contact
+      # form test is the same with or without network access to Cloudflare.
+      GC_TURNSTILE_SECRET_KEY: 2x0000000000000000000000000000000AA
+      TURNSTILE_SITE_KEY: 1x00000000000000000000AA
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

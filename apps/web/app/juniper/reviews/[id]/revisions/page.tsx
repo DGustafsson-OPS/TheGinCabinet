@@ -5,7 +5,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { formatDateTime, humanize } from "@/lib/format";
-import { adminNames, apiGet, requireAdmin } from "@/lib/server-api";
+import { adminNames, apiGet, requireStaff } from "@/lib/server-api";
 import type { Review, Revision } from "@/lib/types";
 
 export const metadata: Metadata = { title: "Revision history" };
@@ -15,7 +15,7 @@ type Params = Promise<{ id: string }>;
 const SHOWN_FIELDS = ["title", "rating", "intro", "nose", "palate", "finish", "tonic", "garnish", "verdict"];
 
 export default async function RevisionsPage({ params }: { params: Params }) {
-  await requireAdmin();
+  await requireStaff();
   const { id } = await params;
   const [{ data: review }, { data: revisions }, names] = await Promise.all([
     apiGet<Review>(`/admin/reviews/${id}`),

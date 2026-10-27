@@ -4,7 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { mediaOptions } from "@/lib/media-options";
-import { apiGet, requireAdmin } from "@/lib/server-api";
+import { apiGet, requireStaff } from "@/lib/server-api";
 import type { AdminName, Media, Page, Tonic } from "@/lib/types";
 
 import TonicForm from "../TonicForm";
@@ -15,7 +15,7 @@ export const metadata: Metadata = { title: "Edit tonic" };
 type Params = Promise<{ id: string }>;
 
 export default async function TonicPage({ params }: { params: Params }) {
-  await requireAdmin();
+  await requireStaff();
   const { id } = await params;
   const [{ data: tonic }, media, authors] = await Promise.all([
     apiGet<Tonic>(`/admin/tonics/${id}`),

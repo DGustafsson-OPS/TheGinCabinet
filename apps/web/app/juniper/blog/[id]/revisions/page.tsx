@@ -5,7 +5,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { formatDateTime, humanize } from "@/lib/format";
-import { adminNames, apiGet, requireAdmin } from "@/lib/server-api";
+import { adminNames, apiGet, requireStaff } from "@/lib/server-api";
 import type { Post, PostBlock, Revision } from "@/lib/types";
 
 export const metadata: Metadata = { title: "Article history" };
@@ -31,7 +31,7 @@ function blockText(block: PostBlock): string {
 }
 
 export default async function PostRevisionsPage({ params }: { params: Params }) {
-  await requireAdmin();
+  await requireStaff();
   const { id } = await params;
   const [{ data: post }, { data: revisions }, names] = await Promise.all([
     apiGet<Post>(`/admin/blog/${id}`),

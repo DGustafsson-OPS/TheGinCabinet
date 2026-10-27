@@ -6,7 +6,7 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 from sqlalchemy import select
 
-from app.api.deps import CurrentAdmin, DbSession
+from app.api.deps import CurrentStaff, DbSession
 from app.models import User
 
 router = APIRouter(prefix="/admin/users", tags=["admin: users"])
@@ -20,6 +20,6 @@ class AdminName(BaseModel):
 
 
 @router.get("", response_model=list[AdminName])
-def list_admins(admin: CurrentAdmin, db: DbSession):
+def list_admins(admin: CurrentStaff, db: DbSession):
     users = db.scalars(select(User).order_by(User.display_name))
     return [AdminName(id=u.id, display_name=u.display_name) for u in users]

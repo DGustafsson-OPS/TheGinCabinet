@@ -6,7 +6,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy import func, or_, select
 
-from app.api.deps import CurrentAdmin, CurrentAdminWrite, DbSession
+from app.api.deps import CurrentStaff, CurrentStaffWrite, DbSession
 from app.errors import ApiError
 from app.models import BlogCategory, BlogPost, BlogPostRevision, PostStatus, User
 from app.schemas.blog import (
@@ -72,14 +72,14 @@ def _category_out(category: BlogCategory, counts: dict) -> CategoryOut:
 
 
 @router.get("/categories", response_model=list[CategoryOut])
-def list_categories(admin: CurrentAdmin, db: DbSession):
+def list_categories(admin: CurrentStaff, db: DbSession):
     counts = category_post_counts(db)
     rows = db.scalars(select(BlogCategory).order_by(BlogCategory.display_order, BlogCategory.name))
     return [_category_out(c, counts) for c in rows]
 
 
 @router.post("/categories", response_model=CategoryOut, status_code=201)
-def create_category(body: CategoryIn, admin: CurrentAdminWrite, db: DbSession):
+def create_category(body: CategoryIn, admin: CurrentStaffWrite, db: DbSession):
     data = body.model_dump()
     if data["slug"]:
         ensure_slug_free(db, BlogCategory, data["slug"])
@@ -103,7 +103,7 @@ def create_category(body: CategoryIn, admin: CurrentAdminWrite, db: DbSession):
 
 @router.patch("/categories/{category_id}", response_model=CategoryOut)
 def update_category(
-    category_id: uuid.UUID, body: CategoryPatch, admin: CurrentAdminWrite, db: DbSession
+    category_id: uuid.UUID, body: CategoryPatch, admin: CurrentStaffWrite, db: DbSession
 ):
     category = get_or_404(db, BlogCategory, category_id, "Category")
     changes = body.model_dump(exclude_unset=True)
@@ -131,7 +131,7 @@ def update_category(
 
 
 @router.delete("/categories/{category_id}", status_code=204)
-def delete_category(category_id: uuid.UUID, admin: CurrentAdminWrite, db: DbSession):
+def delete_category(category_id: uuid.UUID, admin: CurrentStaffWrite, db: DbSession):
     """Only empty categories can be deleted, so no article loses its section by accident."""
     category = get_or_404(db, BlogCategory, category_id, "Category")
     used = category_post_counts(db).get(category.id, 0)
@@ -158,7 +158,7 @@ def delete_category(category_id: uuid.UUID, admin: CurrentAdminWrite, db: DbSess
 
 @router.get("", response_model=Page[PostOut])
 def list_posts(
-    admin: CurrentAdmin,
+    admin: CurrentStaff,
     db: DbSession,
     paging: Annotated[PageParams, Depends()],
     status: PostStatus | None = None,
@@ -197,7 +197,7 @@ def _check_links(db, data: dict) -> None:
 
 
 @router.post("", response_model=PostOut, status_code=201)
-def create_post(body: PostIn, admin: CurrentAdminWrite, db: DbSession):
+def create_post(body: PostIn, admin: CurrentStaffWrite, db: DbSession):
     """A new article always starts as a draft."""
     data = body.model_dump(mode="json")  # "json" mode: blocks become plain JSON
     data.update({k: getattr(body, k) for k in ("category_id", "author_id")})
@@ -222,12 +222,12 @@ def create_post(body: PostIn, admin: CurrentAdminWrite, db: DbSession):
 
 
 @router.get("/{post_id}", response_model=PostOut)
-def get_post(post_id: uuid.UUID, admin: CurrentAdmin, db: DbSession):
+def get_post(post_id: uuid.UUID, admin: CurrentStaff, db: DbSession):
     return post_out(db, get_or_404(db, BlogPost, post_id, "Article"))
 
 
 @router.get("/{post_id}/preview", response_model=PublicPost)
-def preview_post(post_id: uuid.UUID, admin: CurrentAdmin, db: DbSession):
+def preview_post(post_id: uuid.UUID, admin: CurrentStaff, db: DbSession):
     """The article exactly as the public page will show it, for any status.
 
     Previews need a signed-in admin (spec §10A "draft preview uses an
@@ -240,7 +240,7 @@ def preview_post(post_id: uuid.UUID, admin: CurrentAdmin, db: DbSession):
 def update_post(
     post_id: uuid.UUID,
     body: PostPatch,
-    admin: CurrentAdminWrite,
+    admin: CurrentStaffWrite,
     db: DbSession,
     force: Force = False,
 ):
@@ -307,29 +307,29 @@ def _transition(post_id, version, new, admin, db, scheduled_at=None) -> PostOut:
 
 
 @router.post("/{post_id}/publish", response_model=PostOut)
-def publish_post(post_id: uuid.UUID, body: VersionOnly, admin: CurrentAdminWrite, db: DbSession):
+def publish_post(post_id: uuid.UUID, body: VersionOnly, admin: CurrentStaffWrite, db: DbSession):
     return _transition(post_id, body.version, PostStatus.PUBLISHED, admin, db)
 
 
 @router.post("/{post_id}/schedule", response_model=PostOut)
-def schedule_post(post_id: uuid.UUID, body: ScheduleIn, admin: CurrentAdminWrite, db: DbSession):
+def schedule_post(post_id: uuid.UUID, body: ScheduleIn, admin: CurrentStaffWrite, db: DbSession):
     """Publish automatically at ``scheduled_at`` (the job checks every minute)."""
     return _transition(post_id, body.version, PostStatus.SCHEDULED, admin, db, body.scheduled_at)
 
 
 @router.post("/{post_id}/unpublish", response_model=PostOut)
-def unpublish_post(post_id: uuid.UUID, body: VersionOnly, admin: CurrentAdminWrite, db: DbSession):
+def unpublish_post(post_id: uuid.UUID, body: VersionOnly, admin: CurrentStaffWrite, db: DbSession):
     """Back to draft: takes a published article offline, cancels a schedule, or restores."""
     return _transition(post_id, body.version, PostStatus.DRAFT, admin, db)
 
 
 @router.post("/{post_id}/archive", response_model=PostOut)
-def archive_post(post_id: uuid.UUID, body: VersionOnly, admin: CurrentAdminWrite, db: DbSession):
+def archive_post(post_id: uuid.UUID, body: VersionOnly, admin: CurrentStaffWrite, db: DbSession):
     return _transition(post_id, body.version, PostStatus.ARCHIVED, admin, db)
 
 
 @router.post("/bulk-archive", response_model=BulkResult)
-def bulk_archive(body: BulkArchiveIn, admin: CurrentAdminWrite, db: DbSession):
+def bulk_archive(body: BulkArchiveIn, admin: CurrentStaffWrite, db: DbSession):
     """Archive several articles (the UI asks for confirmation first, spec A11).
 
     Each item carries the version the admin saw; anything that changed since
@@ -353,7 +353,7 @@ def bulk_archive(body: BulkArchiveIn, admin: CurrentAdminWrite, db: DbSession):
 
 
 @router.post("/{post_id}/duplicate", response_model=PostOut, status_code=201)
-def duplicate_post(post_id: uuid.UUID, admin: CurrentAdminWrite, db: DbSession):
+def duplicate_post(post_id: uuid.UUID, admin: CurrentStaffWrite, db: DbSession):
     """Copy an article into a new draft (spec A11 "duplicate")."""
     source = get_or_404(db, BlogPost, post_id, "Article")
     title = f"Copy of {source.title}"[:200]
@@ -383,7 +383,7 @@ def duplicate_post(post_id: uuid.UUID, admin: CurrentAdminWrite, db: DbSession):
 
 
 @router.get("/{post_id}/revisions", response_model=list[RevisionOut])
-def list_revisions(post_id: uuid.UUID, admin: CurrentAdmin, db: DbSession):
+def list_revisions(post_id: uuid.UUID, admin: CurrentStaff, db: DbSession):
     get_or_404(db, BlogPost, post_id, "Article")
     revisions = db.scalars(
         select(BlogPostRevision)

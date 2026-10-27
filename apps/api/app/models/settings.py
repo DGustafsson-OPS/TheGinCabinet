@@ -7,7 +7,7 @@ conflict instead of silently overwriting the first.
 
 import uuid
 
-from sqlalchemy import CheckConstraint, ForeignKey, Integer, String, Text
+from sqlalchemy import CheckConstraint, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db import Base
@@ -33,6 +33,5 @@ class SiteSettings(Versioned, Base):
     )
     # Whether newly added gins start as public (spec A10 "default gin visibility").
     default_gin_public: Mapped[bool] = mapped_column(default=False)
-    about_text: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     logo: Mapped[MediaAsset | None] = relationship(lazy="joined")

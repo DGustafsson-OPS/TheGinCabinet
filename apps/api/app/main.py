@@ -28,7 +28,9 @@ from app.api.routes import (
     admin_users,
     auth,
     consent,
+    contact,
     health,
+    page_texts,
     public_blog,
     public_catalogue,
     public_cocktails,
@@ -118,6 +120,9 @@ def create_app() -> FastAPI:
     app.include_router(consent.router, prefix=API_PREFIX)
     app.include_router(tonics.router, prefix=API_PREFIX)
     app.include_router(tonics.public_router, prefix=API_PREFIX)
+    app.include_router(page_texts.router, prefix=API_PREFIX)
+    app.include_router(contact.router, prefix=API_PREFIX)
+    app.include_router(contact.public_router, prefix=API_PREFIX)
     # Not under /api: only reachable on the private network (see routes/consent.py).
     app.include_router(consent.internal_router)
     return app

@@ -1,10 +1,13 @@
 // P09 Privacy (spec §4, §9 "Privacy notices"). Plain-language, and true to
 // what the code actually does. The analytics section appears only when
-// Google Analytics is switched on (GA_MEASUREMENT_ID is set).
+// Google Analytics is switched on (GA_MEASUREMENT_ID is set), and the contact
+// form section only when the form is (Cloudflare Turnstile keys set).
 import type { Metadata } from "next";
 import Link from "next/link";
 
 import { gaMeasurementId } from "@/lib/consent";
+import { getSite } from "@/lib/public-api";
+import { contactFormOn } from "@/lib/turnstile";
 
 import styles from "../prose.module.css";
 
@@ -14,8 +17,9 @@ export const metadata: Metadata = {
   alternates: { canonical: "/privacy" },
 };
 
-export default function PrivacyPage() {
+export default async function PrivacyPage() {
   const analytics = Boolean(gaMeasurementId());
+  const contact = contactFormOn(await getSite());
   return (
     <article className={styles.prose}>
       <h1>Privacy</h1>
@@ -76,6 +80,33 @@ export default function PrivacyPage() {
         </>
       )}
 
+      {contact && (
+        <>
+          <h2>The contact form</h2>
+          <ul>
+            <li>
+              When you send a message, we store your name, email address, message and the time, only to read
+              and answer it. Messages are deleted after a year at most, or sooner when we no longer need them.
+              Only the site&apos;s admins can read them.
+            </li>
+            <li>
+              To limit how many messages one connection can send, we store a scrambled code made from your IP
+              address (not the address itself), kept with the message.
+            </li>
+            <li>
+              To keep out spam robots, the contact page uses Cloudflare Turnstile. Only on that page, Cloudflare
+              processes technical details of your visit (such as IP address and browser information) to check
+              that a person is sending the message. It is not used for advertising. See{" "}
+              <a href="https://www.cloudflare.com/privacypolicy/" rel="noopener noreferrer">
+                Cloudflare&apos;s privacy policy
+              </a>
+              .
+            </li>
+            <li>The legal basis is our legitimate interest in answering you and keeping out spam (GDPR art. 6(1)(f)).</li>
+          </ul>
+        </>
+      )}
+
       <h2>Photos</h2>
       <p>
         Location data and other hidden details are removed from every photo before it is
@@ -83,7 +114,9 @@ export default function PrivacyPage() {
       </p>
 
       <h2>Questions</h2>
-      <p>If you have a question about your data, use the contact details on the About page.</p>
+      <p>
+        If you have a question about your data, {contact ? <Link href="/contact">send us a message</Link> : "use the contact details on the About page"}.
+      </p>
     </article>
   );
 }

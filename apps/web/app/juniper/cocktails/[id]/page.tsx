@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { apiGet, requireAdmin } from "@/lib/server-api";
+import { apiGet, requireStaff } from "@/lib/server-api";
 import { mediaOptions } from "@/lib/media-options";
 import type { Cocktail, Gin, Media, Page } from "@/lib/types";
 
@@ -13,7 +13,7 @@ export const metadata: Metadata = { title: "Edit recipe" };
 type Params = Promise<{ id: string }>;
 
 export default async function CocktailPage({ params }: { params: Params }) {
-  await requireAdmin();
+  await requireStaff();
   const { id } = await params;
   const [{ data: cocktail }, gins, media, ingredients] = await Promise.all([
     apiGet<Cocktail>(`/admin/cocktails/${id}`),

@@ -1,13 +1,14 @@
-// A10 Settings & admins (spec §5): website settings, your own profile and
-// security, and the two admin accounts. A server page that loads everything,
-// then hands each part to a small client form.
+// A10 Settings (spec §5): website settings, your own profile and security,
+// and the people who can sign in. A server page that loads everything, then
+// hands each part to a small client form. Editors see only their own profile
+// and security tabs.
 import type { Metadata } from "next";
 import Link from "next/link";
 
 import Tabs from "@/components/admin/Tabs";
 import { formatDateTime } from "@/lib/format";
 import { mediaOptions } from "@/lib/media-options";
-import { apiGet, requireAdmin } from "@/lib/server-api";
+import { apiGet, requireStaff } from "@/lib/server-api";
 import type { AdminAccount, ConsentStats, Media, Page, Profile, SiteSettings } from "@/lib/types";
 
 import AdminsPanel from "./AdminsPanel";
@@ -66,16 +67,24 @@ function ConsentPanel({ stats }: { stats: ConsentStats | null }) {
   );
 }
 
+const NOTICE_TEXT: Record<string, string> = {
+  "user.password_reset_by_admin": "reset your password",
+  "user.updated_by_admin": "changed your account details",
+};
+
 export default async function SettingsPage() {
-  await requireAdmin();
+  const session = await requireStaff();
+  const isAdmin = session.user.role === "admin";
+  const none = { data: null };
+  // The admin-only parts are only asked for when you're an admin.
   const [site, profile, admins, media, consent] = await Promise.all([
-    apiGet<SiteSettings>("/admin/settings"),
+    isAdmin ? apiGet<SiteSettings>("/admin/settings") : none,
     apiGet<Profile>("/admin/profile"),
-    apiGet<AdminAccount[]>("/admin/admins"),
-    apiGet<Page<Media>>("/admin/media?page_size=100"),
-    apiGet<ConsentStats>("/admin/consent/stats?days=30"),
+    isAdmin ? apiGet<AdminAccount[]>("/admin/admins") : none,
+    isAdmin ? apiGet<Page<Media>>("/admin/media?page_size=100") : none,
+    isAdmin ? apiGet<ConsentStats>("/admin/consent/stats?days=30") : none,
   ]);
-  if (!site.data || !profile.data || !admins.data) {
+  if (!profile.data || (isAdmin && (!site.data || !admins.data))) {
     return (
       <p className="alert alert-error" role="alert">
         The settings could not be loaded.
@@ -88,19 +97,21 @@ export default async function SettingsPage() {
     <>
       <div className="page-header">
         <h1>Settings</h1>
-        <Link className="button button-secondary" href="/juniper/audit">
-          Audit log
-        </Link>
+        {isAdmin && (
+          <Link className="button button-secondary" href="/juniper/audit">
+            Audit log
+          </Link>
+        )}
       </div>
 
       {me.notices.length > 0 && (
         <div className="alert alert-warning" role="alert">
-          <strong>Changes to your account by the other admin:</strong>
+          <strong>Changes to your account by an admin:</strong>
           <ul style={{ margin: 0 }}>
             {me.notices.map((notice) => (
               <li key={notice.at}>
-                {notice.by} reset your password on {formatDateTime(notice.at)}. If you didn&apos;t agree to
-                this, change your password now and talk to them.
+                {notice.by} {NOTICE_TEXT[notice.action] ?? "changed your account"} on {formatDateTime(notice.at)}. If
+                you didn&apos;t agree to this, talk to them (and change your password if it was reset).
               </li>
             ))}
           </ul>
@@ -111,17 +122,21 @@ export default async function SettingsPage() {
         <Tabs
           label="Settings sections"
           tabs={[
-            {
-              id: "website",
-              label: "Website",
-              content: (
-                <SiteSettingsForm
-                  key={site.data.version}
-                  settings={site.data}
-                  media={mediaOptions(media.data?.items ?? [], site.data.logo ? [site.data.logo] : [])}
-                />
-              ),
-            },
+            ...(isAdmin && site.data
+              ? [
+                  {
+                    id: "website",
+                    label: "Website",
+                    content: (
+                      <SiteSettingsForm
+                        key={site.data.version}
+                        settings={site.data}
+                        media={mediaOptions(media.data?.items ?? [], site.data.logo ? [site.data.logo] : [])}
+                      />
+                    ),
+                  },
+                ]
+              : []),
             {
               id: "profile",
               label: "My profile",
@@ -138,16 +153,12 @@ export default async function SettingsPage() {
                 </div>
               ),
             },
-            {
-              id: "admins",
-              label: "Admins",
-              content: <AdminsPanel admins={admins.data} />,
-            },
-            {
-              id: "consent",
-              label: "Cookie consent",
-              content: <ConsentPanel stats={consent.data} />,
-            },
+            ...(isAdmin && admins.data
+              ? [
+                  { id: "people", label: "People", content: <AdminsPanel admins={admins.data} /> },
+                  { id: "consent", label: "Cookie consent", content: <ConsentPanel stats={consent.data} /> },
+                ]
+              : []),
           ]}
         />
       </div>

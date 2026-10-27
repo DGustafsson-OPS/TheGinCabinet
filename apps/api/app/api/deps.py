@@ -15,7 +15,7 @@ from sqlalchemy.orm import Session
 from app.config import get_settings
 from app.db import get_db
 from app.errors import ApiError
-from app.models import AuthSession, User
+from app.models import AuthSession, User, UserRole
 from app.security.tokens import tokens_match
 from app.services.sessions import resolve_session
 
@@ -53,8 +53,8 @@ class AdminContext:
     session: AuthSession
 
 
-def require_admin(session: OptionalSession, db: DbSession) -> AdminContext:
-    """Allow only a fully signed-in admin (password **and** MFA). Otherwise 401."""
+def require_staff(session: OptionalSession, db: DbSession) -> AdminContext:
+    """Allow anyone fully signed in (password **and** MFA): an admin or an editor."""
     if session is None or not session.mfa_verified:
         raise ApiError(401, "not_authenticated", "Please sign in.")
     user = db.get(User, session.user_id)
@@ -63,6 +63,19 @@ def require_admin(session: OptionalSession, db: DbSession) -> AdminContext:
     return AdminContext(user=user, session=session)
 
 
+def require_admin(staff: Annotated[AdminContext, Depends(require_staff)]) -> AdminContext:
+    """Allow only admins. Editors get 403.
+
+    This is the default for every route under /admin. Routes that editors may
+    use (writing and publishing content) ask for ``CurrentStaff`` instead, so
+    a route nobody thought about stays admin-only.
+    """
+    if staff.user.role != UserRole.ADMIN:
+        raise ApiError(403, "admins_only", "Only an admin can do this.")
+    return staff
+
+
+CurrentStaff = Annotated[AdminContext, Depends(require_staff)]
 CurrentAdmin = Annotated[AdminContext, Depends(require_admin)]
 
 
@@ -94,3 +107,12 @@ def require_admin_write(request: Request, admin: CurrentAdmin) -> AdminContext:
 
 
 CurrentAdminWrite = Annotated[AdminContext, Depends(require_admin_write)]
+
+
+def require_staff_write(request: Request, staff: CurrentStaff) -> AdminContext:
+    """Admin or editor + CSRF: for content routes editors may change."""
+    check_csrf(request, staff.session)
+    return staff
+
+
+CurrentStaffWrite = Annotated[AdminContext, Depends(require_staff_write)]

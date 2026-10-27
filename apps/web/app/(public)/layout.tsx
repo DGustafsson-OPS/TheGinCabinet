@@ -19,13 +19,15 @@ import GoogleAnalytics from "@/components/GoogleAnalytics";
 import PublicHeader from "@/components/PublicHeader";
 import { AGE_COOKIE } from "@/lib/age-gate";
 import { CONSENT_COOKIE, gaMeasurementId, parseConsent } from "@/lib/consent";
+import { getSite, siteText } from "@/lib/public-api";
+import { contactFormOn } from "@/lib/turnstile";
 
 import gate from "./age-gate.module.css";
 import consentStyles from "./consent.module.css";
 import styles from "./public.module.css";
 
 export default async function PublicLayout({ children }: { children: React.ReactNode }) {
-  const jar = await cookies();
+  const [jar, site] = await Promise.all([cookies(), getSite()]);
   const ageConfirmed = jar.get(AGE_COOKIE)?.value === "1";
   const gaId = gaMeasurementId();
   // null = no valid answer for the current policy version yet: ask.
@@ -46,7 +48,8 @@ export default async function PublicLayout({ children }: { children: React.React
         <main id="main">{children}</main>
         <footer className={styles.footer}>
           <div className={styles.footerInner}>
-            <span>© The Gin Cabinet</span>
+            <span>{siteText(site, "footer.text") || "© The Gin Cabinet"}</span>
+            {contactFormOn(site) && <Link href="/contact">Contact</Link>}
             <Link href="/privacy">Privacy</Link>
             <Link href="/cookie-settings">Cookie settings</Link>
           </div>

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { formatDate, humanize } from "@/lib/format";
-import { apiGet, requireAdmin } from "@/lib/server-api";
+import { apiGet, requireStaff } from "@/lib/server-api";
 import { FLAVOURS, type Gin, type Page, type Tasting } from "@/lib/types";
 
 import TastingForm from "../TastingForm";
@@ -15,7 +15,7 @@ export const metadata: Metadata = { title: "Tasting" };
 type Params = Promise<{ id: string }>;
 
 export default async function TastingPage({ params }: { params: Params }) {
-  const session = await requireAdmin();
+  const session = await requireStaff();
   const { id } = await params;
   const [{ data: tasting }, gins] = await Promise.all([
     apiGet<Tasting>(`/admin/tastings/${id}`),

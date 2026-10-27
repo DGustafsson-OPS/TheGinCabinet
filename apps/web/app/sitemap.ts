@@ -2,7 +2,8 @@
 // Only published, public items appear: the public API never lists anything else.
 import type { MetadataRoute } from "next";
 
-import { SITE_URL, publicGet } from "@/lib/public-api";
+import { SITE_URL, getSite, publicGet } from "@/lib/public-api";
+import { contactFormOn } from "@/lib/turnstile";
 import type {
   Page,
   PublicCategory,
@@ -55,6 +56,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     page("/blog", 0.9),
     page("/tonics", 0.7),
     page("/about", 0.4),
+    ...(contactFormOn(await getSite()) ? [page("/contact", 0.3)] : []),
     page("/privacy", 0.2),
     ...gins.map((g) => page(`/gins/${g.slug}`, 0.8)),
     ...reviews.map((r) => page(`/reviews/${r.slug}`, 0.8, r.published_at)),

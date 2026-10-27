@@ -2,7 +2,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { apiGet, requireAdmin } from "@/lib/server-api";
+import { apiGet, requireStaff } from "@/lib/server-api";
 import type { Category } from "@/lib/types";
 
 import CategoryManager from "./CategoryManager";
@@ -10,7 +10,7 @@ import CategoryManager from "./CategoryManager";
 export const metadata: Metadata = { title: "Journal categories" };
 
 export default async function CategoriesPage() {
-  await requireAdmin();
+  await requireStaff();
   const { data } = await apiGet<Category[]>("/admin/blog/categories");
   return (
     <>

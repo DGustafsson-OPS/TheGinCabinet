@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { param } from "@/lib/format";
-import { apiGet, requireAdmin } from "@/lib/server-api";
+import { apiGet, requireStaff } from "@/lib/server-api";
 import type { Gin, Page, Tasting } from "@/lib/types";
 
 import NewReviewForm from "./NewReviewForm";
@@ -14,7 +14,7 @@ export const metadata: Metadata = { title: "New review" };
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
 export default async function NewReviewPage({ searchParams }: { searchParams: SearchParams }) {
-  await requireAdmin();
+  await requireStaff();
   const raw = await searchParams;
   const tastingId = param(raw.tasting);
   const [gins, tasting] = await Promise.all([

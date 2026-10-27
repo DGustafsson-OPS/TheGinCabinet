@@ -2,6 +2,10 @@
 // exactly what any visitor would get (spec §8 public endpoints).
 import "server-only";
 
+import { cache } from "react";
+
+import type { PublicSite } from "@/lib/types";
+
 const API_URL = process.env.API_INTERNAL_URL ?? "http://127.0.0.1:8000";
 
 /** The site's own address, for canonical URLs and social images. */
@@ -14,4 +18,15 @@ export async function publicGet<T>(path: string): Promise<T | null> {
     cache: "no-store",
   });
   return response.ok ? ((await response.json()) as T) : null;
+}
+
+/**
+ * The site's settings and page texts. React's cache() makes the layout and
+ * the page share one request per page view instead of asking twice.
+ */
+export const getSite = cache(() => publicGet<PublicSite>("/site"));
+
+/** One editable page text (Admin → Page texts); "" if the API is unreachable. */
+export function siteText(site: PublicSite | null, key: string): string {
+  return site?.texts?.[key] ?? "";
 }

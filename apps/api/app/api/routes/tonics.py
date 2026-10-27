@@ -14,7 +14,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy import func, or_, select, update
 from sqlalchemy.orm import Session
 
-from app.api.deps import CurrentAdmin, CurrentAdminWrite, DbSession
+from app.api.deps import CurrentStaff, CurrentStaffWrite, DbSession
 from app.errors import ApiError
 from app.models import Review, Tonic, TonicReview, TonicReviewStatus, TonicStyle, User
 from app.models._types import utcnow
@@ -122,7 +122,7 @@ def _average(reviews: list[TonicReview]) -> Decimal | None:
 
 @router.get("/tonics", response_model=Page[TonicOut])
 def list_tonics(
-    admin: CurrentAdmin,
+    admin: CurrentStaff,
     db: DbSession,
     paging: Annotated[PageParams, Depends()],
     search: str | None = None,
@@ -150,7 +150,7 @@ def list_tonics(
 
 
 @router.post("/tonics", response_model=TonicOut, status_code=201)
-def create_tonic(body: TonicIn, admin: CurrentAdminWrite, db: DbSession):
+def create_tonic(body: TonicIn, admin: CurrentStaffWrite, db: DbSession):
     ensure_unique_name(db, body.brand, body.name)
     check_cover(db, body.image_media_id)
     data = body.model_dump()
@@ -175,12 +175,12 @@ def create_tonic(body: TonicIn, admin: CurrentAdminWrite, db: DbSession):
 
 
 @router.get("/tonics/{tonic_id}", response_model=TonicOut)
-def get_tonic(tonic_id: uuid.UUID, admin: CurrentAdmin, db: DbSession):
+def get_tonic(tonic_id: uuid.UUID, admin: CurrentStaff, db: DbSession):
     return tonic_out(get_or_404(db, Tonic, tonic_id, "Tonic"))
 
 
 @router.patch("/tonics/{tonic_id}", response_model=TonicOut)
-def update_tonic(tonic_id: uuid.UUID, body: TonicPatch, admin: CurrentAdminWrite, db: DbSession):
+def update_tonic(tonic_id: uuid.UUID, body: TonicPatch, admin: CurrentStaffWrite, db: DbSession):
     tonic = get_or_404(db, Tonic, tonic_id, "Tonic")
     changes = body.model_dump(exclude_unset=True)
     check_version(
@@ -216,7 +216,7 @@ def update_tonic(tonic_id: uuid.UUID, body: TonicPatch, admin: CurrentAdminWrite
 
 
 @router.delete("/tonics/{tonic_id}", status_code=204)
-def delete_tonic(tonic_id: uuid.UUID, admin: CurrentAdminWrite, db: DbSession):
+def delete_tonic(tonic_id: uuid.UUID, admin: CurrentStaffWrite, db: DbSession):
     """Remove a tonic and its reviews (the UI asks for confirmation first)."""
     tonic = get_or_404(db, Tonic, tonic_id, "Tonic")
     audit.record(
@@ -249,7 +249,7 @@ def _check_publishable(review: TonicReview) -> None:
 
 
 @router.post("/tonics/{tonic_id}/reviews", response_model=TonicReviewOut, status_code=201)
-def add_review(tonic_id: uuid.UUID, body: TonicReviewIn, admin: CurrentAdminWrite, db: DbSession):
+def add_review(tonic_id: uuid.UUID, body: TonicReviewIn, admin: CurrentStaffWrite, db: DbSession):
     """Start a review as a draft."""
     tonic = get_or_404(db, Tonic, tonic_id, "Tonic")
     if body.author_id:
@@ -279,7 +279,7 @@ def add_review(tonic_id: uuid.UUID, body: TonicReviewIn, admin: CurrentAdminWrit
 
 @router.patch("/tonic-reviews/{review_id}", response_model=TonicReviewOut)
 def update_review(
-    review_id: uuid.UUID, body: TonicReviewPatch, admin: CurrentAdminWrite, db: DbSession
+    review_id: uuid.UUID, body: TonicReviewPatch, admin: CurrentStaffWrite, db: DbSession
 ):
     """Edit a review; ``status`` publishes (needs rating + notes) or unpublishes it."""
     review = get_or_404(db, TonicReview, review_id, "Review")
@@ -320,7 +320,7 @@ def update_review(
 
 
 @router.delete("/tonic-reviews/{review_id}", status_code=204)
-def delete_review(review_id: uuid.UUID, admin: CurrentAdminWrite, db: DbSession):
+def delete_review(review_id: uuid.UUID, admin: CurrentStaffWrite, db: DbSession):
     review = get_or_404(db, TonicReview, review_id, "Review")
     audit.record(
         db,

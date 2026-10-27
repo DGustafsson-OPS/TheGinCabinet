@@ -22,12 +22,13 @@ class MfaVerifyRequest(BaseModel):
 
 
 class UserOut(BaseModel):
-    """What the frontend may know about the logged-in admin."""
+    """What the frontend may know about the signed-in person."""
 
     id: uuid.UUID
     username: str
     display_name: str
     email: str
+    role: str  # "admin" or "editor": decides which menus the website shows
 
 
 class SessionOut(BaseModel):

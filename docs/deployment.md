@@ -145,11 +145,14 @@ passwords and keys as secret/locked so they're hidden in the dashboard.
 | `GC_ENVIRONMENT` | `production` | Already the image default. Turns off the API docs pages. |
 | `GC_COOKIE_SECURE` | `true` | Already the image default. Cookies only over HTTPS. |
 | `GC_MIGRATE_ON_START` | `true` (default) | Set to `false` only if you run migrations another way. |
+| `GC_TURNSTILE_SECRET_KEY` | from Cloudflare (optional) | Turns on the **contact form**, together with `TURNSTILE_SITE_KEY` on the web app. Secret: lock it. See [Contact form](#contact-form-and-cloudflare-turnstile). |
 
 Optional, with sensible defaults (see `apps/api/app/config.py`):
 `GC_MAX_UPLOAD_MB` (15), `GC_MAX_IMAGE_SIDE` (3000 px),
 `GC_SESSION_IDLE_MINUTES` (30), `GC_SESSION_ABSOLUTE_HOURS` (12),
-`GC_TOTP_ISSUER` ("The Gin Cabinet", the name shown in authenticator apps).
+`GC_TOTP_ISSUER` ("The Gin Cabinet", the name shown in authenticator apps),
+`GC_CONTACT_PER_HOUR` (5 messages per IP address per hour),
+`GC_CONTACT_RETENTION_DAYS` (365, then messages are deleted).
 
 ### Web application
 
@@ -157,6 +160,7 @@ Optional, with sensible defaults (see `apps/api/app/config.py`):
 | --- | --- | --- |
 | `API_INTERNAL_URL` | `http://<api internal host>:8000` | Needed **at build time and at run time**: tick Coolify's "build variable" option *and* keep it as a normal variable. `<api internal host>` is the API application's container name on the Coolify network (shown in the API app's settings; usually its resource ID). |
 | `SITE_URL` | `https://gincabinet.example.com` | Used for canonical links, the sitemap, RSS and social-media previews. No trailing slash. |
+| `TURNSTILE_SITE_KEY` | from Cloudflare (optional) | The public half of the Turnstile keys; the form appears only when the API also has `GC_TURNSTILE_SECRET_KEY`. Read at run time (restart, no rebuild). |
 | `GA_MEASUREMENT_ID` | `G-XXXXXXXXXX` (optional) | Turns on Google Analytics **with a cookie-consent banner**. Leave unset for no analytics and no banner. Read at run time: changing it needs a restart, not a rebuild. See [§8](#google-analytics). |
 
 The website gets **no** database URL or secret key; it doesn't need them.
@@ -209,8 +213,11 @@ password manager. Leave **"Make it publicly available"** off.
    It asks for a password (12+ characters; a passphrase is best), then prints
    an MFA key and 10 recovery codes **once**. Add the key to the admin's
    authenticator app and save the recovery codes in the password manager.
-   Repeat for the second admin. There are no public sign-ups; at most two
-   accounts can exist.
+   Repeat for the second admin if you like. There are no public sign-ups.
+   Everyone else (a second admin, or **editors**) is invited from the website:
+   Admin → Settings → **People** → *Invite someone*. That makes a one-time
+   link (valid 7 days) where the person chooses their own password and sets
+   up their own authenticator app. Limits: two admins, ten accounts in all.
 9. **Sign in** at `https://<domain>/login`. The admin area lives at
    `/juniper` (deliberately not the guessable `/admin`, which shows "not
    found"). It isn't linked from the public site or listed in `robots.txt`;
@@ -348,10 +355,33 @@ To set it up:
 
 **Content-Security-Policy.** Every page is sent with a CSP header (built in
 `apps/web/lib/csp.ts`) that lets the browser run only the site's own scripts.
-Google's hosts are allowed only while `GA_MEASUREMENT_ID` is set. If you ever
+Google's hosts are allowed only while `GA_MEASUREMENT_ID` is set, and
+Turnstile's frame only while `TURNSTILE_SITE_KEY` is set. If you ever
 add another outside service (a map, a video embed, a chat widget), add its
 hosts there too, or the browser will block it; the browser's developer
 console names the blocked address.
+
+### Contact form and Cloudflare Turnstile
+
+The contact page (`/contact`) saves messages to Admin → **Messages** (the site
+sends no email; reply from your own email with the *Reply by email* button).
+[Cloudflare Turnstile](https://developers.cloudflare.com/turnstile/) checks
+that a person, not a bot, is sending. It's free, and works whether or not the
+site's DNS is proxied through Cloudflare.
+
+1. Cloudflare dashboard → **Turnstile** → **Add widget**. Name it "The Gin
+   Cabinet", add the hostname `thegincabinet.com` (and `www.` if you serve it),
+   widget mode **Managed**.
+2. Copy the **site key** into `TURNSTILE_SITE_KEY` on the **web** application,
+   and the **secret key** into `GC_TURNSTILE_SECRET_KEY` on the **API**
+   application (lock it). Restart both; no rebuild needed.
+3. Check: the footer now has a **Contact** link; send yourself a test message
+   and find it under Admin → Messages.
+
+Leave both unset and there is no form: the About page shows the contact email
+instead. Spam protection besides Turnstile: at most 5 messages an hour from one
+IP address (only a keyed hash of the address is stored) and a hidden field
+that catches simple bots. Messages are deleted after a year.
 
 ## 9. Real visitor IP and Cloudflare
 
