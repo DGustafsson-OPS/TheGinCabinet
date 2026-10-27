@@ -123,6 +123,7 @@ Progress against the delivery phases in
 | Ratings in admin | Gin list and gin page show the average published review rating and our tasting average, with shortcuts to rate |
 | EUR by default | Purchases and wishlist default to EUR; any 3-letter currency can still be typed (suggestions: EUR, SEK, NOK, DKK, GBP, USD). Päihdelinkki link points to the English site |
 | Media library folders and bulk edit | Each image has a name (from the file name at upload) and an optional folder path like `Gins/Hernö` (migration 0013; no folders table: a folder exists while an image is in it). Browse by folder, upload into the open folder, rename/move a folder with its subfolders, and for ticked images: move, rename as a numbered series, set the credit, delete (images in use are skipped and listed). Pickers show "Folder › Name — description" |
+| Gin guide | Lasting reference pages at `/guide` (migration 0014, table `guide_pages`): title, summary, cover photo, Journal-style text blocks (now with `**bold**` and `*italic*`), address and SEO, all editable under Admin → Gin guide by admins and editors. Pages have a chosen order (↑/↓), Publish/Unpublish, preview and delete; the menu link appears once one is published. Intro text under Page texts. Six starter drafts (styles, history, glassware, botanicals, G&T, tasting) come with the migration, unpublished |
 | Form layout | Two-column admin forms use `minmax(0, 1fr)` so a long dropdown can't push a column out of the card |
 
 ## Phase 8 – Launch QA ⬜

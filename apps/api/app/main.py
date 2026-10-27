@@ -29,6 +29,7 @@ from app.api.routes import (
     auth,
     consent,
     contact,
+    guide,
     health,
     page_texts,
     public_blog,
@@ -118,6 +119,8 @@ def create_app() -> FastAPI:
     app.include_router(admin_settings.router, prefix=API_PREFIX)
     app.include_router(public_site.router, prefix=API_PREFIX)
     app.include_router(consent.router, prefix=API_PREFIX)
+    app.include_router(guide.router, prefix=API_PREFIX)
+    app.include_router(guide.public_router, prefix=API_PREFIX)
     app.include_router(tonics.router, prefix=API_PREFIX)
     app.include_router(tonics.public_router, prefix=API_PREFIX)
     app.include_router(page_texts.router, prefix=API_PREFIX)

@@ -74,6 +74,9 @@ class ImageBlock(_Block):
     type: Literal["image"]
     media_id: uuid.UUID
     caption: str | None = Field(default=None, max_length=300)
+    # "full": across the text column. "left"/"right": beside the text that
+    # follows, which flows around it (full width on phones).
+    align: Literal["full", "left", "right"] = "full"
 
 
 class CardBlock(_Block):

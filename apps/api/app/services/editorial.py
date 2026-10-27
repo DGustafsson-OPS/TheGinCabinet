@@ -15,6 +15,7 @@ from app.models import (
     CocktailRecipe,
     GinImage,
     GinProduct,
+    GuidePage,
     MediaAsset,
     Review,
     ReviewRevision,
@@ -54,8 +55,8 @@ def media_summary(asset: MediaAsset | None) -> MediaSummary | None:
 def media_usage(db: Session, asset_id: uuid.UUID) -> list[str]:
     """Human-readable list of what uses an image (spec A09 "usage references").
 
-    Journal articles count when the image is their featured or social image,
-    or appears inside the article.
+    Journal articles and Gin guide pages count when the image is their
+    featured (or social) image, or appears inside the text.
     """
     reviews = db.scalars(select(Review.title).where(Review.cover_media_id == asset_id))
     cocktails = db.scalars(
@@ -80,11 +81,20 @@ def media_usage(db: Session, asset_id: uuid.UUID) -> list[str]:
         if asset_id in (hero, social)
         or any(b.get("type") == "image" and str(b.get("media_id")) == wanted for b in blocks or [])
     ]
+    guide_pages = [
+        title
+        for title, hero, blocks in db.execute(
+            select(GuidePage.title, GuidePage.hero_media_id, GuidePage.body_blocks)
+        )
+        if hero == asset_id
+        or any(b.get("type") == "image" and str(b.get("media_id")) == wanted for b in blocks or [])
+    ]
     return (
         [f"Gin: {g.display_name}" for g in gins]
         + [f"Review: {t}" for t in reviews]
         + [f"Cocktail: {t}" for t in cocktails]
         + [f"Article: {t}" for t in articles]
+        + [f"Gin guide: {t}" for t in guide_pages]
         + [
             f"Tonic: {t.display_name}"
             for t in db.scalars(select(Tonic).where(Tonic.image_media_id == asset_id))

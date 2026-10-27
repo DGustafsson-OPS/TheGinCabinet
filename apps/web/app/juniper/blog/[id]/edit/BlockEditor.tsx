@@ -13,7 +13,7 @@ import MediaImage from "@/components/MediaImage";
 import ConfirmButton from "@/components/admin/ConfirmButton";
 import PhotoUpload from "@/components/admin/PhotoUpload";
 import type { MediaOption } from "@/lib/media-options";
-import type { PostBlock, RelationKind } from "@/lib/types";
+import type { ImageAlign, PostBlock, RelationKind } from "@/lib/types";
 
 export type BlockRow = PostBlock & { key: string };
 export type RefOptions = Record<RelationKind, { id: string; label: string }[]>;
@@ -118,7 +118,7 @@ export default function BlockEditor({ idPrefix, blocks, onChange, newKey, media,
                     <label htmlFor={id("main")}>Text</label>
                     <textarea id={id("main")} value={block.text} onChange={(e) => update(index, { text: e.target.value })} aria-describedby={id("hint")} />
                     <span id={id("hint")} className="field-hint">
-                      Links: [label](https://example.com) or [label](/collection).
+                      **bold**, *italic*, links: [label](https://example.com) or [label](/collection).
                     </span>
                   </div>
                 )}
@@ -168,6 +168,22 @@ export default function BlockEditor({ idPrefix, blocks, onChange, newKey, media,
                     <div className="field">
                       <label htmlFor={id("caption")}>Caption (optional)</label>
                       <input id={id("caption")} value={block.caption ?? ""} maxLength={300} onChange={(e) => update(index, { caption: e.target.value })} />
+                    </div>
+                    <div className="field">
+                      <label htmlFor={id("align")}>Placement</label>
+                      <select
+                        id={id("align")}
+                        value={block.align ?? "full"}
+                        onChange={(e) => update(index, { align: e.target.value as ImageAlign })}
+                        aria-describedby={id("align-hint")}
+                      >
+                        <option value="full">Full width</option>
+                        <option value="left">Left, with text beside it</option>
+                        <option value="right">Right, with text beside it</option>
+                      </select>
+                      <span id={id("align-hint")} className="field-hint">
+                        Beside: the text that follows flows around the photo. Phones always show it full width.
+                      </span>
                     </div>
                     {(() => {
                       const chosen = media.find((m) => m.id === block.media_id);
@@ -258,7 +274,8 @@ export function cleanBlocks(rows: BlockRow[]): PostBlock[] {
         break;
       }
       case "image":
-        if (block.media_id) result.push({ type: "image", media_id: block.media_id, caption: block.caption?.trim() || null });
+        if (block.media_id)
+          result.push({ type: "image", media_id: block.media_id, caption: block.caption?.trim() || null, align: block.align ?? "full" });
         break;
       case "card":
         if (block.id) result.push({ type: "card", kind: block.kind, id: block.id });

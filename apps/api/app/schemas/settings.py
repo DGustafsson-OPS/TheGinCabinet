@@ -49,6 +49,8 @@ class PublicSite(BaseModel):
     texts: dict[str, str]
     # Whether the contact form is switched on (Cloudflare Turnstile keys set).
     contact_form: bool
+    # Whether any Gin guide page is published (the menu shows "Gin guide" only then).
+    has_guide: bool = False
 
 
 # ---------------- Your own profile ----------------

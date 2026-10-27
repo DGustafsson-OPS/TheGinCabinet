@@ -39,6 +39,7 @@ const SECTIONS: { title: string; items: NavItem[] }[] = [
       { href: "/juniper/cocktails", label: "Cocktails", ready: true, editors: true },
       { href: "/juniper/tonics", label: "Tonics", ready: true, editors: true },
       { href: "/juniper/blog", label: "Journal", ready: true, editors: true },
+      { href: "/juniper/guide", label: "Gin guide", ready: true, editors: true },
       { href: "/juniper/media", label: "Media", ready: true, editors: true },
       { href: "/juniper/pages", label: "Page texts", ready: true, editors: true },
     ],

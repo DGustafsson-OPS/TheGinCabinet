@@ -116,6 +116,15 @@ PAGE_TEXTS: tuple[PageTextDef, ...] = (
         formatted=True,
         max_length=1000,
     ),
+    PageTextDef(
+        "guide.intro",
+        "Gin guide",
+        "Introduction on the guide's front page",
+        "Everything we have learned about gin: the styles, a little history, the right glass "
+        "and how to get the best out of every bottle.",
+        formatted=True,
+        max_length=1000,
+    ),
     PageTextDef("footer.text", "Every page", "Footer text", "© The Gin Cabinet", max_length=200),
 )
 

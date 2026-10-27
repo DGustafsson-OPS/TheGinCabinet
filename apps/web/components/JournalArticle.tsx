@@ -4,7 +4,7 @@
 import Link from "next/link";
 
 import GinGrid from "@/components/GinGrid";
-import InlineText from "@/components/InlineText";
+import { FormattedLine } from "@/components/FormattedText";
 import MediaImage from "@/components/MediaImage";
 import { PostGrid } from "@/components/PostCard";
 import { formatDate, formatStrength } from "@/lib/format";
@@ -59,14 +59,15 @@ function EmbeddedCard({ block }: { block: Extract<PublicBlock, { type: "card" }>
   );
 }
 
-function Block({ block }: { block: PublicBlock }) {
+/** One block of article text. Also used by the Gin guide pages. */
+export function ArticleBlock({ block }: { block: PublicBlock }) {
   switch (block.type) {
     case "heading":
       return block.level === 2 ? <h2 className={styles.h2}>{block.text}</h2> : <h3 className={styles.h3}>{block.text}</h3>;
     case "paragraph":
       return (
         <p>
-          <InlineText text={block.text} />
+          <FormattedLine text={block.text} />
         </p>
       );
     case "list": {
@@ -75,7 +76,7 @@ function Block({ block }: { block: PublicBlock }) {
         <List>
           {block.items.map((item, index) => (
             <li key={index}>
-              <InlineText text={item} />
+              <FormattedLine text={item} />
             </li>
           ))}
         </List>
@@ -86,7 +87,7 @@ function Block({ block }: { block: PublicBlock }) {
         <figure className={styles.quote}>
           <blockquote>
             <p>
-              <InlineText text={block.text} />
+              <FormattedLine text={block.text} />
             </p>
           </blockquote>
           {block.cite && <figcaption>— {block.cite}</figcaption>}
@@ -94,8 +95,12 @@ function Block({ block }: { block: PublicBlock }) {
       );
     case "image":
       return (
-        <figure className={styles.figure}>
-          <MediaImage media={block.image} className={styles.inlineImage} sizes="(min-width: 760px) 720px, 100vw" />
+        <figure className={block.align === "left" ? styles.figureLeft : block.align === "right" ? styles.figureRight : styles.figure}>
+          <MediaImage
+            media={block.image}
+            className={styles.inlineImage}
+            sizes={block.align === "left" || block.align === "right" ? "(min-width: 640px) 330px, 100vw" : "(min-width: 760px) 720px, 100vw"}
+          />
           {block.caption && <figcaption>{block.caption}</figcaption>}
         </figure>
       );
@@ -142,7 +147,7 @@ export default function JournalArticle({ post }: { post: PublicPost }) {
 
       <div className={styles.body}>
         {post.body.map((block, index) => (
-          <Block key={index} block={block} />
+          <ArticleBlock key={index} block={block} />
         ))}
       </div>
 

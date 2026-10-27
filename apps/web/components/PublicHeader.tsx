@@ -16,10 +16,12 @@ const NAV = [
   { href: "/tonics", label: "Tonics" },
   { href: "/distilleries", label: "Distilleries" },
   { href: "/blog", label: "Journal" },
+  { href: "/guide", label: "Gin guide" },
   { href: "/about", label: "About" },
 ];
 
-export default function PublicHeader() {
+/** `showGuide`: list "Gin guide" only once at least one guide page is published. */
+export default function PublicHeader({ showGuide = false }: { showGuide?: boolean }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
@@ -41,7 +43,7 @@ export default function PublicHeader() {
         </button>
         <nav id="public-nav" aria-label="Main" className={open ? styles.navOpen : styles.nav}>
           <ul>
-            {NAV.map((item) => (
+            {NAV.filter((item) => showGuide || item.href !== "/guide").map((item) => (
               <li key={item.href}>
                 <Link
                   href={item.href}

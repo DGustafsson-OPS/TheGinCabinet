@@ -1,9 +1,11 @@
 """Public website settings (spec A10): name, tagline, logo, contact, page texts."""
 
 from fastapi import APIRouter
+from sqlalchemy import select
 
 from app.api.deps import DbSession
 from app.api.routes.contact import contact_form_enabled
+from app.models import GuidePage
 from app.schemas.settings import PublicSite
 from app.services import page_texts
 from app.services.editorial import media_summary
@@ -24,4 +26,6 @@ def get_public_site(db: DbSession):
         logo=media_summary(row.logo),
         texts=page_texts.resolved(db),
         contact_form=contact_form_enabled(),
+        has_guide=db.scalar(select(GuidePage.id).where(GuidePage.published.is_(True)).limit(1))
+        is not None,
     )

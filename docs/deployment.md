@@ -160,8 +160,8 @@ Optional, with sensible defaults (see `apps/api/app/config.py`):
 | --- | --- | --- |
 | `API_INTERNAL_URL` | `http://<api internal host>:8000` | Needed **at build time and at run time**: tick Coolify's "build variable" option *and* keep it as a normal variable. `<api internal host>` is the API application's container name on the Coolify network (shown in the API app's settings; usually its resource ID). |
 | `SITE_URL` | `https://gincabinet.example.com` | Used for canonical links, the sitemap, RSS and social-media previews. No trailing slash. |
-| `TURNSTILE_SITE_KEY` | from Cloudflare (optional) | The public half of the Turnstile keys; the form appears only when the API also has `GC_TURNSTILE_SECRET_KEY`. Read at run time (restart, no rebuild). |
-| `GA_MEASUREMENT_ID` | `G-XXXXXXXXXX` (optional) | Turns on Google Analytics **with a cookie-consent banner**. Leave unset for no analytics and no banner. Read at run time: changing it needs a restart, not a rebuild. See [§8](#google-analytics). |
+| `TURNSTILE_SITE_KEY` | from Cloudflare (optional) | The public half of the Turnstile keys; the form appears only when the API also has `GC_TURNSTILE_SECRET_KEY`. Read when the app starts: after changing it, press **Redeploy** (a plain Restart may keep the old value). |
+| `GA_MEASUREMENT_ID` | `G-XXXXXXXXXX` (optional) | Turns on Google Analytics **with a cookie-consent banner**. Leave unset for no analytics and no banner. Read when the app starts: after changing it, press **Redeploy** (a plain Restart may keep the old value). See [§8](#google-analytics). |
 
 The website gets **no** database URL or secret key; it doesn't need them.
 
@@ -324,7 +324,7 @@ To set it up:
 1. In [Google Analytics](https://analytics.google.com), create a **GA4
    property** and a **Web data stream** for your domain. Copy its
    Measurement ID (`G-…`) into `GA_MEASUREMENT_ID` on the web application and
-   restart it.
+   press **Redeploy** on it (a plain Restart may keep the old settings).
 2. In GA → **Admin**, adjust these settings to match what the privacy page promises:
    * **Data collection:** keep **Google signals off**, and leave
      advertising/ads personalisation off.
@@ -374,7 +374,8 @@ site's DNS is proxied through Cloudflare.
    widget mode **Managed**.
 2. Copy the **site key** into `TURNSTILE_SITE_KEY` on the **web** application,
    and the **secret key** into `GC_TURNSTILE_SECRET_KEY` on the **API**
-   application (lock it). Restart both; no rebuild needed.
+   application (lock it). Press **Redeploy** on both (a plain Restart may keep
+   the old settings).
 3. Check: the footer now has a **Contact** link; send yourself a test message
    and find it under Admin → Messages.
 

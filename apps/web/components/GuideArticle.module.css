@@ -1,0 +1,9 @@
+/* Previous/next links and the way back, kept in the reading column. */
+.footer {
+  max-width: var(--reading-max-width);
+  margin: var(--space-7) auto 0;
+}
+.footer ul {
+  padding-left: var(--space-4);
+  line-height: 2;
+}

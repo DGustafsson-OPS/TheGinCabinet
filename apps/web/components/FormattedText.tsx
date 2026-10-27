@@ -1,7 +1,7 @@
 // Show an editable page text (Admin → Page texts) with a few simple marks:
 //
 //   ## A heading          - a bullet            1. a numbered step
-//   **bold words**        [link text](https://…) or [text](/a-page)
+//   **bold words**  *italic words*  [link text](https://…) or [text](/a-page)
 //
 // A blank line starts a new paragraph. Like InlineText, nothing is ever
 // inserted as HTML: we build each element ourselves and React escapes the
@@ -48,13 +48,31 @@ function toBlocks(text: string): Block[] {
   return blocks;
 }
 
-/** One line of text: **bold** parts, and links via InlineText. */
+// **bold** or *italic*: the text between the stars can't contain a star or a line break.
+const EMPHASIS = /\*\*([^*\n]+)\*\*|\*([^*\n]+)\*/g;
+
+/** One line of text: **bold** and *italic* parts, and links via InlineText. */
 export function FormattedLine({ text }: { text: string }) {
   const parts: ReactNode[] = [];
-  text.split(/\*\*([^*\n]+)\*\*/).forEach((piece, index) => {
-    // split() with a (group) gives: plain, bold, plain, bold, …
-    parts.push(index % 2 ? <strong key={index}><InlineText text={piece} /></strong> : <InlineText key={index} text={piece} />);
-  });
+  let last = 0;
+  for (const match of text.matchAll(EMPHASIS)) {
+    const [whole, bold, italic] = match;
+    const start = match.index ?? 0;
+    parts.push(<InlineText key={`t${start}`} text={text.slice(last, start)} />);
+    parts.push(
+      bold !== undefined ? (
+        <strong key={start}>
+          <InlineText text={bold} />
+        </strong>
+      ) : (
+        <em key={start}>
+          <InlineText text={italic} />
+        </em>
+      ),
+    );
+    last = start + whole.length;
+  }
+  parts.push(<InlineText key="end" text={text.slice(last)} />);
   return <>{parts}</>;
 }
 

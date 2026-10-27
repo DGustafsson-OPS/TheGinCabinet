@@ -10,6 +10,7 @@ import type {
   PublicCocktailCard,
   PublicDistilleryCard,
   PublicGinCard,
+  PublicGuideCard,
   PublicPostCard,
   PublicReviewCard,
   PublicTonicCard,
@@ -33,7 +34,7 @@ async function all<T>(path: string): Promise<T[]> {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [gins, reviews, cocktails, distilleries, posts, categories, tonics] = await Promise.all([
+  const [gins, reviews, cocktails, distilleries, posts, categories, tonics, guide] = await Promise.all([
     all<PublicGinCard>("/gins"),
     all<PublicReviewCard>("/reviews"),
     all<PublicCocktailCard>("/cocktails"),
@@ -41,6 +42,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     all<PublicPostCard>("/blog"),
     publicGet<PublicCategory[]>("/blog/categories"),
     all<PublicTonicCard>("/tonics"),
+    publicGet<PublicGuideCard[]>("/guide"),
   ]);
   const page = (path: string, priority: number, lastModified?: string) => ({
     url: `${SITE_URL}${path}`,
@@ -55,6 +57,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     page("/distilleries", 0.6),
     page("/blog", 0.9),
     page("/tonics", 0.7),
+    ...(guide?.length ? [page("/guide", 0.7), ...guide.map((g) => page(`/guide/${g.slug}`, 0.6))] : []),
     page("/about", 0.4),
     ...(contactFormOn(await getSite()) ? [page("/contact", 0.3)] : []),
     page("/privacy", 0.2),
