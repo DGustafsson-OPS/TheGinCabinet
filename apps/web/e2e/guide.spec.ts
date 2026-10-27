@@ -6,6 +6,12 @@ import { HAS_CREDENTIALS, gotoReady, signInThroughUi, toasts, unique } from "./h
 
 test.skip(!HAS_CREDENTIALS, "Set E2E_PASSWORD and E2E_TOTP_SECRET (see e2e/README.md)");
 
+// A valid 1×1 pixel PNG, so the test doesn't need an image file on disk.
+const TINY_PNG = Buffer.from(
+  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+  "base64",
+);
+
 test("write, publish, reorder and remove a Gin guide page", async ({ page, browser }) => {
   const tag = unique();
   const title = `Glasses ${tag}`;
@@ -29,6 +35,15 @@ test("write, publish, reorder and remove a Gin guide page", async ({ page, brows
     .getByRole("group", { name: "Paragraph (block 2)" })
     .getByLabel("Text")
     .fill("A **big bowl** for *aromatic* gins. See [our collection](/collection).");
+  // A photo beside the text, uploaded right here.
+  await page.getByRole("button", { name: "+ Image" }).click();
+  const photo = page.getByRole("group", { name: "Image (block 3)" });
+  await photo.getByText("Upload a new photo…").click();
+  await photo.getByLabel("Photo file").setInputFiles({ name: `copa-${tag}.png`, mimeType: "image/png", buffer: TINY_PNG });
+  await photo.getByLabel("Describe the photo").fill(`A copa glass ${tag}`);
+  await photo.getByRole("button", { name: "Upload", exact: true }).click();
+  await expect(toasts(page)).toContainText("Photo uploaded and selected");
+  await photo.getByLabel("Placement").selectOption("right");
   // Title and summary.
   await page.getByRole("tab", { name: "Title and summary" }).click();
   await page.getByRole("textbox", { name: "Summary", exact: true }).fill("Which glass for which gin drink.");
@@ -41,6 +56,13 @@ test("write, publish, reorder and remove a Gin guide page", async ({ page, brows
   await expect(page.getByRole("heading", { level: 2, name: "The copa" })).toBeVisible();
   await expect(page.locator("strong", { hasText: "big bowl" })).toBeVisible();
   await expect(page.locator("em", { hasText: "aromatic" })).toBeVisible();
+  // The photo sits on the right beside the text; on a phone it goes full width.
+  const figure = page.locator("figure", { has: page.getByRole("img", { name: `A copa glass ${tag}` }) });
+  await expect(figure).toHaveCSS("float", "right");
+  const desktop = page.viewportSize()!;
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(figure).toHaveCSS("float", "none");
+  await page.setViewportSize(desktop);
   await page.getByRole("link", { name: "← Back to the editor" }).click();
 
   // Not public yet.

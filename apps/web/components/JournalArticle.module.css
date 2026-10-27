@@ -65,6 +65,12 @@
 .body {
   font-size: 1.1rem;
   line-height: 1.75;
+  display: flow-root; /* keeps photos placed beside the text inside the article */
+}
+/* Lists beside a photo: keep the bullets clear of it. */
+.body ul,
+.body ol {
+  display: flow-root;
 }
 .body p,
 .body ul,
@@ -73,6 +79,7 @@
 }
 .h2,
 .h3 {
+  clear: both; /* a new section starts below a photo placed beside the text */
   font-family: var(--font-display);
   font-weight: 500;
   line-height: 1.25;
@@ -100,8 +107,28 @@
   margin: 0;
 }
 
-.figure {
+.figure,
+.figureLeft,
+.figureRight {
   margin: var(--space-5) 0;
+}
+/* A photo beside the text: it "floats" to one side and the following
+   paragraphs flow around it. On phones there's no room, so it stays full width. */
+@media (min-width: 640px) {
+  .figureLeft,
+  .figureRight {
+    width: 45%;
+    margin-top: var(--space-1);
+    margin-bottom: var(--space-3);
+  }
+  .figureLeft {
+    float: left;
+    margin-right: var(--space-5);
+  }
+  .figureRight {
+    float: right;
+    margin-left: var(--space-5);
+  }
 }
 .inlineImage {
   display: block;

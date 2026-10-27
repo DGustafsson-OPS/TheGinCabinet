@@ -68,6 +68,12 @@ def test_an_empty_page_cannot_be_published(api):
     assert r.json()["error"]["code"] == "empty_page"
 
 
+def test_photo_placement_must_be_known(api):
+    image = upload(api, jpeg_with_gps(), alt="A copa glass").json()
+    block = {"type": "image", "media_id": image["id"], "align": "centre-ish"}
+    assert api.post(ADMIN, json={"title": "Bad", "body_blocks": [block]}).status_code == 422
+
+
 def test_unsafe_links_are_rejected(api):
     r = api.post(
         ADMIN,
@@ -114,7 +120,7 @@ def test_images_and_cards_in_the_body(api, client):
         hero_media_id=image["id"],
         body_blocks=[
             *BODY,
-            {"type": "image", "media_id": image["id"], "caption": "Copa"},
+            {"type": "image", "media_id": image["id"], "caption": "Copa", "align": "right"},
             {"type": "card", "kind": "gin", "id": private_gin["id"]},
         ],
     )
@@ -124,6 +130,7 @@ def test_images_and_cards_in_the_body(api, client):
     types = [b["type"] for b in public["body"]]
     assert "image" in types
     assert "card" not in types  # the gin is private, so its card is left out
+    assert public["body"][types.index("image")]["align"] == "right"
 
     # The image counts as used, so it can't be deleted from the library.
     media = api.get(f"/api/v1/admin/media/{image['id']}").json()

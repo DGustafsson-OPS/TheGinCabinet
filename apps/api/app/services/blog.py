@@ -467,6 +467,7 @@ def public_blocks(
                     "type": "image",
                     "image": image.model_dump(mode="json"),
                     "caption": block.get("caption"),
+                    "align": block.get("align", "full"),  # older blocks have none
                 }
             )
         elif block["type"] == "card":

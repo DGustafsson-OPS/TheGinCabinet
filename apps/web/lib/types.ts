@@ -454,12 +454,15 @@ export type PostStatus = "draft" | "scheduled" | "published" | "archived";
 export type RelationKind = "gin" | "review" | "cocktail" | "post";
 
 /** One block of an article body, as the editor stores it. */
+/** Where a photo sits: across the text, or beside it with the text flowing around. */
+export type ImageAlign = "full" | "left" | "right";
+
 export type PostBlock =
   | { type: "heading"; level: 2 | 3; text: string }
   | { type: "paragraph"; text: string }
   | { type: "list"; ordered: boolean; items: string[] }
   | { type: "quote"; text: string; cite?: string | null }
-  | { type: "image"; media_id: string; caption?: string | null }
+  | { type: "image"; media_id: string; caption?: string | null; align?: ImageAlign }
   | { type: "card"; kind: RelationKind; id: string };
 
 export type CategoryRef = { id: string; name: string; slug: string };
@@ -519,7 +522,7 @@ export type PublicBlock =
   | { type: "paragraph"; text: string }
   | { type: "list"; ordered: boolean; items: string[] }
   | { type: "quote"; text: string; cite?: string | null }
-  | { type: "image"; image: MediaSummary; caption: string | null }
+  | { type: "image"; image: MediaSummary; caption: string | null; align?: ImageAlign }
   | { type: "card"; kind: "gin"; card: PublicGinCard }
   | { type: "card"; kind: "review"; card: PublicReviewCard }
   | { type: "card"; kind: "cocktail"; card: PublicCocktailCard }

@@ -95,8 +95,12 @@ export function ArticleBlock({ block }: { block: PublicBlock }) {
       );
     case "image":
       return (
-        <figure className={styles.figure}>
-          <MediaImage media={block.image} className={styles.inlineImage} sizes="(min-width: 760px) 720px, 100vw" />
+        <figure className={block.align === "left" ? styles.figureLeft : block.align === "right" ? styles.figureRight : styles.figure}>
+          <MediaImage
+            media={block.image}
+            className={styles.inlineImage}
+            sizes={block.align === "left" || block.align === "right" ? "(min-width: 640px) 330px, 100vw" : "(min-width: 760px) 720px, 100vw"}
+          />
           {block.caption && <figcaption>{block.caption}</figcaption>}
         </figure>
       );
