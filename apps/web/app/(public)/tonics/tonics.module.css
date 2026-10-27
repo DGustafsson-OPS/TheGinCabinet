@@ -21,7 +21,7 @@
   .controls {
     grid-template-columns: 2fr 1fr 1fr auto;
   }
-  .controls .button {
+  .controls :global(.button) { /* :global: the site-wide .button class, not a local one */
     margin-bottom: var(--space-3);
   }
 }

@@ -34,7 +34,7 @@
   align-items: flex-end;
   flex-wrap: wrap;
 }
-.search .button {
+.search :global(.button) { /* :global: the site-wide .button class, not a local one */
   margin-bottom: var(--space-3);
 }
 

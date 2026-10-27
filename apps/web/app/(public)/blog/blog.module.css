@@ -64,7 +64,7 @@
   .search {
     grid-template-columns: minmax(0, 420px) max-content;
   }
-  .search .button {
+  .search :global(.button) { /* :global: the site-wide .button class, not a local one */
     margin-bottom: var(--space-3);
   }
 }
