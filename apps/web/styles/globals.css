@@ -457,3 +457,20 @@ input[type="radio"] {
 .rating-facts dd {
   margin: 0;
 }
+
+/* A group of related fields with a small heading, without the browser's box. */
+.fieldset-plain {
+  border: none;
+  padding: 0;
+  margin: var(--space-4) 0;
+}
+.fieldset-plain legend {
+  font-weight: 600;
+  font-size: var(--font-size-small);
+  margin-bottom: var(--space-2);
+}
+
+/* The public header sticks to the top; keep jump-to targets visible below it. */
+html {
+  scroll-padding-top: 80px;
+}

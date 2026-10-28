@@ -1,5 +1,10 @@
 /* CSS Modules: class names here are private to PublicHeader, so they can't clash. */
+/* Sticky: stays at the top while scrolling, so the menu is always in reach.
+   Newer iPhone Safari also colours the status bar from it. */
 .masthead {
+  position: sticky;
+  top: 0;
+  z-index: 50;
   background: var(--color-forest);
   color: var(--color-cream);
 }

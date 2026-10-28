@@ -20,6 +20,7 @@ from PIL import Image, ImageOps, UnidentifiedImageError
 
 from app.config import get_settings
 from app.errors import ApiError
+from app.services import watermark
 
 # What Pillow calls each format → (MIME type, file extension).
 ALLOWED_FORMATS = {
@@ -95,9 +96,7 @@ def process_image(raw: bytes) -> ProcessedImage:
 
 def store(processed: ProcessedImage) -> str:
     """Write the cleaned image to disk and return its random file name."""
-    key = f"{uuid.uuid4().hex}.{processed.extension}"
-    (media_dir() / key).write_bytes(processed.data)
-    return key
+    return store_bytes(processed.data, processed.extension)
 
 
 def path_for(key: str) -> Path | None:
@@ -108,3 +107,40 @@ def path_for(key: str) -> Path | None:
         return None
     path = media_dir() / key
     return path if path.is_file() else None
+
+
+def store_bytes(data: bytes, extension: str) -> str:
+    key = f"{uuid.uuid4().hex}.{extension}"
+    (media_dir() / key).write_bytes(data)
+    return key
+
+
+def remove(key: str | None) -> None:
+    """Delete one of our stored files (used for marked copies that are replaced)."""
+    path = path_for(key) if key else None
+    if path is not None:
+        path.unlink(missing_ok=True)
+
+
+def refresh_marks(asset, site_name: str) -> str | None:
+    """Make (or drop) the marked copy after the asset's mark switches changed.
+
+    Returns the key of the copy it replaced, for the caller to ``remove()``
+    once the database change is saved.
+    """
+    old = asset.display_key
+    if not (asset.watermark or asset.ai_generated):
+        asset.display_key = None
+        return old
+    original = path_for(asset.storage_key)
+    if original is None:
+        raise ApiError(409, "file_missing", "The image file is missing, so it can't be marked.")
+    extension = asset.storage_key.rpartition(".")[2]
+    data = watermark.draw_marks(
+        original.read_bytes(),
+        extension,
+        mark=watermark.site_mark(site_name) if asset.watermark else None,
+        ai=asset.ai_generated,
+    )
+    asset.display_key = store_bytes(data, extension)  # a new name, so browsers fetch it afresh
+    return old

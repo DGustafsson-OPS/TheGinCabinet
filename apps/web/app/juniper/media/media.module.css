@@ -149,3 +149,11 @@
   height: 1.25rem;
   z-index: 1;
 }
+
+/* The two "corner marks" choices under the upload area. */
+.uploadMarks {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0 var(--space-5);
+}

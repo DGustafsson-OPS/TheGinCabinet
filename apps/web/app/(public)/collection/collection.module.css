@@ -27,16 +27,23 @@
   cursor: pointer;
 }
 
+/* Two fields per row, even on phones (the search box takes a whole row there),
+   so the filters don't push the gins far down the page. */
 .form {
   display: grid;
-  gap: 0 var(--space-4);
-  grid-template-columns: 1fr;
+  gap: 0 var(--space-3);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   padding-bottom: var(--space-4);
-  align-items: start;
+  align-items: end;
+}
+@media (max-width: 767px) {
+  .form > :first-child {
+    grid-column: 1 / -1;
+  }
 }
 @media (min-width: 768px) {
   .form {
-    grid-template-columns: repeat(2, 1fr);
+    gap: 0 var(--space-4);
   }
 }
 @media (min-width: 1200px) {
