@@ -14,7 +14,15 @@ import type { Media, MediaBulkResult } from "@/lib/types";
 
 import styles from "./media.module.css";
 
-type Action = "move" | "rename" | "credit";
+type Action = "move" | "rename" | "credit" | "watermark_on" | "watermark_off" | "ai_on" | "ai_off";
+
+// The corner-mark choices: which mark, and on or off.
+const MARKS: Partial<Record<Action, { action: "watermark" | "ai_generated"; on: boolean; done: string }>> = {
+  watermark_on: { action: "watermark", on: true, done: "Watermark added to" },
+  watermark_off: { action: "watermark", on: false, done: "Watermark removed from" },
+  ai_on: { action: "ai_generated", on: true, done: "AI-generated label added to" },
+  ai_off: { action: "ai_generated", on: false, done: "AI-generated label removed from" },
+};
 
 export default function MediaBrowser({ items, folders }: { items: Media[]; folders: string[] }) {
   const router = useRouter();
@@ -56,6 +64,8 @@ export default function MediaBrowser({ items, folders }: { items: Media[]; folde
     if (action === "move") run({ action, folder: folder.trim() }, (n) => `${s(n)} moved to ${folder.trim() || "no folder"}.`);
     if (action === "rename") run({ action, base_name: baseName }, (n) => `${s(n)} renamed.`);
     if (action === "credit") run({ action, credit }, (n) => `Credit set on ${s(n)}.`);
+    const mark = MARKS[action];
+    if (mark) run({ action: mark.action, on: mark.on }, (n) => `${mark.done} ${s(n)}.`);
   }
 
   return (
@@ -81,6 +91,10 @@ export default function MediaBrowser({ items, folders }: { items: Media[]; folde
                 <option value="move">Move to a folder</option>
                 <option value="rename">Rename as a series</option>
                 <option value="credit">Set the photo credit</option>
+                <option value="watermark_on">Add the watermark (© bottom-right)</option>
+                <option value="watermark_off">Remove the watermark</option>
+                <option value="ai_on">Add the &quot;AI-generated&quot; label</option>
+                <option value="ai_off">Remove the &quot;AI-generated&quot; label</option>
               </select>
             </div>
             {action === "move" && (
@@ -163,6 +177,8 @@ export default function MediaBrowser({ items, folders }: { items: Media[]; folde
                 <MediaImage media={item} className={styles.thumb} sizes="240px" />
                 <span className={styles.caption}>{label}</span>
                 <span className={styles.used}>
+                  {item.watermark && "© · "}
+                  {item.ai_generated && "AI · "}
                   {item.alt ? "" : item.decorative ? "Decorative · " : "⚠ No alt text · "}
                   {item.used_by.length > 0 ? `Used in ${item.used_by.length}` : "Not used"}
                 </span>

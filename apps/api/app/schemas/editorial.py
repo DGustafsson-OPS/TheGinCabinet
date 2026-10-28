@@ -49,6 +49,9 @@ class MediaOut(BaseModel):
     credit: str | None
     rights: str | None
     uploaded_by_id: uuid.UUID | None
+    # Corner marks on the version the website shows (see services/watermark.py).
+    watermark: bool = False
+    ai_generated: bool = False
     version: int
     created_at: datetime
     # Where the image is used (spec A09 "usage references").
@@ -63,18 +66,21 @@ class MediaPatch(BaseModel):
     decorative: bool | None = None
     credit: str | None = Field(default=None, max_length=200)
     rights: str | None = Field(default=None, max_length=200)
+    watermark: bool | None = None
+    ai_generated: bool | None = None
 
 
 class MediaBulk(BaseModel):
     """One change to many images at once (Media → tick several → action)."""
 
     ids: list[uuid.UUID] = Field(min_length=1, max_length=200)
-    action: Literal["move", "rename", "credit", "delete"]
+    action: Literal["move", "rename", "credit", "delete", "watermark", "ai_generated"]
     folder: str | None = Field(default=None, max_length=300)  # move: "" = not in a folder
     # rename: "Hernö bottle" -> "Hernö bottle 1", "Hernö bottle 2", ... (in the order sent)
     base_name: str | None = Field(default=None, max_length=150)
     start: int = Field(default=1, ge=0, le=100_000)
     credit: str | None = Field(default=None, max_length=200)  # credit: "" clears it
+    on: bool | None = None  # watermark / ai_generated: switch the mark on or off
 
 
 class BulkSkipped(BaseModel):

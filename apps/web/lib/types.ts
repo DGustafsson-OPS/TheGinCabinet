@@ -216,6 +216,10 @@ export type Media = {
   credit: string | null;
   rights: string | null;
   uploaded_by_id: string | null;
+  /** Small "© site name" mark in the bottom-right corner of the version the website shows. */
+  watermark: boolean;
+  /** Small "AI-generated" label in the bottom-left corner. */
+  ai_generated: boolean;
   version: number;
   created_at: string;
   used_by: string[];

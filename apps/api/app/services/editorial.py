@@ -40,8 +40,11 @@ TEASER_LENGTH = 220
 
 
 def media_url(asset: MediaAsset) -> str:
-    """Public address of the image file (served by app/api/routes/media.py)."""
-    return f"/api/v1/media/{asset.storage_key}"
+    """Public address of the image file (served by routes/admin_media.py).
+
+    With a watermark or AI label switched on, that's the marked copy.
+    """
+    return f"/api/v1/media/{asset.display_key or asset.storage_key}"
 
 
 def media_summary(asset: MediaAsset | None) -> MediaSummary | None:

@@ -3,7 +3,8 @@
 Images have a readable name and can be filed in folders ("Gins/Hernö"; see
 services/media_library.py). Several images can be changed at once with
 ``POST /admin/media/bulk``: move to a folder, rename as a numbered series,
-set the credit, or delete (images still in use are skipped and listed).
+set the credit, switch the watermark or "AI-generated" label on or off, or
+delete (images still in use are skipped and listed).
 """
 
 import uuid
@@ -32,12 +33,17 @@ from app.services import audit, media
 from app.services.common import apply_patch, contains, get_or_404
 from app.services.editorial import media_out, media_usage
 from app.services.media_library import clean_folder, name_from_filename
+from app.services.site import get_site_settings
 from app.services.versioning import check_version
 
 router = APIRouter(prefix="/admin/media", tags=["admin: media"])
 files_router = APIRouter(tags=["media files"])
 
 Force = Annotated[bool, Query(description="Overwrite even if the record changed meanwhile")]
+
+
+def _site_name(db) -> str:
+    return get_site_settings(db).site_name
 
 
 def _get_live(db: DbSession, media_id: uuid.UUID) -> MediaAsset:
@@ -56,8 +62,13 @@ def upload(
     credit: Annotated[str | None, Form(max_length=200)] = None,
     name: Annotated[str | None, Form(max_length=160)] = None,
     folder: Annotated[str | None, Form(max_length=300)] = None,
+    watermark: Annotated[bool, Form()] = False,
+    ai_generated: Annotated[bool, Form()] = False,
 ):
-    """Upload an image. It is checked, cleaned of metadata and stored under a random name."""
+    """Upload an image. It is checked, cleaned of metadata and stored under a random name.
+
+    ``watermark`` / ``ai_generated`` put the small corner marks on it straight away.
+    """
     # Read at most one byte more than allowed: enough to know it's too big.
     raw = file.file.read(get_settings().max_upload_mb * 1024 * 1024 + 1)
     processed = media.process_image(raw)
@@ -73,7 +84,11 @@ def upload(
         alt=(alt or "").strip() or None,
         credit=(credit or "").strip() or None,
         uploaded_by_id=admin.user.id,
+        watermark=watermark,
+        ai_generated=ai_generated,
     )
+    if watermark or ai_generated:
+        media.refresh_marks(asset, _site_name(db))
     db.add(asset)
     db.flush()
     audit.record(
@@ -185,6 +200,7 @@ def bulk_change(body: MediaBulk, admin: CurrentStaffWrite, db: DbSession):
     }
     assets = [found[i] for i in dict.fromkeys(body.ids) if i in found]  # keep order, no repeats
     skipped: list[BulkSkipped] = []
+    replaced: list[str | None] = []  # marked copies to delete once saved
     changed = 0
     if body.action == "move":
         folder = clean_folder(body.folder)
@@ -200,6 +216,13 @@ def bulk_change(body: MediaBulk, admin: CurrentStaffWrite, db: DbSession):
         credit = (body.credit or "").strip() or None
         for asset in assets:
             asset.credit = credit
+    elif body.action in ("watermark", "ai_generated"):
+        if body.on is None:
+            raise ApiError(422, "validation_error", "Say whether to switch the mark on or off.")
+        site_name = _site_name(db)
+        for asset in assets:
+            setattr(asset, body.action, body.on)
+            replaced.append(media.refresh_marks(asset, site_name))
     elif body.action == "delete":
         for asset in list(assets):
             used_by = media_usage(db, asset.id)
@@ -225,6 +248,8 @@ def bulk_change(body: MediaBulk, admin: CurrentStaffWrite, db: DbSession):
         summary={"images": changed, "skipped": len(skipped)},
     )
     db.commit()
+    for key in replaced:
+        media.remove(key)
     return MediaBulkResult(changed=changed, skipped=skipped)
 
 
@@ -255,7 +280,11 @@ def update_media(
         changes["folder"] = clean_folder(changes["folder"])
     if "name" in changes:
         changes["name"] = " ".join((changes["name"] or "").split()) or None
-    apply_patch(asset, changes, never_empty={"decorative"})
+    marks_before = (asset.watermark, asset.ai_generated)
+    apply_patch(asset, changes, never_empty={"decorative", "watermark", "ai_generated"})
+    replaced = None
+    if (asset.watermark, asset.ai_generated) != marks_before:
+        replaced = media.refresh_marks(asset, _site_name(db))
     audit.record(
         db,
         action="media.update",
@@ -265,6 +294,7 @@ def update_media(
         summary={"fields": sorted(changes)},
     )
     db.commit()
+    media.remove(replaced)  # the old marked copy, once the new state is saved
     return media_out(db, asset)
 
 
@@ -296,8 +326,12 @@ def delete_media(media_id: uuid.UUID, admin: CurrentStaffWrite, db: DbSession):
 def serve_file(key: str, db: DbSession):
     """Send an image file. File names are random and unguessable."""
     path = media.path_for(key)
-    asset = db.scalar(select(MediaAsset).where(MediaAsset.storage_key == key)) if path else None
-    if path is None or asset is None or asset.deleted_at is not None:
+    where = or_(MediaAsset.storage_key == key, MediaAsset.display_key == key)
+    asset = db.scalar(select(MediaAsset).where(where)) if path else None
+    # While an image is marked, only the marked copy is served: the unmarked
+    # original would otherwise still be reachable at its old address.
+    hidden = asset is not None and asset.display_key and key == asset.storage_key
+    if path is None or asset is None or asset.deleted_at is not None or hidden:
         raise ApiError(404, "not_found", "Image not found.")
     return FileResponse(
         path,

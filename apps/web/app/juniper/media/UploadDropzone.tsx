@@ -19,6 +19,9 @@ export default function UploadDropzone({ folder }: { folder?: string }) {
   const input = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
   const [busy, setBusy] = useState(false);
+  // Corner marks for the images uploaded next (they can be changed later per image).
+  const [watermark, setWatermark] = useState(false);
+  const [aiGenerated, setAiGenerated] = useState(false);
 
   async function send(files: FileList | File[]) {
     const list = Array.from(files);
@@ -33,6 +36,8 @@ export default function UploadDropzone({ folder }: { folder?: string }) {
       const form = new FormData();
       form.append("file", file);
       if (folder) form.append("folder", folder);
+      if (watermark) form.append("watermark", "true");
+      if (aiGenerated) form.append("ai_generated", "true");
       try {
         await upload<Media>("/admin/media", form);
         done++;
@@ -76,6 +81,16 @@ export default function UploadDropzone({ folder }: { folder?: string }) {
         JPEG, PNG or WebP{folder ? `, filed in ${folder}` : ""}. Location data and other hidden details are removed
         automatically.
       </p>
+      <div className={styles.uploadMarks}>
+        <div className="field-checkbox">
+          <input id="upload-watermark" type="checkbox" checked={watermark} onChange={(e) => setWatermark(e.target.checked)} />
+          <label htmlFor="upload-watermark">Add watermark (© bottom-right)</label>
+        </div>
+        <div className="field-checkbox">
+          <input id="upload-ai" type="checkbox" checked={aiGenerated} onChange={(e) => setAiGenerated(e.target.checked)} />
+          <label htmlFor="upload-ai">AI-generated (label bottom-left)</label>
+        </div>
+      </div>
       <label className="visually-hidden" htmlFor="upload-input">
         Upload images
       </label>

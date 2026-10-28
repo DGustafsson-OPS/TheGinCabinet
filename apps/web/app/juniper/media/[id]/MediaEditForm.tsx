@@ -17,6 +17,8 @@ export default function MediaEditForm({ media, folders }: { media: Media; folder
   const [decorative, setDecorative] = useState(media.decorative);
   const [credit, setCredit] = useState(media.credit ?? "");
   const [rights, setRights] = useState(media.rights ?? "");
+  const [watermark, setWatermark] = useState(media.watermark);
+  const [aiGenerated, setAiGenerated] = useState(media.ai_generated);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -33,8 +35,11 @@ export default function MediaEditForm({ media, folders }: { media: Media; folder
         decorative,
         credit: credit.trim() || null,
         rights: rights.trim() || null,
+        watermark,
+        ai_generated: aiGenerated,
       });
-      toast("Saved.");
+      const marksChanged = watermark !== media.watermark || aiGenerated !== media.ai_generated;
+      toast(marksChanged ? "Saved. The website now shows the image with these marks." : "Saved.");
       router.refresh();
     } catch (err) {
       setError(
@@ -116,6 +121,21 @@ export default function MediaEditForm({ media, folders }: { media: Media; folder
           placeholder="e.g. Own photo, or CC BY 4.0"
         />
       </div>
+      <fieldset className="fieldset-plain">
+        <legend>Corner marks</legend>
+        <p className="field-hint" style={{ marginTop: 0 }}>
+          Small text drawn on the image the website shows. Your uploaded file stays unchanged, so marks can be switched
+          off again at any time.
+        </p>
+        <div className="field-checkbox">
+          <input id="watermark" type="checkbox" checked={watermark} onChange={(event) => setWatermark(event.target.checked)} />
+          <label htmlFor="watermark">Watermark: &quot;© site name&quot;, bottom-right corner</label>
+        </div>
+        <div className="field-checkbox">
+          <input id="ai-generated" type="checkbox" checked={aiGenerated} onChange={(event) => setAiGenerated(event.target.checked)} />
+          <label htmlFor="ai-generated">AI-generated: &quot;AI-generated&quot; label, bottom-left corner</label>
+        </div>
+      </fieldset>
       <div className="form-actions">
         <button className="button button-primary" type="submit" disabled={busy}>
           {busy ? "Saving…" : "Save"}

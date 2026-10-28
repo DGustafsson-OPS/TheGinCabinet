@@ -22,6 +22,7 @@ from sqlalchemy import (
     String,
     Text,
     UniqueConstraint,
+    false,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -61,6 +62,12 @@ class MediaAsset(Versioned, Base):
     uploaded_by_id: Mapped[uuid.UUID | None] = mapped_column(
         ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True
     )
+    # Corner marks (services/watermark.py): the site's "©" mark, and an
+    # "AI-generated" label. When either is on, ``display_key`` names the marked
+    # copy the website shows; the original file stays untouched.
+    watermark: Mapped[bool] = mapped_column(default=False, server_default=false())
+    ai_generated: Mapped[bool] = mapped_column(default=False, server_default=false())
+    display_key: Mapped[str | None] = mapped_column(String(80), unique=True, nullable=True)
     # Soft delete (spec A09): the row stays, so old revisions still make sense.
     deleted_at: Mapped[datetime | None] = mapped_column(UTCDateTime, nullable=True)
 
