@@ -57,6 +57,18 @@ def _clean_tags(values: list[str] | None) -> list[str] | None:
     return seen
 
 
+def _clean_equipment(values: list[str] | None) -> list[str] | None:
+    """Trimmed, no blanks, no repeats (ignoring capitals), each at most 60 characters."""
+    if values is None:
+        return None
+    seen: list[str] = []
+    for raw in values:
+        item = " ".join(raw.split())
+        if item and len(item) <= 60 and item.lower() not in (s.lower() for s in seen):
+            seen.append(item)
+    return seen
+
+
 class CocktailIn(BaseModel):
     title: str = Field(min_length=1, max_length=160)
     slug: str | None = Field(default=None, max_length=150, pattern=SLUG_PATTERN)
@@ -69,6 +81,7 @@ class CocktailIn(BaseModel):
     garnish: str | None = Field(default=None, max_length=160)
     garnish_quantity: QuantityIn | None = None
     tags: list[str] = Field(default_factory=list, max_length=12)
+    equipment: list[str] = Field(default_factory=list, max_length=15)
     cover_media_id: uuid.UUID | None = None
     seo_title: str | None = Field(default=None, max_length=70)
     seo_description: str | None = Field(default=None, max_length=170)
@@ -77,6 +90,7 @@ class CocktailIn(BaseModel):
     gins: list[PairingIn] = Field(default_factory=list, max_length=10)
 
     _tags = field_validator("tags")(_clean_tags)
+    _equipment = field_validator("equipment")(_clean_equipment)
 
 
 class CocktailPatch(BaseModel):
@@ -94,6 +108,7 @@ class CocktailPatch(BaseModel):
     garnish: str | None = Field(default=None, max_length=160)
     garnish_quantity: QuantityIn | None = None
     tags: list[str] | None = Field(default=None, max_length=12)
+    equipment: list[str] | None = Field(default=None, max_length=15)
     cover_media_id: uuid.UUID | None = None
     seo_title: str | None = Field(default=None, max_length=70)
     seo_description: str | None = Field(default=None, max_length=170)
@@ -102,6 +117,7 @@ class CocktailPatch(BaseModel):
     gins: list[PairingIn] | None = Field(default=None, max_length=10)
 
     _tags = field_validator("tags")(_clean_tags)
+    _equipment = field_validator("equipment")(_clean_equipment)
 
 
 class CocktailStatusChange(BaseModel):
@@ -146,6 +162,7 @@ class CocktailOut(BaseModel):
     garnish: str | None
     garnish_quantity: Quantity | None
     tags: list[str]
+    equipment: list[str]
     status: str
     author: Person
     cover_media_id: uuid.UUID | None
@@ -195,6 +212,7 @@ class PublicCocktail(PublicCocktailCard):
     ingredients: list[IngredientLineOut]
     garnish: str | None
     garnish_quantity: Quantity | None
+    equipment: list[str]  # "What you need"
     steps: list[str]
     recommended_gins: list[PublicGinPairing]
     seo_title: str | None

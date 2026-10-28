@@ -45,19 +45,23 @@ export default async function HomePage() {
 
       {stats && stats.gins > 0 && (
         <section className={styles.stats} aria-label="The collection in numbers">
+          {/* Each number links to its page; the whole tile is the link. */}
           <ul>
-            <li>
-              <strong>{stats.gins}</strong> gins
-            </li>
-            <li>
-              <strong>{stats.countries}</strong> countries
-            </li>
-            <li>
-              <strong>{stats.reviews}</strong> reviews
-            </li>
-            <li>
-              <strong>{stats.cocktails}</strong> cocktails
-            </li>
+            {[
+              { href: "/collection", count: stats.gins, label: "gins" },
+              { href: "/distilleries", count: stats.countries, label: "countries" },
+              { href: "/reviews", count: stats.reviews, label: "reviews" },
+              { href: "/cocktails", count: stats.cocktails, label: "cocktails" },
+            ].map((item) => (
+              <li key={item.href}>
+                <Link href={item.href} className={styles.statLink}>
+                  <strong>{item.count}</strong> {item.label}
+                  <span aria-hidden="true" className={styles.statArrow}>
+                    →
+                  </span>
+                </Link>
+              </li>
+            ))}
           </ul>
         </section>
       )}

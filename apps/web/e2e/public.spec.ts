@@ -64,7 +64,14 @@ test("the public site shows public gins with their reviews and cocktails, and no
 
   // Home: numbers and the latest content.
   await gotoReady(page, "/");
-  await expect(page.getByRole("region", { name: "The collection in numbers" })).toBeVisible();
+  const numbers = page.getByRole("region", { name: "The collection in numbers" });
+  await expect(numbers).toBeVisible();
+  // Each number is a link to its page.
+  await numbers.getByRole("link", { name: /^\d+ gins$/ }).click();
+  await expect(page).toHaveURL(/\/collection$/);
+  await gotoReady(page, "/");
+  await numbers.getByRole("link", { name: /^\d+ cocktails$/ }).click();
+  await expect(page).toHaveURL(/\/cocktails$/);
 
   // Collection: filter by the test country with the real form.
   await gotoReady(page, "/collection");

@@ -49,6 +49,7 @@ class Unit(StrEnum):
     SPRIG = "sprig"
     LEAF = "leaf"
     TOP_UP = "top up"  # "top up with tonic": has no amount
+    NONE = ""  # no unit: "2 strawberries", "1 lime", or just "Ice"
 
 
 class Method(StrEnum):
@@ -104,6 +105,8 @@ class CocktailRecipe(Versioned, Base):
     garnish_quantity: Mapped[Decimal | None] = mapped_column(Numeric(6, 2), nullable=True)
     # Free labels for filtering, e.g. ["refreshing", "citrus", "summer"].
     tags: Mapped[list[str]] = mapped_column(JSONType, default=list)
+    # "What you need": bar tools, in the order given ("Shaker", "Strainer", …).
+    equipment: Mapped[list[str]] = mapped_column(JSONType, default=list, server_default="[]")
     status: Mapped[str] = mapped_column(String(16), default=CocktailStatus.DRAFT)
     cover_media_id: Mapped[uuid.UUID | None] = mapped_column(
         ForeignKey("media_assets.id", ondelete="SET NULL"), nullable=True, index=True

@@ -133,7 +133,7 @@ def update_cocktail(
     apply_patch(
         recipe,
         changes,
-        never_empty={"title", "slug", "method", "difficulty", "servings_base", "tags"},
+        never_empty={"title", "slug", "method", "difficulty", "servings_base", "tags", "equipment"},
     )
     audit.record(
         db,

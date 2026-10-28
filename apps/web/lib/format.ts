@@ -52,10 +52,11 @@ const PLURALS: Record<string, string> = {
   sprig: "sprigs", leaf: "leaves", barspoon: "barspoons",
 };
 
-/** "50 ml", "2 dashes", "1 slice"… An amount and its unit, ready to read. */
+/** "50 ml", "2 dashes", "1 slice", "2" (no unit)… An amount and its unit, ready to read. */
 export function formatAmount(quantity: string | null, unit: string): string {
   if (unit === "top up") return "Top up";
   if (quantity === null) return unit;
+  if (unit === "") return quantity; // no unit: just the number, "2 strawberries"
   const plural = Number(quantity) !== 1 && PLURALS[unit];
   return `${quantity} ${plural || unit}`;
 }

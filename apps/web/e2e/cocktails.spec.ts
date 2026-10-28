@@ -22,6 +22,14 @@ test("build a recipe in the tabbed editor, publish it, scale it as a visitor", a
   await page.getByLabel("Garnish", { exact: true }).fill("lime wheels");
   await page.getByLabel("Garnish amount (scales with servings)").fill("2");
   await page.getByLabel("Preparation time (minutes)").fill("3");
+  // "What you need": tick two tools, then add one by typing.
+  await page.getByLabel("Shaker", { exact: true }).check();
+  await page.getByLabel("Strainer", { exact: true }).check();
+  const toolList = page.getByLabel("The whole list, in order (comma separated)");
+  await expect(toolList).toHaveValue("Shaker, Strainer");
+  await toolList.fill("Shaker, Strainer, Ice tongs");
+  await page.getByLabel("Shaker", { exact: true }).uncheck(); // unticking removes it from the list
+  await expect(toolList).toHaveValue("Strainer, Ice tongs");
 
   // The tabs work with the keyboard: Right arrow moves to "Ingredients".
   await page.getByRole("tab", { name: "Basics" }).focus();
@@ -34,6 +42,11 @@ test("build a recipe in the tabbed editor, publish it, scale it as a visitor", a
   await page.getByRole("button", { name: "Add ingredient" }).click();
   await page.getByLabel("Ingredient 2", { exact: true }).fill("Tonic water");
   await page.getByLabel("Unit of ingredient 2").selectOption("top up");
+  // No unit: "3 strawberries".
+  await page.getByRole("button", { name: "Add ingredient" }).click();
+  await page.getByLabel("Ingredient 3", { exact: true }).fill("Strawberries");
+  await page.getByLabel("Amount of ingredient 3").fill("3");
+  await page.getByLabel("Unit of ingredient 3").selectOption({ label: "(no unit)" });
 
   await page.getByRole("tab", { name: /Steps/ }).click();
   await page.getByRole("button", { name: "Add step" }).click();
@@ -64,7 +77,9 @@ test("build a recipe in the tabbed editor, publish it, scale it as a visitor", a
   await visitor.getByRole("link", { name: title }).click();
   // A <section> labelled by its heading is a named "region" for screen readers.
   const ingredients = visitor.getByRole("region", { name: "Ingredients" });
+  await expect(visitor.getByRole("region", { name: "What you need" }).getByRole("listitem")).toHaveText(["Strainer", "Ice tongs"]);
   await expect(ingredients.getByText("50 ml")).toBeVisible();
+  await expect(ingredients.getByRole("listitem").filter({ hasText: "Strawberries" })).toHaveText(/^3\s*Strawberries$/);
   await expect(visitor.getByText("Floral notes lift the tonic.")).toBeVisible();
 
   // Each click loads a new page; wait for it before clicking again, or the
@@ -77,6 +92,7 @@ test("build a recipe in the tabbed editor, publish it, scale it as a visitor", a
   await expect(visitor.getByText("4 drinks")).toBeVisible();
   await expect(ingredients.getByText("200 ml")).toBeVisible(); // 50 ml × 4
   await expect(ingredients.getByText("Top up")).toBeVisible(); // no number to scale
+  await expect(ingredients.getByRole("listitem").filter({ hasText: "Strawberries" })).toHaveText(/^12\s*Strawberries$/); // 3 × 4, no unit
   await expect(ingredients.getByText("8", { exact: true })).toBeVisible(); // 2 lime wheels × 4
   // The method text is never rewritten (spec §11).
   await expect(visitor.getByText("Pour 50 ml gin and top up with tonic.")).toBeVisible();
