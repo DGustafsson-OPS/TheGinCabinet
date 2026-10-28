@@ -67,7 +67,7 @@ export default async function CocktailPage({ params, searchParams }: { params: P
     ...(recipe.cover && { image: `${SITE_URL}${recipe.cover.url}` }),
     keywords: recipe.tags.join(", "),
     recipeIngredient: recipe.ingredients.map((i) =>
-      i.unit === "top up" ? `${i.name}, to top up` : `${formatAmount(i.quantity, i.unit)} ${i.name}`,
+      i.unit === "top up" ? `${i.name}, to top up` : [formatAmount(i.quantity, i.unit), i.name].filter(Boolean).join(" "),
     ),
     recipeInstructions: recipe.steps.map((text) => ({ "@type": "HowToStep", text })),
   };

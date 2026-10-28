@@ -49,6 +49,7 @@ class Unit(StrEnum):
     SPRIG = "sprig"
     LEAF = "leaf"
     TOP_UP = "top up"  # "top up with tonic": has no amount
+    NONE = ""  # no unit: "2 strawberries", "1 lime", or just "Ice"
 
 
 class Method(StrEnum):

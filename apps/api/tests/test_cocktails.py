@@ -117,6 +117,28 @@ def test_scaling_changes_numbers_not_text(api, client):
     assert client.get(f"{PUBLIC}/{recipe['slug']}", params={"servings": 13}).status_code == 422
 
 
+def test_ingredients_without_a_unit(api, client):
+    """ "2 strawberries", "1 lime", or just "Ice": the unit may be left empty."""
+    lines = [
+        {"name": "Gin", "quantity": "50", "unit": "ml"},
+        {"name": "Strawberries", "quantity": "2", "unit": ""},
+        {"name": "Ice", "unit": ""},
+    ]
+    recipe = create(api, title="Strawberry smash", ingredients=lines)
+    assert [(i["quantity"], i["unit"]) for i in recipe["ingredients"]] == [
+        ("50", "ml"),
+        ("2", ""),
+        (None, ""),
+    ]
+    publish(api, recipe)
+    two = client.get(f"{PUBLIC}/{recipe['slug']}", params={"servings": 2}).json()
+    assert [(i["quantity"], i["unit"]) for i in two["ingredients"]] == [
+        ("100", "ml"),
+        ("4", ""),  # the number still scales
+        (None, ""),
+    ]
+
+
 def test_scaling_from_a_multi_serving_recipe(api, client):
     recipe = create(
         api,

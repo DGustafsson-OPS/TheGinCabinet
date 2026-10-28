@@ -327,9 +327,10 @@ export type PublicReview = PublicReviewCard & {
 
 // ---------- Cocktails ----------
 
+// "" = no unit: "2 strawberries", "1 lime", or just "Ice".
 export const UNITS = [
   "ml", "cl", "g", "tsp", "tbsp", "barspoon", "dash", "drop",
-  "piece", "slice", "wedge", "sprig", "leaf", "top up",
+  "piece", "slice", "wedge", "sprig", "leaf", "top up", "",
 ] as const;
 export type Unit = (typeof UNITS)[number];
 export const METHODS = ["build", "shake", "stir", "blend"] as const;

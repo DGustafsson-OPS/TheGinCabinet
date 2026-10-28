@@ -298,7 +298,7 @@ export default function CocktailEditor({ cocktail, gins, media: library, knownIn
                 <select id={`${formId}-ing-unit-${line.key}`} value={line.unit} onChange={(e) => update({ unit: e.target.value as Unit })}>
                   {UNITS.map((u) => (
                     <option key={u} value={u}>
-                      {u}
+                      {u === "" ? "(no unit)" : u}
                     </option>
                   ))}
                 </select>
