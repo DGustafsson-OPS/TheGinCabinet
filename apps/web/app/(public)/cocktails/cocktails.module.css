@@ -38,18 +38,35 @@
   margin-bottom: var(--space-3);
 }
 
-/* Filter chips: links that look like toggle buttons. */
+/* Filter chips: links that look like toggle buttons, in one group per filter.
+   The groups sit side by side on wide screens and stack on phones, each with
+   its label on its own line, so it's clear which chips belong together. */
 .chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3) var(--space-6);
+  margin: var(--space-2) 0 var(--space-5);
+}
+.chipGroup {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-2);
-  margin: var(--space-2) 0 var(--space-5);
 }
 .chipLabel {
   font-weight: 600;
   font-size: var(--font-size-small);
-  margin-left: var(--space-2);
+  margin-right: var(--space-1);
+}
+@media (max-width: 767px) {
+  .chipLabel {
+    flex-basis: 100%; /* the label on its own line, chips below */
+  }
+  .chip {
+    min-height: 40px;
+    padding: 0 var(--space-3);
+    font-size: 0.95rem;
+  }
 }
 .chip {
   display: inline-flex;
@@ -68,18 +85,18 @@
   color: var(--color-cream);
 }
 
-/* 1 / 2 / 4 columns (spec §2: desktop 3–4 columns). */
+/* 2 / 2 / 4 columns: two side by side on phones too (spec §2: desktop 3–4). */
 .grid {
   list-style: none;
   margin: 0;
   padding: 0;
   display: grid;
-  gap: var(--space-5);
-  grid-template-columns: 1fr;
+  gap: var(--space-3);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 @media (min-width: 768px) {
   .grid {
-    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-5);
   }
 }
 @media (min-width: 1200px) {
@@ -130,6 +147,16 @@
   margin: 0;
   font-size: var(--font-size-small);
   color: var(--color-muted);
+}
+/* Smaller text inside the narrower phone cards (after the rules above, so it wins). */
+@media (max-width: 767px) {
+  .cardBody {
+    padding: var(--space-3);
+  }
+  .cardTitle {
+    font-size: 1.05rem;
+    line-height: 1.25;
+  }
 }
 
 /* ---------- Recipe page ---------- */

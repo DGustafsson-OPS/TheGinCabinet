@@ -63,19 +63,27 @@ export default async function CocktailLibraryPage({ searchParams }: { searchPara
           </button>
         </form>
 
-        <div className={styles.chips} aria-label="Filters">
-          <span className={styles.chipLabel}>Method:</span>
-          {METHODS.map((m) => (
-            <Link key={m} href={chipHref("method", m)} className={styles.chip} aria-pressed={filters.method === m}>
-              {humanize(m)}
-            </Link>
-          ))}
-          <span className={styles.chipLabel}>Difficulty:</span>
-          {DIFFICULTIES.map((d) => (
-            <Link key={d} href={chipHref("difficulty", d)} className={styles.chip} aria-pressed={filters.difficulty === d}>
-              {humanize(d)}
-            </Link>
-          ))}
+        <div className={styles.chips}>
+          <div className={styles.chipGroup} role="group" aria-labelledby="chips-method">
+            <span id="chips-method" className={styles.chipLabel}>
+              Method
+            </span>
+            {METHODS.map((m) => (
+              <Link key={m} href={chipHref("method", m)} className={styles.chip} aria-pressed={filters.method === m}>
+                {humanize(m)}
+              </Link>
+            ))}
+          </div>
+          <div className={styles.chipGroup} role="group" aria-labelledby="chips-difficulty">
+            <span id="chips-difficulty" className={styles.chipLabel}>
+              Difficulty
+            </span>
+            {DIFFICULTIES.map((d) => (
+              <Link key={d} href={chipHref("difficulty", d)} className={styles.chip} aria-pressed={filters.difficulty === d}>
+                {humanize(d)}
+              </Link>
+            ))}
+          </div>
         </div>
 
         {!data ? (
