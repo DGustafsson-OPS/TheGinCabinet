@@ -594,6 +594,9 @@ export type PageText = {
   updated_by: string | null;
 };
 
+export type MessageFolderRef = { id: string; name: string };
+export type MessageNote = { id: string; text: string; author_name: string | null; created_at: string };
+
 export type ContactMessage = {
   id: string;
   name: string;
@@ -601,6 +604,19 @@ export type ContactMessage = {
   message: string;
   created_at: string;
   read_at: string | null;
+  /** null = the Inbox */
+  folder: MessageFolderRef | null;
+  /** Set = in Spam; deleted 90 days after this. */
+  spam_at: string | null;
+  notes: MessageNote[];
+};
+
+/** Counts for the Messages menu: Inbox, each folder, Spam. */
+export type MessageBoxes = {
+  inbox_count: number;
+  inbox_unread: number;
+  folders: (MessageFolderRef & { count: number; unread: number })[];
+  spam_count: number;
 };
 
 export type Profile = {

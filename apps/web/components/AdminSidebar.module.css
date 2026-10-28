@@ -110,3 +110,16 @@
     padding: 0 var(--space-3) var(--space-4);
   }
 }
+
+/* The number of new messages next to "Messages". */
+.count {
+  min-width: 1.5rem;
+  padding: 0 var(--space-2);
+  border-radius: 999px;
+  background: var(--color-brass);
+  color: var(--color-forest);
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1.5rem;
+  text-align: center;
+}
