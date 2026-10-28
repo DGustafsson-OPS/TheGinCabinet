@@ -41,6 +41,18 @@ class ContactIn(BaseModel):
     website: str = Field(default="", max_length=200)
 
 
+class MessageFolderRef(BaseModel):
+    id: uuid.UUID
+    name: str
+
+
+class MessageNoteOut(BaseModel):
+    id: uuid.UUID
+    text: str
+    author_name: str | None  # None if the account was removed
+    created_at: datetime
+
+
 class ContactMessageOut(BaseModel):
     id: uuid.UUID
     name: str
@@ -48,7 +60,36 @@ class ContactMessageOut(BaseModel):
     message: str
     created_at: datetime
     read_at: datetime | None
+    folder: MessageFolderRef | None  # None = the Inbox
+    spam_at: datetime | None  # set = in Spam, deleted 90 days after this
+    notes: list[MessageNoteOut]
 
 
-class ContactRead(BaseModel):
-    read: bool
+class MessagePatch(BaseModel):
+    """Only the fields sent change. ``folder_id: null`` moves back to the Inbox."""
+
+    read: bool | None = None
+    folder_id: uuid.UUID | None = None
+    spam: bool | None = None
+
+
+class MessageNoteIn(BaseModel):
+    text: str = Field(min_length=1, max_length=10_000)
+
+
+class MessageFolderIn(BaseModel):
+    name: str = Field(min_length=1, max_length=60)
+
+
+class MessageFolderOut(MessageFolderRef):
+    count: int
+    unread: int
+
+
+class MessageBoxes(BaseModel):
+    """What the Messages menu shows: the Inbox, each folder, and Spam."""
+
+    inbox_count: int
+    inbox_unread: int
+    folders: list[MessageFolderOut]
+    spam_count: int

@@ -62,9 +62,9 @@ function visibleSections(role: Role) {
   })).filter((section) => section.items.length > 0);
 }
 
-type Props = { displayName: string; csrfToken: string; role: Role };
+type Props = { displayName: string; csrfToken: string; role: Role; unreadMessages?: number };
 
-export default function AdminSidebar({ displayName, csrfToken, role }: Props) {
+export default function AdminSidebar({ displayName, csrfToken, role, unreadMessages = 0 }: Props) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
@@ -106,6 +106,12 @@ export default function AdminSidebar({ displayName, csrfToken, role }: Props) {
                         onClick={() => setOpen(false)}
                       >
                         {item.label}
+                        {item.href === "/juniper/messages" && unreadMessages > 0 && (
+                          <span className={styles.count}>
+                            {unreadMessages}
+                            <span className="visually-hidden"> new</span>
+                          </span>
+                        )}
                       </Link>
                     </li>
                   ) : (

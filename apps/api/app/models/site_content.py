@@ -5,7 +5,10 @@
   exists only once someone has changed it, so "reset to default" simply
   deletes the row.
 * ``contact_messages``: messages sent with the public contact form, read in
-  Admin → Messages.
+  Admin → Messages. New ones land in the Inbox; admins can move them into
+  their own folders (``message_folders``), mark them as spam (deleted 90 days
+  later) and keep notes on them (``contact_message_notes``), e.g. a copy of
+  the reply they sent.
 """
 
 import uuid
@@ -33,6 +36,16 @@ class PageText(Versioned, Base):
     updated_by: Mapped[User | None] = relationship(lazy="joined")
 
 
+class MessageFolder(Base):
+    """A folder for contact messages, such as "Ideas" or "Dennis"."""
+
+    __tablename__ = "message_folders"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUIDType, primary_key=True, default=new_uuid)
+    name: Mapped[str] = mapped_column(String(60), unique=True)
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)
+
+
 class ContactMessage(Base):
     __tablename__ = "contact_messages"
     __table_args__ = (Index("ix_contact_messages_created_at", "created_at"),)
@@ -46,3 +59,35 @@ class ContactMessage(Base):
     sender_hash: Mapped[str] = mapped_column(String(64), index=True)
     created_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)
     read_at: Mapped[datetime | None] = mapped_column(UTCDateTime, nullable=True)
+    # None = the Inbox.
+    folder_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("message_folders.id", ondelete="SET NULL"), nullable=True, index=True
+    )
+    # Set when marked as spam: the message then shows only under Spam and is
+    # deleted 90 days after this moment (services/maintenance.py).
+    spam_at: Mapped[datetime | None] = mapped_column(UTCDateTime, nullable=True, index=True)
+
+    folder: Mapped[MessageFolder | None] = relationship(lazy="joined")
+    notes: Mapped[list["ContactMessageNote"]] = relationship(
+        cascade="all, delete-orphan",
+        lazy="selectin",
+        order_by="ContactMessageNote.created_at",
+    )
+
+
+class ContactMessageNote(Base):
+    """An admin's note on a message, e.g. "Replied 3 May:" and a copy of the reply."""
+
+    __tablename__ = "contact_message_notes"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUIDType, primary_key=True, default=new_uuid)
+    message_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("contact_messages.id", ondelete="CASCADE"), index=True
+    )
+    author_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("users.id", ondelete="SET NULL"), nullable=True
+    )
+    text: Mapped[str] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)
+
+    author: Mapped[User | None] = relationship(lazy="joined")
