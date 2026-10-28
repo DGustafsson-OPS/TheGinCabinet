@@ -474,3 +474,10 @@ input[type="radio"] {
 html {
   scroll-padding-top: 80px;
 }
+
+/* The cocktail editor's "What you need" tick boxes, several per row. */
+.tool-choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--space-5);
+}

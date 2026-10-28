@@ -22,6 +22,14 @@ test("build a recipe in the tabbed editor, publish it, scale it as a visitor", a
   await page.getByLabel("Garnish", { exact: true }).fill("lime wheels");
   await page.getByLabel("Garnish amount (scales with servings)").fill("2");
   await page.getByLabel("Preparation time (minutes)").fill("3");
+  // "What you need": tick two tools, then add one by typing.
+  await page.getByLabel("Shaker", { exact: true }).check();
+  await page.getByLabel("Strainer", { exact: true }).check();
+  const toolList = page.getByLabel("The whole list, in order (comma separated)");
+  await expect(toolList).toHaveValue("Shaker, Strainer");
+  await toolList.fill("Shaker, Strainer, Ice tongs");
+  await page.getByLabel("Shaker", { exact: true }).uncheck(); // unticking removes it from the list
+  await expect(toolList).toHaveValue("Strainer, Ice tongs");
 
   // The tabs work with the keyboard: Right arrow moves to "Ingredients".
   await page.getByRole("tab", { name: "Basics" }).focus();
@@ -69,6 +77,7 @@ test("build a recipe in the tabbed editor, publish it, scale it as a visitor", a
   await visitor.getByRole("link", { name: title }).click();
   // A <section> labelled by its heading is a named "region" for screen readers.
   const ingredients = visitor.getByRole("region", { name: "Ingredients" });
+  await expect(visitor.getByRole("region", { name: "What you need" }).getByRole("listitem")).toHaveText(["Strainer", "Ice tongs"]);
   await expect(ingredients.getByText("50 ml")).toBeVisible();
   await expect(ingredients.getByRole("listitem").filter({ hasText: "Strawberries" })).toHaveText(/^3\s*Strawberries$/);
   await expect(visitor.getByText("Floral notes lift the tonic.")).toBeVisible();

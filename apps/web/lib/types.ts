@@ -334,6 +334,11 @@ export const UNITS = [
 ] as const;
 export type Unit = (typeof UNITS)[number];
 export const METHODS = ["build", "shake", "stir", "blend"] as const;
+/** Suggested "What you need" tools (tick boxes in the editor); anything else can be typed. */
+export const COMMON_TOOLS = [
+  "Shaker", "Strainer", "Fine strainer", "Jigger", "Bar spoon",
+  "Mixing glass", "Muddler", "Citrus press", "Peeler", "Blender",
+] as const;
 export const DIFFICULTIES = ["easy", "medium", "advanced"] as const;
 
 export type IngredientLine = {
@@ -366,6 +371,8 @@ export type Cocktail = {
   garnish: string | null;
   garnish_quantity: string | null;
   tags: string[];
+  /** "What you need": bar tools, e.g. ["Shaker", "Strainer"]. */
+  equipment: string[];
   status: CocktailStatus;
   author: Person;
   cover_media_id: string | null;
@@ -400,6 +407,7 @@ export type PublicCocktail = PublicCocktailCard & {
   ingredients: IngredientLine[];
   garnish: string | null;
   garnish_quantity: string | null;
+  equipment: string[];
   steps: string[];
   recommended_gins: { slug: string; display_name: string; country: string | null; abv: string; pairing_note: string | null }[];
   seo_title: string | null;

@@ -24,6 +24,7 @@ import {
   type MediaSummary,
   METHODS,
   UNITS,
+  COMMON_TOOLS,
   type Unit,
 } from "@/lib/types";
 
@@ -38,7 +39,7 @@ type GinRow = Row<{ gin_id: string; priority: string; pairing_note: string }>;
 type Basics = {
   title: string; slug: string; intro: string; method: string; glassware: string;
   prep_minutes: string; difficulty: string; servings_base: string; garnish: string;
-  garnish_quantity: string; tags: string; cover_media_id: string; seo_title: string;
+  garnish_quantity: string; tags: string; equipment: string; cover_media_id: string; seo_title: string;
   seo_description: string;
 };
 
@@ -47,13 +48,15 @@ function initialBasics(c: Cocktail): Basics {
     title: c.title, slug: c.slug, intro: c.intro ?? "", method: c.method, glassware: c.glassware ?? "",
     prep_minutes: c.prep_minutes?.toString() ?? "", difficulty: c.difficulty,
     servings_base: String(c.servings_base), garnish: c.garnish ?? "",
-    garnish_quantity: c.garnish_quantity ?? "", tags: c.tags.join(", "),
+    garnish_quantity: c.garnish_quantity ?? "", tags: c.tags.join(", "), equipment: c.equipment.join(", "),
     cover_media_id: c.cover_media_id ?? "", seo_title: c.seo_title ?? "",
     seo_description: c.seo_description ?? "",
   };
 }
 
 const text = (value: string) => value.trim() || null;
+/** "Shaker, Strainer" → ["Shaker", "Strainer"] */
+const splitList = (value: string) => value.split(",").map((t) => t.trim()).filter(Boolean);
 const decimal = (value: string) => (value.trim() ? value.replace(",", ".").trim() : null);
 
 /** Everything on screen, as the JSON the API expects. */
@@ -70,6 +73,7 @@ function payload(basics: Basics, lines: LineRow[], steps: StepRow[], gins: GinRo
     garnish: text(basics.garnish),
     garnish_quantity: decimal(basics.garnish_quantity),
     tags: basics.tags.split(",").map((t) => t.trim()).filter(Boolean),
+    equipment: splitList(basics.equipment),
     cover_media_id: basics.cover_media_id || null,
     seo_title: text(basics.seo_title),
     seo_description: text(basics.seo_description),
@@ -256,6 +260,34 @@ export default function CocktailEditor({ cocktail, gins, media: library, knownIn
       {field("tags", "Tags (comma separated)", { placeholder: "refreshing, citrus, summer" })}
       {field("garnish", "Garnish", { placeholder: "e.g. lime wheels" })}
       {field("garnish_quantity", "Garnish amount (scales with servings)", { inputMode: "decimal" })}
+      <fieldset className="fieldset-plain span-2">
+        <legend>What you need</legend>
+        <p className="field-hint" style={{ marginTop: 0 }}>
+          Tick the tools, or type others in the list below. The glass above is shown too.
+        </p>
+        <div className="tool-choices">
+          {COMMON_TOOLS.map((tool) => {
+            const list = splitList(basics.equipment);
+            const chosen = list.some((t) => t.toLowerCase() === tool.toLowerCase());
+            return (
+              <div key={tool} className="field-checkbox">
+                <input
+                  id={`tool-${tool}`}
+                  type="checkbox"
+                  checked={chosen}
+                  onChange={() => {
+                    // Ticking adds the tool to the end of the list; unticking removes it.
+                    const next = chosen ? list.filter((t) => t.toLowerCase() !== tool.toLowerCase()) : [...list, tool];
+                    setBasics((b) => ({ ...b, equipment: next.join(", ") }));
+                  }}
+                />
+                <label htmlFor={`tool-${tool}`}>{tool}</label>
+              </div>
+            );
+          })}
+        </div>
+        {field("equipment", "The whole list, in order (comma separated)", { placeholder: "e.g. Shaker, Strainer, Jigger, Ice" })}
+      </fieldset>
     </div>
   );
 

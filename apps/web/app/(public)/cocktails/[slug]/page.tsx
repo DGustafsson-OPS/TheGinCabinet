@@ -116,55 +116,72 @@ export default async function CocktailPage({ params, searchParams }: { params: P
       </div>
 
       <div className={styles.body}>
-        <section aria-labelledby="ingredients-title">
-          <h2 id="ingredients-title" className={styles.sectionTitle}>
-            Ingredients
-          </h2>
-          <div className={styles.stepper}>
-            <Link
-              href={stepHref(recipe.servings - 1)}
-              className={styles.stepButton}
-              aria-label="One drink fewer"
-              aria-disabled={lessDisabled}
-              tabIndex={lessDisabled ? -1 : undefined}
-              scroll={false}
-            >
-              −
-            </Link>
-            {/* aria-live: screen readers hear the new number after each change. */}
-            <span aria-live="polite">
-              <strong>{recipe.servings}</strong> drink{recipe.servings === 1 ? "" : "s"}
-            </span>
-            <Link
-              href={stepHref(recipe.servings + 1)}
-              className={styles.stepButton}
-              aria-label="One drink more"
-              aria-disabled={moreDisabled}
-              tabIndex={moreDisabled ? -1 : undefined}
-              scroll={false}
-            >
-              +
-            </Link>
-          </div>
-          <ul className={styles.ingredients}>
-            {recipe.ingredients.map((line, index) => (
-              <li key={index}>
-                <span className={styles.amount}>{formatAmount(line.quantity, line.unit)}</span>
-                <span>
-                  {line.name}
-                  {line.note && `, ${line.note}`}
-                  {line.optional && " (optional)"}
-                </span>
-              </li>
-            ))}
-            {recipe.garnish && (
-              <li>
-                <span className={styles.amount}>{recipe.garnish_quantity ?? "To garnish"}</span>
-                <span>{recipe.garnish}</span>
-              </li>
-            )}
-          </ul>
-        </section>
+        {/* Left column: ingredients, then "What you need". */}
+        <div>
+          <section aria-labelledby="ingredients-title">
+            <h2 id="ingredients-title" className={styles.sectionTitle}>
+              Ingredients
+            </h2>
+            <div className={styles.stepper}>
+              <Link
+                href={stepHref(recipe.servings - 1)}
+                className={styles.stepButton}
+                aria-label="One drink fewer"
+                aria-disabled={lessDisabled}
+                tabIndex={lessDisabled ? -1 : undefined}
+                scroll={false}
+              >
+                −
+              </Link>
+              {/* aria-live: screen readers hear the new number after each change. */}
+              <span aria-live="polite">
+                <strong>{recipe.servings}</strong> drink{recipe.servings === 1 ? "" : "s"}
+              </span>
+              <Link
+                href={stepHref(recipe.servings + 1)}
+                className={styles.stepButton}
+                aria-label="One drink more"
+                aria-disabled={moreDisabled}
+                tabIndex={moreDisabled ? -1 : undefined}
+                scroll={false}
+              >
+                +
+              </Link>
+            </div>
+            <ul className={styles.ingredients}>
+              {recipe.ingredients.map((line, index) => (
+                <li key={index}>
+                  <span className={styles.amount}>{formatAmount(line.quantity, line.unit)}</span>
+                  <span>
+                    {line.name}
+                    {line.note && `, ${line.note}`}
+                    {line.optional && " (optional)"}
+                  </span>
+                </li>
+              ))}
+              {recipe.garnish && (
+                <li>
+                  <span className={styles.amount}>{recipe.garnish_quantity ?? "To garnish"}</span>
+                  <span>{recipe.garnish}</span>
+                </li>
+              )}
+            </ul>
+          </section>
+
+          {(recipe.glassware || recipe.equipment.length > 0) && (
+            <section aria-labelledby="equipment-title" className={styles.equipment}>
+              <h2 id="equipment-title" className={styles.sectionTitle}>
+                What you need
+              </h2>
+              <ul className={styles.ingredients}>
+                {recipe.glassware && <li>{recipe.glassware}</li>}
+                {recipe.equipment.map((tool) => (
+                  <li key={tool}>{tool}</li>
+                ))}
+              </ul>
+            </section>
+          )}
+        </div>
 
         <section aria-labelledby="method-title">
           <h2 id="method-title" className={styles.sectionTitle}>

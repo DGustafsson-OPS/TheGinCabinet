@@ -155,6 +155,7 @@ def cocktail_out(recipe: CocktailRecipe) -> CocktailOut:
         garnish=recipe.garnish,
         garnish_quantity=recipe.garnish_quantity,
         tags=recipe.tags or [],
+        equipment=recipe.equipment or [],
         status=recipe.status,
         author=Person.model_validate(recipe.author),
         cover_media_id=recipe.cover_media_id,
@@ -203,6 +204,7 @@ def public_cocktail(recipe: CocktailRecipe, servings: int | None) -> PublicCockt
         ingredients=lines(recipe, target),
         garnish=recipe.garnish,
         garnish_quantity=scale(recipe.garnish_quantity, recipe.servings_base, target),
+        equipment=recipe.equipment or [],
         # Steps are text and are never changed by scaling (spec §11).
         steps=[step.text for step in recipe.steps],
         # Only gins the public may see (spec §6: no leaks of private gins).
