@@ -20,6 +20,16 @@ async function load(slug: string) {
   return publicGet<PublicGin>(`/gins/${encodeURIComponent(slug)}`);
 }
 
+/**
+ * The page title, worded the way people search: "Hernö Navy Strength review &
+ * tasting notes" once the gin has a published review, otherwise "Hernö Navy
+ * Strength gin" ("gin" is not added twice if the name already has it).
+ */
+function ginTitle(gin: PublicGin) {
+  if (gin.review_count > 0) return `${gin.display_name} review & tasting notes`;
+  return /\bgin\b/i.test(gin.display_name) ? gin.display_name : `${gin.display_name} gin`;
+}
+
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
   const gin = await load((await params).slug);
   if (!gin) return { title: "Gin not found" };
@@ -27,7 +37,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
     gin.description?.slice(0, 160) ??
     `${gin.display_name}: a ${humanize(gin.style).toLowerCase()} gin${gin.country ? ` from ${gin.country}` : ""}, ${formatStrength(gin.abv)}.`;
   return {
-    title: gin.display_name,
+    title: ginTitle(gin),
     description,
     alternates: { canonical: `/gins/${gin.slug}` },
     openGraph: {

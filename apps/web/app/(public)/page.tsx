@@ -1,15 +1,31 @@
 // P01 Home (spec §4): hero with two calls to action, latest reviews, featured
 // cocktails, collection numbers and a featured gin. The numbers count public
 // gins, reviews and recipes only, never private bottles.
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import GinCard from "@/components/GinCard";
 import MediaImage from "@/components/MediaImage";
 import { formatDate, humanize } from "@/lib/format";
-import { getSite, publicGet, siteText } from "@/lib/public-api";
+import { SITE_URL, getSite, publicGet, siteText } from "@/lib/public-api";
 import type { Page, PublicCocktailCard, PublicGinCard, PublicReviewCard, PublicStats } from "@/lib/types";
 
 import styles from "./public.module.css";
+
+// The title and description search engines show for the home page, edited in
+// Admin → Page texts. "absolute" because the title already names the site, so
+// the usual " · The Gin Cabinet" ending is not added again.
+export async function generateMetadata(): Promise<Metadata> {
+  const site = await getSite();
+  const title = siteText(site, "home.seo_title") || (site?.site_name ?? "The Gin Cabinet");
+  const description = siteText(site, "home.seo_description") || undefined;
+  return {
+    title: { absolute: title },
+    description,
+    alternates: { canonical: "/" },
+    openGraph: { title, description, url: `${SITE_URL}/`, type: "website" },
+  };
+}
 
 export default async function HomePage() {
   const [site, stats, reviews, cocktails, topGins] = await Promise.all([
