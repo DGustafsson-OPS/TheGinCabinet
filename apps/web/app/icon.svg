@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- The Gin Cabinet's browser icon: a brass copa (balloon) gin glass on forest green. -->
+  <rect width="64" height="64" rx="14" fill="#19251f"/>
+  <!-- The gin in the glass -->
+  <path d="M18.4 26 H45.6 C44.2 33.5 39 38.5 32 38.5 S19.8 33.5 18.4 26 Z" fill="#c7a46b" opacity="0.55"/>
+  <!-- Bowl, stem and foot -->
+  <path d="M17 14 H47 C47 28 40.5 38.5 32 38.5 S17 28 17 14 Z" fill="none" stroke="#c7a46b" stroke-width="3.2" stroke-linejoin="round"/>
+  <path d="M32 38.5 V50 M23.5 51 H40.5" fill="none" stroke="#c7a46b" stroke-width="3.2" stroke-linecap="round"/>
+  <!-- A juniper berry -->
+  <circle cx="37.5" cy="30.5" r="2.6" fill="#f5f0e6"/>
+</svg>
