@@ -5,6 +5,7 @@
 * ``RecipeIngredient``: one ordered line: 50 ml gin, 2 dashes bitters...
 * ``RecipeStep``: one ordered preparation step.
 * ``CocktailGinRecommendation``: "best with this gin, because ...".
+* ``CocktailTonicRecommendation``: "use this tonic", with an optional note.
 """
 
 import uuid
@@ -29,6 +30,7 @@ from app.models._mixins import Versioned
 from app.models._types import JSONType, UTCDateTime, UUIDType, new_uuid
 from app.models.catalogue import GinProduct
 from app.models.editorial import MediaAsset
+from app.models.tonics import Tonic
 from app.models.user import User
 
 
@@ -136,6 +138,12 @@ class CocktailRecipe(Versioned, Base):
         lazy="selectin",
         order_by="CocktailGinRecommendation.priority",
     )
+    tonic_recommendations: Mapped[list["CocktailTonicRecommendation"]] = relationship(
+        back_populates="recipe",
+        cascade="all, delete-orphan",
+        lazy="selectin",
+        order_by="CocktailTonicRecommendation.position",
+    )
 
 
 class RecipeIngredient(Base):
@@ -193,3 +201,23 @@ class CocktailGinRecommendation(Base):
 
     recipe: Mapped[CocktailRecipe] = relationship(back_populates="gin_recommendations")
     gin: Mapped[GinProduct] = relationship(lazy="joined")
+
+
+class CocktailTonicRecommendation(Base):
+    """A tonic to use in a cocktail. The tonic's page lists the cocktail back."""
+
+    __tablename__ = "cocktail_tonic_recommendations"
+    __table_args__ = (UniqueConstraint("recipe_id", "tonic_id", name="uq_cocktail_tonic_pair"),)
+
+    id: Mapped[uuid.UUID] = mapped_column(UUIDType, primary_key=True, default=new_uuid)
+    recipe_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("cocktail_recipes.id", ondelete="CASCADE"), index=True
+    )
+    tonic_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("tonics.id", ondelete="CASCADE"), index=True
+    )
+    position: Mapped[int] = mapped_column(Integer, default=0)  # the order shown
+    pairing_note: Mapped[str | None] = mapped_column(String(300), nullable=True)
+
+    recipe: Mapped[CocktailRecipe] = relationship(back_populates="tonic_recommendations")
+    tonic: Mapped[Tonic] = relationship(lazy="joined")

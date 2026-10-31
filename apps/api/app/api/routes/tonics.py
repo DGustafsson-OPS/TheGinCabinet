@@ -11,16 +11,31 @@ from decimal import ROUND_HALF_UP, Decimal
 from typing import Annotated
 
 from fastapi import APIRouter, Depends
-from sqlalchemy import func, or_, select, update
+from sqlalchemy import delete, func, or_, select, update
 from sqlalchemy.orm import Session
 
 from app.api.deps import CurrentStaff, CurrentStaffWrite, DbSession
 from app.errors import ApiError
-from app.models import Review, Tonic, TonicReview, TonicReviewStatus, TonicStyle, User
+from app.models import (
+    CocktailRecipe,
+    CocktailStatus,
+    CocktailTonicRecommendation,
+    GinProduct,
+    GinTonicPairing,
+    Review,
+    Tonic,
+    TonicReview,
+    TonicReviewStatus,
+    TonicStyle,
+    User,
+)
 from app.models._types import utcnow
+from app.schemas.catalogue import GinSummary
+from app.schemas.cocktails import PublicGinPairing
 from app.schemas.common import Page, PageParams
 from app.schemas.editorial import Person
 from app.schemas.tonics import (
+    GinLinkOut,
     PublicTonic,
     PublicTonicCard,
     PublicTonicReview,
@@ -33,6 +48,7 @@ from app.schemas.tonics import (
     TonicSort,
 )
 from app.services import audit
+from app.services.cocktails import public_card as cocktail_card
 from app.services.common import (
     apply_patch,
     contains,
@@ -81,6 +97,14 @@ def tonic_out(tonic: Tonic) -> TonicOut:
         image=media_summary(tonic.image),
         public_visible=tonic.public_visible,
         reviews=[review_out(r) for r in tonic.reviews],
+        gins=[
+            GinLinkOut(
+                gin=GinSummary.model_validate(p.gin),
+                gin_public=p.gin.public_visible,
+                pairing_note=p.pairing_note,
+            )
+            for p in tonic.gin_pairings
+        ],
         version=tonic.version,
         created_at=tonic.created_at,
         updated_at=tonic.updated_at,
@@ -104,6 +128,26 @@ def ensure_unique_name(
             f"{existing.display_name} is already in the list.",
             details={"existing_id": str(existing.id)},
         )
+
+
+def set_gins(db: Session, tonic: Tonic, links: list[dict]) -> None:
+    """Replace the gins this tonic suits, in the order given (each gin once)."""
+    gin_ids = [link["gin_id"] for link in links]
+    if len(set(gin_ids)) != len(gin_ids):
+        raise ApiError(422, "duplicate_pairing", "Each gin can be added only once.")
+    for gin_id in gin_ids:
+        if db.get(GinProduct, gin_id) is None:
+            raise ApiError(404, "not_found", "A chosen gin doesn't exist.")
+    # Reuse the row of a gin that stays: a new row for the same gin would clash
+    # with the unique (tonic, gin) rule, because new rows are saved first.
+    existing = {p.gin_id: p for p in tonic.gin_pairings}
+    rows = []
+    for position, link in enumerate(links):
+        row = existing.get(link["gin_id"]) or GinTonicPairing(gin_id=link["gin_id"])
+        row.position = position
+        row.pairing_note = (link.get("pairing_note") or "").strip() or None
+        rows.append(row)
+    tonic.gin_pairings = rows
 
 
 def _published(tonic: Tonic) -> list[TonicReview]:
@@ -154,12 +198,14 @@ def create_tonic(body: TonicIn, admin: CurrentStaffWrite, db: DbSession):
     ensure_unique_name(db, body.brand, body.name)
     check_cover(db, body.image_media_id)
     data = body.model_dump()
+    gins = data.pop("gins")
     if data["slug"]:
         ensure_slug_free(db, Tonic, data["slug"])
     else:
         data["slug"] = unique_slug(db, Tonic, slugify(f"{body.brand} {body.name}"))
     tonic = Tonic(**data)
     db.add(tonic)
+    set_gins(db, tonic, gins)
     db.flush()
     audit.record(
         db,
@@ -183,6 +229,7 @@ def get_tonic(tonic_id: uuid.UUID, admin: CurrentStaff, db: DbSession):
 def update_tonic(tonic_id: uuid.UUID, body: TonicPatch, admin: CurrentStaffWrite, db: DbSession):
     tonic = get_or_404(db, Tonic, tonic_id, "Tonic")
     changes = body.model_dump(exclude_unset=True)
+    gins = changes.pop("gins", None)  # a list, saved separately below
     check_version(
         current_version=tonic.version,
         sent_version=changes.pop("version"),
@@ -201,6 +248,8 @@ def update_tonic(tonic_id: uuid.UUID, body: TonicPatch, admin: CurrentStaffWrite
         check_cover(db, changes["image_media_id"])
     if changes.get("slug"):
         ensure_slug_free(db, Tonic, changes["slug"], exclude_id=tonic.id)
+    if gins is not None:
+        set_gins(db, tonic, gins)
     apply_patch(tonic, changes, never_empty={"brand", "name", "slug", "style", "public_visible"})
     audit.record(
         db,
@@ -208,7 +257,10 @@ def update_tonic(tonic_id: uuid.UUID, body: TonicPatch, admin: CurrentStaffWrite
         entity_type="tonic",
         entity_id=tonic.id,
         actor_id=admin.user.id,
-        summary={"title": tonic.display_name, "fields": sorted(changes)},
+        summary={
+            "title": tonic.display_name,
+            "fields": sorted([*changes, *(["gins"] if gins is not None else [])]),
+        },
     )
     db.commit()
     db.refresh(tonic)
@@ -231,6 +283,11 @@ def delete_tonic(tonic_id: uuid.UUID, admin: CurrentStaffWrite, db: DbSession):
     # link goes. (PostgreSQL would do this by itself via ON DELETE SET NULL;
     # doing it here makes every database behave the same.)
     db.execute(update(Review).where(Review.tonic_id == tonic.id).values(tonic_id=None))
+    # Cocktails that used it just lose the link. (Its gin links go with the
+    # tonic itself.)
+    db.execute(
+        delete(CocktailTonicRecommendation).where(CocktailTonicRecommendation.tonic_id == tonic.id)
+    )
     db.delete(tonic)
     db.commit()
 
@@ -408,6 +465,32 @@ def get_public_tonic(slug: str, db: DbSession):
                 .where(Review.tonic_id == tonic.id)
                 .order_by(Review.published_at.desc())
                 .limit(12)
+            ).unique()
+        ],
+        gins=[
+            PublicGinPairing(
+                slug=p.gin.slug,
+                display_name=p.gin.display_name,
+                country=p.gin.country,
+                abv=p.gin.abv,
+                pairing_note=p.pairing_note,
+            )
+            for p in tonic.gin_pairings
+            if p.gin.public_visible
+        ],
+        cocktails=[
+            cocktail_card(r)
+            for r in db.scalars(
+                select(CocktailRecipe)
+                .join(
+                    CocktailTonicRecommendation,
+                    CocktailTonicRecommendation.recipe_id == CocktailRecipe.id,
+                )
+                .where(
+                    CocktailTonicRecommendation.tonic_id == tonic.id,
+                    CocktailRecipe.status == CocktailStatus.PUBLISHED,
+                )
+                .order_by(CocktailRecipe.title)
             ).unique()
         ],
         updated_at=tonic.updated_at,

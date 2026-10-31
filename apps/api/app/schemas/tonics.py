@@ -8,13 +8,27 @@ from typing import Annotated, Literal
 from pydantic import BaseModel, Field, field_validator
 
 from app.models import TonicReviewStatus, TonicStyle
-from app.schemas.catalogue import ShortText, Slug, _clean_botanicals
+from app.schemas.catalogue import GinSummary, ShortText, Slug, _clean_botanicals
+from app.schemas.cocktails import PublicCocktailCard, PublicGinPairing
 from app.schemas.common import Fixed1, MediaSummary
 from app.schemas.editorial import Person, PublicReviewCard
 
 Rating = Annotated[Decimal, Field(ge=0, le=10, max_digits=3, decimal_places=1)]
 
 # ---------------- Admin ----------------
+
+
+class GinLinkIn(BaseModel):
+    """A gin this tonic suits; the list order is the order shown."""
+
+    gin_id: uuid.UUID
+    pairing_note: str | None = Field(default=None, max_length=300)
+
+
+class GinLinkOut(BaseModel):
+    gin: GinSummary
+    gin_public: bool
+    pairing_note: str | None
 
 
 class TonicIn(BaseModel):
@@ -27,6 +41,7 @@ class TonicIn(BaseModel):
     description: str | None = Field(default=None, max_length=10_000)
     image_media_id: uuid.UUID | None = None
     public_visible: bool = False
+    gins: list[GinLinkIn] = Field(default_factory=list, max_length=20)
 
     # Same cleaning as gin botanicals: trimmed, lower-case, no duplicates.
     _notes = field_validator("flavour_notes")(_clean_botanicals)
@@ -48,6 +63,7 @@ class TonicPatch(BaseModel):
     description: str | None = Field(default=None, max_length=10_000)
     image_media_id: uuid.UUID | None = None
     public_visible: bool | None = None
+    gins: list[GinLinkIn] | None = Field(default=None, max_length=20)  # replaces the list
 
     _notes = field_validator("flavour_notes")(_clean_botanicals)
 
@@ -95,6 +111,7 @@ class TonicOut(BaseModel):
     image: MediaSummary | None
     public_visible: bool
     reviews: list[TonicReviewOut]
+    gins: list[GinLinkOut]
     version: int
     created_at: datetime
     updated_at: datetime
@@ -128,6 +145,9 @@ class PublicTonic(PublicTonicCard):
     reviews: list[PublicTonicReview]
     # Published gin reviews that name this tonic as the perfect serve.
     gin_reviews: list[PublicReviewCard] = []
+    # Gins it suits (public ones only) and published cocktails that use it.
+    gins: list[PublicGinPairing] = []
+    cocktails: list[PublicCocktailCard] = []
     updated_at: datetime
 
 

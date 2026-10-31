@@ -217,6 +217,22 @@ export default async function CocktailPage({ params, searchParams }: { params: P
               </ul>
             </>
           )}
+          {recipe.recommended_tonics.length > 0 && (
+            <>
+              <h2 className={styles.sectionTitle}>Tonics to use</h2>
+              <ul className={styles.pairings}>
+                {recipe.recommended_tonics.map((tonic) => (
+                  <li key={tonic.slug} className="card">
+                    <strong>
+                      <Link href={`/tonics/${tonic.slug}`}>{tonic.display_name}</Link>
+                    </strong>
+                    <div className="field-hint">{humanize(tonic.style)} tonic</div>
+                    {tonic.pairing_note && <p style={{ margin: "var(--space-2) 0 0" }}>{tonic.pairing_note}</p>}
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
         </section>
       </div>
       <p>

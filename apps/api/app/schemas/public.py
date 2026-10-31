@@ -9,7 +9,7 @@ from typing import Literal
 
 from pydantic import BaseModel
 
-from app.schemas.cocktails import PublicCocktailCard
+from app.schemas.cocktails import PublicCocktailCard, PublicTonicLink
 from app.schemas.common import Fixed1, Fixed2, MediaSummary
 from app.schemas.editorial import PublicReviewCard
 
@@ -45,6 +45,7 @@ class PublicGin(PublicGinCard):
     images: list[MediaSummary]
     reviews: list[PublicReviewCard]
     cocktails: list[PublicCocktailCard]
+    tonics: list[PublicTonicLink]  # tonics that suit it (public ones only)
     related: list[PublicGinCard]
     updated_at: datetime
 

@@ -24,6 +24,7 @@ from app.models.cocktails import (
     CocktailGinRecommendation,
     CocktailRecipe,
     CocktailStatus,
+    CocktailTonicRecommendation,
     Difficulty,
     Ingredient,
     Method,
@@ -48,7 +49,7 @@ from app.models.guide import GuidePage
 from app.models.purchases import Purchase, PurchaseLine
 from app.models.settings import SETTINGS_ID, SiteSettings
 from app.models.site_content import ContactMessage, ContactMessageNote, MessageFolder, PageText
-from app.models.tonics import Tonic, TonicReview, TonicReviewStatus, TonicStyle
+from app.models.tonics import GinTonicPairing, Tonic, TonicReview, TonicReviewStatus, TonicStyle
 from app.models.user import MAX_ACCOUNTS, MAX_ADMINS, User, UserRole
 from app.models.wishlist import WishlistItem, WishlistStatus
 
@@ -56,6 +57,7 @@ __all__ = [
     "ContactMessageNote",
     "MessageFolder",
     "GuidePage",
+    "GinTonicPairing",
     "Tonic",
     "TonicReview",
     "TonicReviewStatus",
@@ -74,6 +76,7 @@ __all__ = [
     "RelationKind",
     "blog_post_tags",
     "CocktailGinRecommendation",
+    "CocktailTonicRecommendation",
     "CocktailRecipe",
     "CocktailStatus",
     "Difficulty",
