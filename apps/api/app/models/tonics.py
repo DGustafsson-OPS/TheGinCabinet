@@ -7,6 +7,10 @@ tonic is, and what we think of it.
 * ``TonicReview``: one admin's verdict on a tonic: a rating, tasting notes and
   what it pairs well with. Each admin can review the same tonic. A review is
   either a draft or published (no "ready" step, no revision history).
+* ``GinTonicPairing``: "this tonic suits that gin", with an optional note.
+  Edited on the tonic; the gin's page lists the tonic back.
+
+Cocktails link to tonics too (``CocktailTonicRecommendation`` in cocktails.py).
 """
 
 import uuid
@@ -15,12 +19,13 @@ from decimal import Decimal
 from enum import StrEnum
 from typing import Any
 
-from sqlalchemy import CheckConstraint, ForeignKey, Numeric, String, Text
+from sqlalchemy import CheckConstraint, ForeignKey, Integer, Numeric, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db import Base
 from app.models._mixins import Versioned
 from app.models._types import JSONType, UTCDateTime, UUIDType, new_uuid
+from app.models.catalogue import GinProduct
 from app.models.editorial import MediaAsset
 from app.models.user import User
 
@@ -63,6 +68,12 @@ class Tonic(Versioned, Base):
         lazy="selectin",
         order_by="TonicReview.created_at",
     )
+    gin_pairings: Mapped[list["GinTonicPairing"]] = relationship(
+        back_populates="tonic",
+        cascade="all, delete-orphan",
+        lazy="selectin",
+        order_by="GinTonicPairing.position",
+    )
 
     @property
     def display_name(self) -> str:
@@ -89,3 +100,21 @@ class TonicReview(Versioned, Base):
 
     tonic: Mapped[Tonic] = relationship(back_populates="reviews")
     author: Mapped[User] = relationship(lazy="joined")
+
+
+class GinTonicPairing(Base):
+    __tablename__ = "gin_tonic_pairings"
+    __table_args__ = (UniqueConstraint("tonic_id", "gin_id", name="uq_gin_tonic_pair"),)
+
+    id: Mapped[uuid.UUID] = mapped_column(UUIDType, primary_key=True, default=new_uuid)
+    tonic_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("tonics.id", ondelete="CASCADE"), index=True
+    )
+    gin_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("gin_products.id", ondelete="CASCADE"), index=True
+    )
+    position: Mapped[int] = mapped_column(Integer, default=0)  # the order shown
+    pairing_note: Mapped[str | None] = mapped_column(String(300), nullable=True)
+
+    tonic: Mapped[Tonic] = relationship(back_populates="gin_pairings")
+    gin: Mapped[GinProduct] = relationship(lazy="joined")

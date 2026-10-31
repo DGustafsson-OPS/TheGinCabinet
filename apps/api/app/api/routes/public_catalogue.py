@@ -15,10 +15,13 @@ from app.models import (
     CocktailStatus,
     Distillery,
     GinProduct,
+    GinTonicPairing,
     Review,
     ReviewStatus,
+    Tonic,
     gin_botanicals,
 )
+from app.schemas.cocktails import PublicTonicLink
 from app.schemas.common import Page, PageParams
 from app.schemas.public import (
     Facets,
@@ -153,6 +156,18 @@ def get_public_gin(slug: str, db: DbSession):
         images=gin_images(gin),
         reviews=[editorial.public_card(r) for r in reviews],
         cocktails=[cocktail_service.public_card(r) for r in recipes],
+        # Tonics that suit it (set on the tonic), public tonics only.
+        tonics=[
+            PublicTonicLink(
+                slug=t.slug, display_name=t.display_name, style=t.style, pairing_note=note
+            )
+            for t, note in db.execute(
+                select(Tonic, GinTonicPairing.pairing_note)
+                .join(GinTonicPairing, GinTonicPairing.tonic_id == Tonic.id)
+                .where(GinTonicPairing.gin_id == gin.id, Tonic.public_visible.is_(True))
+                .order_by(Tonic.brand, Tonic.name)
+            ).unique()
+        ],
         related=cards(db, related_gins(db, gin)),
         updated_at=gin.updated_at,
     )

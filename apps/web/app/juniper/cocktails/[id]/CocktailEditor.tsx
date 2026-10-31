@@ -1,6 +1,6 @@
 "use client";
 // The recipe editor (spec §5 A07): tabs for basics / ingredients / steps /
-// imagery / gin pairings / SEO / publishing, all in one form so switching tabs
+// imagery / gin pairings / tonics / SEO / publishing, all in one form so switching tabs
 // never loses unsaved work.
 
 import Link from "next/link";
@@ -11,6 +11,7 @@ import MediaImage from "@/components/MediaImage";
 import { errorMessage, useAdmin } from "@/components/admin/AdminProvider";
 import ConfirmButton from "@/components/admin/ConfirmButton";
 import ConflictPanel from "@/components/admin/ConflictPanel";
+import LinkList, { type LinkRow, linkPayload, toLinkRows } from "@/components/admin/LinkList";
 import Tabs from "@/components/admin/Tabs";
 import PhotoUpload from "@/components/admin/PhotoUpload";
 import { ApiError } from "@/lib/api-client";
@@ -60,7 +61,7 @@ const splitList = (value: string) => value.split(",").map((t) => t.trim()).filte
 const decimal = (value: string) => (value.trim() ? value.replace(",", ".").trim() : null);
 
 /** Everything on screen, as the JSON the API expects. */
-function payload(basics: Basics, lines: LineRow[], steps: StepRow[], gins: GinRow[]) {
+function payload(basics: Basics, lines: LineRow[], steps: StepRow[], gins: GinRow[], tonics: LinkRow[]) {
   return {
     title: basics.title.trim(),
     slug: basics.slug.trim(),
@@ -90,6 +91,7 @@ function payload(basics: Basics, lines: LineRow[], steps: StepRow[], gins: GinRo
       priority: Number(g.priority || 1),
       pairing_note: text(g.pairing_note),
     })),
+    tonics: linkPayload(tonics, "tonic_id"),
   };
 }
 
@@ -105,6 +107,7 @@ function move<T>(list: T[], index: number, by: -1 | 1): T[] {
 type Props = {
   cocktail: Cocktail;
   gins: GinSummary[];
+  tonics: { id: string; label: string }[];
   media: (MediaSummary & { label: string })[];
   knownIngredients: string[];
 };
@@ -116,8 +119,10 @@ const toLines = (c: Cocktail, tag = "init"): LineRow[] =>
 const toSteps = (c: Cocktail, tag = "init"): StepRow[] => c.steps.map((t, i) => ({ key: `${tag}-${i}`, text: t }));
 const toGinRows = (c: Cocktail, tag = "init"): GinRow[] =>
   c.gins.map((g, i) => ({ key: `${tag}-${i}`, gin_id: g.gin.id, priority: String(g.priority), pairing_note: g.pairing_note ?? "" }));
+const toTonicRows = (c: Cocktail, tag = "init"): LinkRow[] =>
+  toLinkRows(c.tonics.map((t) => ({ id: t.tonic.id, note: t.pairing_note })), tag);
 
-export default function CocktailEditor({ cocktail, gins, media: library, knownIngredients }: Props) {
+export default function CocktailEditor({ cocktail, gins, tonics, media: library, knownIngredients }: Props) {
   // Photos uploaded from this form (PhotoUpload) join the library's list.
   const [uploaded, setUploaded] = useState<Props["media"]>([]);
   const media = [...uploaded, ...library];
@@ -133,9 +138,10 @@ export default function CocktailEditor({ cocktail, gins, media: library, knownIn
   const [lines, setLines] = useState<LineRow[]>(() => toLines(cocktail));
   const [steps, setSteps] = useState<StepRow[]>(() => toSteps(cocktail));
   const [ginRows, setGinRows] = useState<GinRow[]>(() => toGinRows(cocktail));
+  const [tonicRows, setTonicRows] = useState<LinkRow[]>(() => toTonicRows(cocktail));
   // The last saved state. After a save we update these from the API's answer
   // instead of rebuilding the editor, so you stay on the tab you were using.
-  const [original, setOriginal] = useState(() => payload(basics, lines, steps, ginRows));
+  const [original, setOriginal] = useState(() => payload(basics, lines, steps, ginRows, tonicRows));
   const [version, setVersion] = useState(cocktail.version);
   const [status, setStatusState] = useState<CocktailStatus>(cocktail.status);
   const [conflict, setConflict] = useState<ConflictDetails<Cocktail> | null>(null);
@@ -148,17 +154,19 @@ export default function CocktailEditor({ cocktail, gins, media: library, knownIn
     const tag = `v${saved.version}`; // fresh keys, different from the rows on screen
     const next = {
       basics: initialBasics(saved), lines: toLines(saved, tag), steps: toSteps(saved, tag), gins: toGinRows(saved, tag),
+      tonics: toTonicRows(saved, tag),
     };
     setBasics(next.basics);
     setLines(next.lines);
     setSteps(next.steps);
     setGinRows(next.gins);
-    setOriginal(payload(next.basics, next.lines, next.steps, next.gins));
+    setTonicRows(next.tonics);
+    setOriginal(payload(next.basics, next.lines, next.steps, next.gins, next.tonics));
     setVersion(saved.version);
     setStatusState(saved.status);
   }
 
-  const current = payload(basics, lines, steps, ginRows);
+  const current = payload(basics, lines, steps, ginRows, tonicRows);
   const changes = Object.fromEntries(
     Object.entries(current).filter(
       ([key, value]) => JSON.stringify(value) !== JSON.stringify(original[key as keyof typeof original]),
@@ -508,6 +516,23 @@ export default function CocktailEditor({ cocktail, gins, media: library, knownIn
     </>
   );
 
+  const tonicsTab = (
+    <>
+      <p className="field-hint">
+        Tonics to use in this cocktail. They&apos;re shown on the recipe and, in return, each tonic&apos;s page lists
+        this cocktail. Only public tonics are shown to visitors.
+      </p>
+      <LinkList
+        rows={tonicRows}
+        onChange={setTonicRows}
+        options={tonics}
+        noun="tonic"
+        privateIds={cocktail.tonics.filter((t) => !t.tonic_public).map((t) => t.tonic.id)}
+        notePlaceholder="e.g. a light tonic keeps the herbs in front"
+      />
+    </>
+  );
+
   const seoTab = (
     <div className="form-grid">
       <div className="field">
@@ -590,6 +615,7 @@ export default function CocktailEditor({ cocktail, gins, media: library, knownIn
           { id: "steps", label: "Steps", badge: String(steps.length), content: stepsTab },
           { id: "imagery", label: "Imagery", content: imageryTab },
           { id: "gins", label: "Gin pairings", badge: String(ginRows.length), content: pairingsTab },
+          { id: "tonics", label: "Tonics", badge: String(tonicRows.length), content: tonicsTab },
           { id: "seo", label: "SEO", content: seoTab },
           { id: "publishing", label: "Publishing", content: publishingTab },
         ]}

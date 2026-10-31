@@ -5,7 +5,7 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Annotated
 
-from pydantic import BaseModel, Field, PlainSerializer, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, PlainSerializer, field_validator, model_validator
 
 from app.models import CocktailStatus, Difficulty, Method, Unit
 from app.schemas.catalogue import SLUG_PATTERN, GinSummary
@@ -43,6 +43,13 @@ class StepIn(BaseModel):
 class PairingIn(BaseModel):
     gin_id: uuid.UUID
     priority: int = Field(default=1, ge=1, le=10)
+    pairing_note: str | None = Field(default=None, max_length=300)
+
+
+class TonicLinkIn(BaseModel):
+    """A tonic to use in the cocktail; the list order is the order shown."""
+
+    tonic_id: uuid.UUID
     pairing_note: str | None = Field(default=None, max_length=300)
 
 
@@ -88,13 +95,14 @@ class CocktailIn(BaseModel):
     ingredients: list[IngredientLineIn] = Field(default_factory=list, max_length=30)
     steps: list[StepIn] = Field(default_factory=list, max_length=30)
     gins: list[PairingIn] = Field(default_factory=list, max_length=10)
+    tonics: list[TonicLinkIn] = Field(default_factory=list, max_length=10)
 
     _tags = field_validator("tags")(_clean_tags)
     _equipment = field_validator("equipment")(_clean_equipment)
 
 
 class CocktailPatch(BaseModel):
-    """Lists (ingredients, steps, gins), when sent, replace the old lists completely."""
+    """Lists (ingredients, steps, gins, tonics), when sent, replace the old lists completely."""
 
     version: int
     title: str | None = Field(default=None, min_length=1, max_length=160)
@@ -115,6 +123,7 @@ class CocktailPatch(BaseModel):
     ingredients: list[IngredientLineIn] | None = Field(default=None, max_length=30)
     steps: list[StepIn] | None = Field(default=None, max_length=30)
     gins: list[PairingIn] | None = Field(default=None, max_length=10)
+    tonics: list[TonicLinkIn] | None = Field(default=None, max_length=10)
 
     _tags = field_validator("tags")(_clean_tags)
     _equipment = field_validator("equipment")(_clean_equipment)
@@ -149,6 +158,20 @@ class PairingOut(BaseModel):
     pairing_note: str | None
 
 
+class TonicSummary(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    slug: str
+    display_name: str
+
+
+class TonicLinkOut(BaseModel):
+    tonic: TonicSummary
+    tonic_public: bool
+    pairing_note: str | None
+
+
 class CocktailOut(BaseModel):
     id: uuid.UUID
     slug: str
@@ -172,6 +195,7 @@ class CocktailOut(BaseModel):
     ingredients: list[IngredientLineOut]
     steps: list[str]
     gins: list[PairingOut]
+    tonics: list[TonicLinkOut]
     published_at: datetime | None
     version: int
     created_at: datetime
@@ -203,6 +227,13 @@ class PublicGinPairing(BaseModel):
     pairing_note: str | None
 
 
+class PublicTonicLink(BaseModel):
+    slug: str
+    display_name: str
+    style: str
+    pairing_note: str | None
+
+
 class PublicCocktail(PublicCocktailCard):
     """The full recipe, scaled to ``servings`` (spec P07)."""
 
@@ -215,6 +246,7 @@ class PublicCocktail(PublicCocktailCard):
     equipment: list[str]  # "What you need"
     steps: list[str]
     recommended_gins: list[PublicGinPairing]
+    recommended_tonics: list[PublicTonicLink]
     seo_title: str | None
     seo_description: str | None
     published_at: datetime

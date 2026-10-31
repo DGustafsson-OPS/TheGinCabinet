@@ -5,7 +5,7 @@ import { notFound } from "next/navigation";
 
 import { mediaOptions } from "@/lib/media-options";
 import { apiGet, requireStaff } from "@/lib/server-api";
-import type { AdminName, Media, Page, Tonic } from "@/lib/types";
+import type { AdminName, Gin, Media, Page, Tonic } from "@/lib/types";
 
 import TonicForm from "../TonicForm";
 import TonicReviews from "./TonicReviews";
@@ -17,10 +17,11 @@ type Params = Promise<{ id: string }>;
 export default async function TonicPage({ params }: { params: Params }) {
   await requireStaff();
   const { id } = await params;
-  const [{ data: tonic }, media, authors] = await Promise.all([
+  const [{ data: tonic }, media, authors, gins] = await Promise.all([
     apiGet<Tonic>(`/admin/tonics/${id}`),
     apiGet<Page<Media>>("/admin/media?page_size=100"),
     apiGet<AdminName[]>("/admin/users"),
+    apiGet<Page<Gin>>("/admin/gins?page_size=100"),
   ]);
   if (!tonic) notFound();
 
@@ -38,7 +39,12 @@ export default async function TonicPage({ params }: { params: Params }) {
         )}
       </div>
       {/* `key`: after each save the page reloads and the form starts fresh. */}
-      <TonicForm key={tonic.version} tonic={tonic} media={mediaOptions(media.data?.items ?? [], tonic.image ? [tonic.image] : [])} />
+      <TonicForm
+        key={tonic.version}
+        tonic={tonic}
+        media={mediaOptions(media.data?.items ?? [], tonic.image ? [tonic.image] : [])}
+        gins={(gins.data?.items ?? []).map((g) => ({ id: g.id, label: g.display_name }))}
+      />
       <TonicReviews tonic={tonic} authors={authors.data ?? []} />
     </>
   );

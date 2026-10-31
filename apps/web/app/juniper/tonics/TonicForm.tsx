@@ -1,12 +1,14 @@
 "use client";
 // Add or edit a tonic. Without `tonic` it creates (POST), with it it edits
 // (PATCH, with the version check that protects against two people saving at once).
+// "Gins it suits" links the tonic to gins; each gin's page then lists it.
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import MediaImage from "@/components/MediaImage";
 import { errorMessage, useAdmin } from "@/components/admin/AdminProvider";
+import LinkList, { type LinkRow, linkPayload, toLinkRows } from "@/components/admin/LinkList";
 import PhotoUpload from "@/components/admin/PhotoUpload";
 import { ApiError } from "@/lib/api-client";
 import { humanize } from "@/lib/format";
@@ -42,13 +44,18 @@ const toPayload = (v: Values) => ({
   public_visible: v.public_visible,
 });
 
-export default function TonicForm({ tonic, media: library }: { tonic?: Tonic; media: MediaOption[] }) {
+type Props = { tonic?: Tonic; media: MediaOption[]; gins: { id: string; label: string }[] };
+
+export default function TonicForm({ tonic, media: library, gins }: Props) {
   // Photos uploaded from this form (PhotoUpload) join the library's list.
   const [uploaded, setUploaded] = useState<MediaOption[]>([]);
   const media = [...uploaded, ...library];
   const router = useRouter();
   const { call, toast } = useAdmin();
   const [values, setValues] = useState<Values>(() => toValues(tonic));
+  const [ginRows, setGinRows] = useState<LinkRow[]>(() =>
+    toLinkRows((tonic?.gins ?? []).map((g) => ({ id: g.gin.id, note: g.pairing_note }))),
+  );
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -66,12 +73,16 @@ export default function TonicForm({ tonic, media: library }: { tonic?: Tonic; me
     setError(null);
     try {
       if (!tonic) {
-        const created = await call<Tonic>("/admin/tonics", "POST", toPayload(values));
+        const created = await call<Tonic>("/admin/tonics", "POST", { ...toPayload(values), gins: linkPayload(ginRows, "gin_id") });
         toast(`${created.display_name} was added.`);
         router.push(`/juniper/tonics/${created.id}`);
         return;
       }
-      await call<Tonic>(`/admin/tonics/${tonic.id}`, "PATCH", { version: tonic.version, ...toPayload(values) });
+      await call<Tonic>(`/admin/tonics/${tonic.id}`, "PATCH", {
+        version: tonic.version,
+        ...toPayload(values),
+        gins: linkPayload(ginRows, "gin_id"),
+      });
       toast("Saved.");
       router.refresh(); // the page reloads the tonic; `key` then starts this form fresh
     } catch (err) {
@@ -153,6 +164,20 @@ export default function TonicForm({ tonic, media: library }: { tonic?: Tonic; me
           <label htmlFor="public_visible">Show this tonic on the public website</label>
         </div>
       </div>
+      <fieldset className="fieldset-plain" style={{ marginTop: "var(--space-5)" }}>
+        <legend>Gins it suits</legend>
+        <p className="field-hint" style={{ marginTop: 0 }}>
+          Shown on this tonic&apos;s page and, in return, on each gin&apos;s page. Only public gins are shown to visitors.
+        </p>
+        <LinkList
+          rows={ginRows}
+          onChange={setGinRows}
+          options={gins}
+          noun="gin"
+          privateIds={(tonic?.gins ?? []).filter((g) => !g.gin_public).map((g) => g.gin.id)}
+          notePlaceholder="e.g. lets the cucumber shine"
+        />
+      </fieldset>
       <div className="form-actions">
         <button className="button button-primary" type="submit" disabled={busy}>
           {busy ? "Saving…" : tonic ? "Save changes" : "Add tonic"}

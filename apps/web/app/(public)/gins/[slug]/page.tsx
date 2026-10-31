@@ -1,5 +1,6 @@
 // P03 Gin detail (spec §4): photos with thumbnails, name, distillery,
-// country, alcohol content, botanicals, collection status, reviews, cocktails, related gins.
+// country, alcohol content, botanicals, collection status, reviews, tonics that
+// suit it, cocktails, related gins.
 // Private gins are a 404; prices and bottle counts are never shown.
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -168,6 +169,33 @@ export default async function GinPage({ params, searchParams }: { params: Params
                   {review.author_name} · {formatDate(review.published_at)}
                 </p>
                 <p>{review.teaser}</p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {gin.tonics.length > 0 && (
+        <section aria-labelledby="tonics-title" className={styles.section}>
+          <h2 id="tonics-title" className={styles.sectionTitle}>
+            Tonics that suit it
+          </h2>
+          <ul className={styles.cocktails}>
+            {gin.tonics.map((t) => (
+              <li key={t.slug}>
+                <Link href={`/tonics/${t.slug}`} className={styles.cocktail}>
+                  <span>
+                    <strong>{t.display_name}</strong>
+                    <br />
+                    <span className="field-hint">{humanize(t.style)} tonic</span>
+                    {t.pairing_note && (
+                      <>
+                        <br />
+                        {t.pairing_note}
+                      </>
+                    )}
+                  </span>
+                </Link>
               </li>
             ))}
           </ul>

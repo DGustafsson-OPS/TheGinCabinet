@@ -1,12 +1,12 @@
 // One tonic: photo, style, flavour notes, description, our published
-// reviews with what each tonic pairs well with, and the gin reviews that
-// name it as the perfect serve.
+// reviews with what each tonic pairs well with, the gins it suits, the
+// cocktails that use it, and the gin reviews that name it as the perfect serve.
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import MediaImage from "@/components/MediaImage";
-import { formatDate, humanize } from "@/lib/format";
+import { formatDate, formatStrength, humanize } from "@/lib/format";
 import { SITE_URL, publicGet } from "@/lib/public-api";
 import type { PublicTonic } from "@/lib/types";
 
@@ -102,6 +102,51 @@ export default async function TonicPage({ params }: { params: Params }) {
           </ul>
         )}
       </section>
+
+      {tonic.gins.length > 0 && (
+        <section aria-labelledby="tonic-suits" className={styles.section}>
+          <h2 id="tonic-suits" className={styles.sectionTitle}>
+            Gins it suits
+          </h2>
+          <ul className={styles.reviews}>
+            {tonic.gins.map((gin) => (
+              <li key={gin.slug} className={styles.review}>
+                <div className={styles.reviewHead}>
+                  <Link href={`/gins/${gin.slug}`}>
+                    <strong>{gin.display_name}</strong>
+                  </Link>
+                  <span className="field-hint">{[gin.country, formatStrength(gin.abv)].filter(Boolean).join(" · ")}</span>
+                </div>
+                {gin.pairing_note && <p className={styles.reviewText}>{gin.pairing_note}</p>}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {tonic.cocktails.length > 0 && (
+        <section aria-labelledby="tonic-cocktails" className={styles.section}>
+          <h2 id="tonic-cocktails" className={styles.sectionTitle}>
+            Cocktails with this tonic
+          </h2>
+          <ul className={styles.reviews}>
+            {tonic.cocktails.map((c) => (
+              <li key={c.slug} className={styles.review}>
+                <div className={styles.reviewHead}>
+                  <Link href={`/cocktails/${c.slug}`}>
+                    <strong>{c.title}</strong>
+                  </Link>
+                  <span className="field-hint">
+                    {humanize(c.method)}
+                    {c.prep_minutes != null && ` · ${c.prep_minutes} min`}
+                  </span>
+                </div>
+                {c.teaser && <p className={styles.reviewText}>{c.teaser}</p>}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {tonic.gin_reviews.length > 0 && (
         <section aria-labelledby="tonic-gins" className={styles.section}>

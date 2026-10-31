@@ -358,6 +358,15 @@ export type Pairing = {
 
 export type CocktailStatus = "draft" | "published" | "archived";
 
+/** A tonic linked to a cocktail (admin view). */
+export type TonicLink = { tonic: { id: string; slug: string; display_name: string }; tonic_public: boolean; pairing_note: string | null };
+/** A gin linked to a tonic (admin view). */
+export type GinLink = { gin: GinSummary; gin_public: boolean; pairing_note: string | null };
+/** A linked tonic as visitors see it. */
+export type PublicTonicLink = { slug: string; display_name: string; style: string; pairing_note: string | null };
+/** A linked gin as visitors see it. */
+export type PublicGinLink = { slug: string; display_name: string; country: string | null; abv: string; pairing_note: string | null };
+
 export type Cocktail = {
   id: string;
   slug: string;
@@ -382,6 +391,7 @@ export type Cocktail = {
   ingredients: IngredientLine[];
   steps: string[];
   gins: Pairing[];
+  tonics: TonicLink[];
   published_at: string | null;
   version: number;
   created_at: string;
@@ -409,7 +419,8 @@ export type PublicCocktail = PublicCocktailCard & {
   garnish_quantity: string | null;
   equipment: string[];
   steps: string[];
-  recommended_gins: { slug: string; display_name: string; country: string | null; abv: string; pairing_note: string | null }[];
+  recommended_gins: PublicGinLink[];
+  recommended_tonics: PublicTonicLink[];
   seo_title: string | null;
   seo_description: string | null;
   published_at: string;
@@ -439,6 +450,7 @@ export type PublicGin = PublicGinCard & {
   images: MediaSummary[];
   reviews: PublicReviewCard[];
   cocktails: PublicCocktailCard[];
+  tonics: PublicTonicLink[]; // tonics that suit it
   related: PublicGinCard[];
   updated_at: string;
 };
@@ -687,6 +699,7 @@ export type Tonic = {
   image: MediaSummary | null;
   public_visible: boolean;
   reviews: TonicReview[];
+  gins: GinLink[]; // gins it suits
   version: number;
   created_at: string;
   updated_at: string;
@@ -709,6 +722,8 @@ export type PublicTonic = PublicTonicCard & {
   reviews: { author_name: string; rating: string | null; notes: string | null; pairs_with: string | null; published_at: string | null }[];
   /** Published gin reviews that name this tonic as the perfect serve. */
   gin_reviews: PublicReviewCard[];
+  gins: PublicGinLink[]; // gins it suits
+  cocktails: PublicCocktailCard[]; // published cocktails that use it
   updated_at: string;
 };
 

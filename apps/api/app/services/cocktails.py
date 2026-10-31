@@ -11,10 +11,12 @@ from app.errors import ApiError
 from app.models import (
     CocktailGinRecommendation,
     CocktailRecipe,
+    CocktailTonicRecommendation,
     GinProduct,
     Ingredient,
     RecipeIngredient,
     RecipeStep,
+    Tonic,
 )
 from app.schemas.catalogue import GinSummary
 from app.schemas.cocktails import (
@@ -24,6 +26,9 @@ from app.schemas.cocktails import (
     PublicCocktail,
     PublicCocktailCard,
     PublicGinPairing,
+    PublicTonicLink,
+    TonicLinkOut,
+    TonicSummary,
 )
 from app.schemas.editorial import Person
 from app.services.editorial import media_summary, teaser
@@ -88,6 +93,31 @@ def replace_lists(db: Session, recipe: CocktailRecipe, data: dict[str, Any]) -> 
             row.pairing_note = pairing.get("pairing_note")
             rows.append(row)
         recipe.gin_recommendations = rows
+    if data.get("tonics") is not None:
+        recipe.tonic_recommendations = tonic_rows(db, recipe, data["tonics"])
+
+
+def tonic_rows(
+    db: Session, recipe: CocktailRecipe, links: list[dict[str, Any]]
+) -> list[CocktailTonicRecommendation]:
+    """The recipe's tonics, in the order given (each tonic once)."""
+    tonic_ids = [link["tonic_id"] for link in links]
+    if len(set(tonic_ids)) != len(tonic_ids):
+        raise ApiError(422, "duplicate_pairing", "Each tonic can be added only once.")
+    for tonic_id in tonic_ids:
+        if db.get(Tonic, tonic_id) is None:
+            raise ApiError(404, "not_found", "A chosen tonic doesn't exist.")
+    # Reuse the row of a tonic that stays (see the gins above for why).
+    existing = {rec.tonic_id: rec for rec in recipe.tonic_recommendations}
+    rows = []
+    for position, link in enumerate(links):
+        row = existing.get(link["tonic_id"]) or CocktailTonicRecommendation(
+            tonic_id=link["tonic_id"]
+        )
+        row.position = position
+        row.pairing_note = (link.get("pairing_note") or "").strip() or None
+        rows.append(row)
+    return rows
 
 
 def check_can_publish(recipe: CocktailRecipe) -> None:
@@ -173,6 +203,14 @@ def cocktail_out(recipe: CocktailRecipe) -> CocktailOut:
             )
             for rec in recipe.gin_recommendations
         ],
+        tonics=[
+            TonicLinkOut(
+                tonic=TonicSummary.model_validate(rec.tonic),
+                tonic_public=rec.tonic.public_visible,
+                pairing_note=rec.pairing_note,
+            )
+            for rec in recipe.tonic_recommendations
+        ],
         published_at=recipe.published_at,
         version=recipe.version,
         created_at=recipe.created_at,
@@ -218,6 +256,17 @@ def public_cocktail(recipe: CocktailRecipe, servings: int | None) -> PublicCockt
             )
             for rec in recipe.gin_recommendations
             if rec.gin.public_visible
+        ],
+        # Likewise only public tonics.
+        recommended_tonics=[
+            PublicTonicLink(
+                slug=rec.tonic.slug,
+                display_name=rec.tonic.display_name,
+                style=rec.tonic.style,
+                pairing_note=rec.pairing_note,
+            )
+            for rec in recipe.tonic_recommendations
+            if rec.tonic.public_visible
         ],
         seo_title=recipe.seo_title,
         seo_description=recipe.seo_description,
