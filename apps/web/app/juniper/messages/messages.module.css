@@ -1,0 +1,86 @@
+/* Folder list on the left, messages on the right (stacked on phones). */
+.layout {
+  display: grid;
+  gap: var(--space-5);
+  margin-top: var(--space-4);
+}
+@media (min-width: 900px) {
+  .layout {
+    grid-template-columns: 220px minmax(0, 1fr);
+    align-items: start;
+  }
+}
+
+.boxes ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-1);
+}
+.boxes a {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  color: var(--color-charcoal);
+}
+.boxes a:hover {
+  background: var(--color-white);
+}
+.boxes a[aria-current="page"] {
+  background: var(--color-white);
+  font-weight: 700;
+  box-shadow: inset 3px 0 0 var(--color-brass-600);
+}
+
+/* Unread count next to a folder. */
+.badge {
+  min-width: 1.5rem;
+  padding: 0 var(--space-2);
+  border-radius: 999px;
+  background: var(--color-brass);
+  color: var(--color-forest);
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1.5rem;
+  text-align: center;
+}
+
+.boxTitle {
+  font-size: var(--font-size-h3);
+  margin: 0 0 var(--space-3);
+}
+
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: var(--space-4);
+}
+
+/* Notes under a message. */
+.notes {
+  margin-top: var(--space-4);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border);
+}
+.notes ol {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 var(--space-3);
+  display: grid;
+  gap: var(--space-3);
+}
+.note {
+  background: var(--color-cream);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3);
+}
+.noteText {
+  white-space: pre-wrap; /* keep the line breaks of a pasted email */
+  margin: var(--space-1) 0 0;
+}

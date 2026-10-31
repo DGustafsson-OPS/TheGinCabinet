@@ -7,7 +7,7 @@ import type { Metadata } from "next";
 
 import AdminSidebar from "@/components/AdminSidebar";
 import AdminProvider from "@/components/admin/AdminProvider";
-import { getSession } from "@/lib/server-api";
+import { apiGet, getSession } from "@/lib/server-api";
 
 import styles from "./admin.module.css";
 
@@ -21,11 +21,14 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   if (!session.authenticated || !session.user || !session.csrf_token) {
     return <>{children}</>; // the page itself redirects to /login
   }
+  // New contact-form messages, shown next to "Messages" in the menu (admins only).
+  const unread =
+    session.user.role === "admin" ? ((await apiGet<{ unread: number }>("/admin/messages/unread-count")).data?.unread ?? 0) : 0;
 
   return (
     <AdminProvider csrfToken={session.csrf_token}>
       <div className={styles.shell}>
-        <AdminSidebar displayName={session.user.display_name} csrfToken={session.csrf_token} role={session.user.role} />
+        <AdminSidebar displayName={session.user.display_name} csrfToken={session.csrf_token} role={session.user.role} unreadMessages={unread} />
         <main id="main" className={styles.workspace}>
           {children}
         </main>
