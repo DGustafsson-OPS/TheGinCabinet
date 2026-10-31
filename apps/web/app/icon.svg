@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- The Gin Cabinet's browser icon: a brass gin bottle on forest green. -->
+  <rect width="64" height="64" rx="14" fill="#19251f"/>
+  <!-- Cap -->
+  <rect x="26.5" y="6.5" width="11" height="6" rx="1.2" fill="#c7a46b"/>
+  <!-- Bottle: neck, square shoulders and body, with the gin inside -->
+  <path d="M28.5 13 H35.5 V19 L43.5 25 V53 A3 3 0 0 1 40.5 56 H23.5 A3 3 0 0 1 20.5 53 V25 L28.5 19 Z" fill="#c7a46b" fill-opacity="0.3" stroke="#c7a46b" stroke-width="3" stroke-linejoin="round"/>
+  <!-- Label with a juniper berry -->
+  <rect x="24.5" y="33" width="15" height="13" rx="1.5" fill="#f5f0e6"/>
+  <circle cx="32" cy="39.5" r="3" fill="#19251f"/>
+</svg>

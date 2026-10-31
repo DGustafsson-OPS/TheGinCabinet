@@ -47,6 +47,25 @@ We score out of ten. A 7 is a good gin we would happily buy again; a 9 is one we
 The collection shows gins we have catalogued and chosen to share. Bottle counts, prices and our private tasting notes stay private."""
 
 PAGE_TEXTS: tuple[PageTextDef, ...] = (
+    # What search engines show for the home page: the blue link and the two
+    # lines of text under it.
+    PageTextDef(
+        "home.seo_title",
+        "Home page",
+        "Title in Google and the browser tab",
+        "Gin reviews, tasting notes & cocktail recipes · The Gin Cabinet",
+        hint="About 50–60 characters; longer titles are cut off in search results.",
+        max_length=70,
+    ),
+    PageTextDef(
+        "home.seo_description",
+        "Home page",
+        "Description in Google search results",
+        "Honest gin reviews, tasting notes and cocktail recipes from a home gin cabinet: "
+        "what we pour, how it tastes and which tonic suits it.",
+        hint="About 120–160 characters. Say what makes the site yours.",
+        max_length=160,
+    ),
     PageTextDef(
         "home.eyebrow",
         "Home page",

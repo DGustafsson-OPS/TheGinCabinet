@@ -72,6 +72,18 @@ def test_text_rules(api):
     assert api.patch(f"{TEXTS}/nope", json={"version": 0, "value": "x"}).status_code == 404
 
 
+def test_home_page_search_texts(api, client):
+    """The home page's title and description in Google are editable texts."""
+    texts = client.get("/api/v1/public/site").json()["texts"]
+    assert texts["home.seo_title"].endswith("The Gin Cabinet")
+    assert 0 < len(texts["home.seo_description"]) <= 160
+    # Kept to what search results show: 70 and 160 characters.
+    r = api.patch(f"{TEXTS}/home.seo_title", json={"version": 0, "value": "x" * 71})
+    assert r.status_code == 422
+    r = api.patch(f"{TEXTS}/home.seo_description", json={"version": 0, "value": "x" * 161})
+    assert r.status_code == 422
+
+
 def test_editors_may_edit_page_texts(api, db, client):
     editor = make_admin(db, username="eva", email="eva@example.com", role="editor")
     api.post("/api/v1/auth/logout")

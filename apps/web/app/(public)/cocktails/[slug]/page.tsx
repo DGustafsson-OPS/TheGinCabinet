@@ -9,7 +9,7 @@ import { notFound } from "next/navigation";
 
 import MediaImage from "@/components/MediaImage";
 import { formatAmount, formatStrength, humanize, param } from "@/lib/format";
-import { SITE_URL, publicGet } from "@/lib/public-api";
+import { SITE_URL, getSite, publicGet } from "@/lib/public-api";
 import type { PublicCocktail } from "@/lib/types";
 
 import styles from "../cocktails.module.css";
@@ -48,7 +48,7 @@ export default async function CocktailPage({ params, searchParams }: { params: P
   const { slug } = await params;
   const requested = Number(param((await searchParams).servings));
   const servings = Number.isInteger(requested) && requested >= MIN_SERVINGS && requested <= MAX_SERVINGS ? requested : undefined;
-  const recipe = await load(slug, servings);
+  const [recipe, site] = await Promise.all([load(slug, servings), getSite()]);
   if (!recipe) notFound();
 
   const stepHref = (n: number) => `/cocktails/${recipe.slug}?servings=${n}`;
@@ -70,6 +70,12 @@ export default async function CocktailPage({ params, searchParams }: { params: P
       i.unit === "top up" ? `${i.name}, to top up` : [formatAmount(i.quantity, i.unit), i.name].filter(Boolean).join(" "),
     ),
     recipeInstructions: recipe.steps.map((text) => ({ "@type": "HowToStep", text })),
+    // The "What you need" list: shaker, strainer, …
+    ...(recipe.equipment.length > 0 && { tool: recipe.equipment.map((name) => ({ "@type": "HowToTool", name })) }),
+    // Google recommends an author and dates; the site itself is the author.
+    author: { "@type": "Organization", name: site?.site_name ?? "The Gin Cabinet", url: SITE_URL },
+    datePublished: recipe.published_at,
+    dateModified: recipe.updated_at,
   };
 
   return (
