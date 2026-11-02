@@ -7,9 +7,8 @@ import Link from "next/link";
 
 import Tabs from "@/components/admin/Tabs";
 import { formatDateTime } from "@/lib/format";
-import { mediaOptions } from "@/lib/media-options";
 import { apiGet, requireStaff } from "@/lib/server-api";
-import type { AdminAccount, ConsentStats, Media, Page, Profile, SiteSettings } from "@/lib/types";
+import type { AdminAccount, ConsentStats, Profile, SiteSettings } from "@/lib/types";
 
 import AdminsPanel from "./AdminsPanel";
 import { MfaChange, PasswordForm, ProfileForm, RecoveryCodes } from "./ProfileForms";
@@ -77,11 +76,10 @@ export default async function SettingsPage() {
   const isAdmin = session.user.role === "admin";
   const none = { data: null };
   // The admin-only parts are only asked for when you're an admin.
-  const [site, profile, admins, media, consent] = await Promise.all([
+  const [site, profile, admins, consent] = await Promise.all([
     isAdmin ? apiGet<SiteSettings>("/admin/settings") : none,
     apiGet<Profile>("/admin/profile"),
     isAdmin ? apiGet<AdminAccount[]>("/admin/admins") : none,
-    isAdmin ? apiGet<Page<Media>>("/admin/media?page_size=100") : none,
     isAdmin ? apiGet<ConsentStats>("/admin/consent/stats?days=30") : none,
   ]);
   if (!profile.data || (isAdmin && (!site.data || !admins.data))) {
@@ -128,11 +126,7 @@ export default async function SettingsPage() {
                     id: "website",
                     label: "Website",
                     content: (
-                      <SiteSettingsForm
-                        key={site.data.version}
-                        settings={site.data}
-                        media={mediaOptions(media.data?.items ?? [], site.data.logo ? [site.data.logo] : [])}
-                      />
+                      <SiteSettingsForm key={site.data.version} settings={site.data} />
                     ),
                   },
                 ]

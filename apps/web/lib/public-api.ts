@@ -11,6 +11,11 @@ const API_URL = process.env.API_INTERNAL_URL ?? "http://127.0.0.1:8000";
 /** The site's own address, for canonical URLs and social images. */
 export const SITE_URL = (process.env.SITE_URL ?? "http://localhost:3000").replace(/\/$/, "");
 
+/** Used when Admin → Settings → Website has no tagline or description. */
+export const DEFAULT_TAGLINE = "Tasted, reviewed, shared";
+export const DEFAULT_DESCRIPTION =
+  "Honest gin reviews, tasting notes and cocktail recipes from our home gin cabinet: every bottle tasted neat and with tonic, and rated in juniper berries.";
+
 /**
  * The picture shown when a page without a photo of its own is shared (the
  * logo on forest green, app/opengraph-image.png). Pages that set their own

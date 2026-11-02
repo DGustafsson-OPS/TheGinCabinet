@@ -53,10 +53,10 @@ def test_defaults_then_edit_and_reset(api, client):
 
 def test_text_rules(api):
     # Single-line texts can't have line breaks.
-    r = api.patch(f"{TEXTS}/home.eyebrow", json={"version": 0, "value": "One\nTwo"})
+    r = api.patch(f"{TEXTS}/home.empty_title", json={"version": 0, "value": "One\nTwo"})
     assert r.status_code == 422
     # Too long.
-    r = api.patch(f"{TEXTS}/home.eyebrow", json={"version": 0, "value": "x" * 81})
+    r = api.patch(f"{TEXTS}/home.empty_title", json={"version": 0, "value": "x" * 121})
     assert r.status_code == 422
     # Formatted texts: only safe links.
     r = api.patch(
@@ -72,15 +72,14 @@ def test_text_rules(api):
     assert api.patch(f"{TEXTS}/nope", json={"version": 0, "value": "x"}).status_code == 404
 
 
-def test_home_page_search_texts(api, client):
-    """The home page's title and description in Google are editable texts."""
+def test_home_page_search_title(api, client):
+    """The home page's title in Google is an editable text. (Its description and
+    the tagline are website settings.)"""
     texts = client.get("/api/v1/public/site").json()["texts"]
     assert texts["home.seo_title"].endswith("The Gin Cabinet")
-    assert 0 < len(texts["home.seo_description"]) <= 160
-    # Kept to what search results show: 70 and 160 characters.
+    assert "home.seo_description" not in texts and "home.eyebrow" not in texts
+    # Kept to what search results show.
     r = api.patch(f"{TEXTS}/home.seo_title", json={"version": 0, "value": "x" * 71})
-    assert r.status_code == 422
-    r = api.patch(f"{TEXTS}/home.seo_description", json={"version": 0, "value": "x" * 161})
     assert r.status_code == 422
 
 
