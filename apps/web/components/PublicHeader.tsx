@@ -6,6 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 
+import CabinetMark from "./CabinetMark";
 import styles from "./PublicHeader.module.css";
 
 // Spec §3 public routes. Pages arrive in Phase 5; links are in place already.
@@ -29,6 +30,7 @@ export default function PublicHeader({ showGuide = false }: { showGuide?: boolea
     <header className={styles.masthead}>
       <div className={styles.inner}>
         <Link href="/" className={styles.brand}>
+          <CabinetMark className={styles.mark} />
           The Gin Cabinet
         </Link>
         {/* On phones the menu collapses behind this button (spec §2 responsive). */}

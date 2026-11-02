@@ -5,7 +5,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import ReviewArticle from "@/components/ReviewArticle";
-import { SITE_URL, publicGet } from "@/lib/public-api";
+import { DEFAULT_SHARE_IMAGES, SITE_URL, publicGet } from "@/lib/public-api";
 import type { PublicReview } from "@/lib/types";
 
 type Params = Promise<{ slug: string }>;
@@ -32,7 +32,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
       publishedTime: review.published_at,
       modifiedTime: review.updated_at,
       authors: [review.author_name],
-      images: image ? [{ url: image, alt: review.cover?.alt ?? "" }] : undefined,
+      images: image ? [{ url: image, alt: review.cover?.alt ?? "" }] : DEFAULT_SHARE_IMAGES,
     },
   };
 }

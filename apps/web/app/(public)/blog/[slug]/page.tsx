@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import JournalArticle from "@/components/JournalArticle";
-import { SITE_URL, publicGet } from "@/lib/public-api";
+import { DEFAULT_SHARE_IMAGES, SITE_URL, publicGet } from "@/lib/public-api";
 import type { PublicPost } from "@/lib/types";
 
 type Params = Promise<{ slug: string }>;
@@ -28,7 +28,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
       publishedTime: post.published_at ?? undefined,
       modifiedTime: post.updated_at,
       authors: [post.author_name],
-      images: image ? [{ url: `${SITE_URL}${image.url}`, alt: image.alt ?? "" }] : undefined,
+      images: image ? [{ url: `${SITE_URL}${image.url}`, alt: image.alt ?? "" }] : DEFAULT_SHARE_IMAGES,
     },
   };
 }

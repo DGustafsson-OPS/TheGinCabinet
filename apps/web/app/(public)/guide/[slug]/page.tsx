@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import GuideArticle from "@/components/GuideArticle";
-import { SITE_URL, publicGet } from "@/lib/public-api";
+import { DEFAULT_SHARE_IMAGES, SITE_URL, publicGet } from "@/lib/public-api";
 import type { PublicGuidePage } from "@/lib/types";
 
 type Params = Promise<{ slug: string }>;
@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
       description,
       url: `${SITE_URL}/guide/${page.slug}`,
       modifiedTime: page.updated_at,
-      images: page.image ? [{ url: `${SITE_URL}${page.image.url}`, alt: page.image.alt ?? "" }] : undefined,
+      images: page.image ? [{ url: `${SITE_URL}${page.image.url}`, alt: page.image.alt ?? "" }] : DEFAULT_SHARE_IMAGES,
     },
   };
 }

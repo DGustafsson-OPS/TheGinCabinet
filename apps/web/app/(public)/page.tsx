@@ -8,23 +8,31 @@ import Junipers from "@/components/Junipers";
 import GinCard from "@/components/GinCard";
 import MediaImage from "@/components/MediaImage";
 import { formatDate, humanize } from "@/lib/format";
-import { SITE_URL, getSite, publicGet, siteText } from "@/lib/public-api";
+import {
+  DEFAULT_DESCRIPTION,
+  DEFAULT_SHARE_IMAGES,
+  DEFAULT_TAGLINE,
+  SITE_URL,
+  getSite,
+  publicGet,
+  siteText,
+} from "@/lib/public-api";
 import type { Page, PublicCocktailCard, PublicGinCard, PublicReviewCard, PublicStats } from "@/lib/types";
 
 import styles from "./public.module.css";
 
-// The title and description search engines show for the home page, edited in
-// Admin → Page texts. "absolute" because the title already names the site, so
+// The title search engines show for the home page is edited in Admin → Page
+// texts; the description (and the tagline) in Admin → Settings → Website. "absolute" because the title already names the site, so
 // the usual " · The Gin Cabinet" ending is not added again.
 export async function generateMetadata(): Promise<Metadata> {
   const site = await getSite();
   const title = siteText(site, "home.seo_title") || (site?.site_name ?? "The Gin Cabinet");
-  const description = siteText(site, "home.seo_description") || undefined;
+  const description = site?.meta_description || DEFAULT_DESCRIPTION;
   return {
     title: { absolute: title },
     description,
     alternates: { canonical: "/" },
-    openGraph: { title, description, url: `${SITE_URL}/`, type: "website" },
+    openGraph: { title, description, url: `${SITE_URL}/`, type: "website", images: DEFAULT_SHARE_IMAGES },
   };
 }
 
@@ -40,11 +48,25 @@ export default async function HomePage() {
   // The wording is edited in Admin → Page texts.
   const text = (key: string) => siteText(site, key);
 
+  // Tells search engines the site's name and logo (schema.org WebSite and
+  // Organization), so results can show "The Gin Cabinet" with the cabinet.
+  const jsonLd = [
+    { "@context": "https://schema.org", "@type": "WebSite", name: site?.site_name ?? "The Gin Cabinet", url: `${SITE_URL}/` },
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      name: site?.site_name ?? "The Gin Cabinet",
+      url: `${SITE_URL}/`,
+      logo: `${SITE_URL}/logo.png`,
+    },
+  ];
+
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       <section className={styles.hero} aria-labelledby="hero-title">
         <div className={styles.heroInner}>
-          <p className={styles.eyebrow}>{text("home.eyebrow")}</p>
+          <p className={styles.eyebrow}>{site?.tagline || DEFAULT_TAGLINE}</p>
           <h1 id="hero-title" className={styles.heroTitle}>
             The Gin Cabinet
           </h1>

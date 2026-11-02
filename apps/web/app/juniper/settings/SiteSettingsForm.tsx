@@ -1,21 +1,19 @@
 "use client";
-// Website settings (spec A10): public branding, metadata, contact details and
-// the default visibility of new gins.
+// Website settings (spec A10): the name, tagline and search-engine description,
+// contact details and the default visibility of new gins. (The logo is part of
+// the site itself: components/CabinetMark.tsx and app/icon.svg.)
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import MediaImage from "@/components/MediaImage";
 import { errorMessage, useAdmin } from "@/components/admin/AdminProvider";
-import PhotoUpload from "@/components/admin/PhotoUpload";
 import { ApiError } from "@/lib/api-client";
-import type { MediaOption } from "@/lib/media-options";
 import type { SiteSettings } from "@/lib/types";
 
 type Values = {
   site_name: string; tagline: string; meta_description: string; contact_email: string;
-  logo_media_id: string; default_gin_public: boolean;
+  default_gin_public: boolean;
 };
 
 const toValues = (s: SiteSettings): Values => ({
@@ -23,14 +21,10 @@ const toValues = (s: SiteSettings): Values => ({
   tagline: s.tagline ?? "",
   meta_description: s.meta_description ?? "",
   contact_email: s.contact_email ?? "",
-  logo_media_id: s.logo_media_id ?? "",
   default_gin_public: s.default_gin_public,
 });
 
-export default function SiteSettingsForm({ settings, media: library }: { settings: SiteSettings; media: MediaOption[] }) {
-  // Photos uploaded from this form (PhotoUpload) join the library's list.
-  const [uploaded, setUploaded] = useState<MediaOption[]>([]);
-  const media = [...uploaded, ...library];
+export default function SiteSettingsForm({ settings }: { settings: SiteSettings }) {
   const router = useRouter();
   const { call, toast } = useAdmin();
   const [values, setValues] = useState<Values>(() => toValues(settings));
@@ -57,7 +51,6 @@ export default function SiteSettingsForm({ settings, media: library }: { setting
         tagline: text(values.tagline),
         meta_description: text(values.meta_description),
         contact_email: text(values.contact_email),
-        logo_media_id: values.logo_media_id || null,
         default_gin_public: values.default_gin_public,
       });
       toast("Website settings saved.");
@@ -73,7 +66,6 @@ export default function SiteSettingsForm({ settings, media: library }: { setting
     }
   }
 
-  const logo = media.find((m) => m.id === values.logo_media_id);
   return (
     <form onSubmit={save}>
       <div role="alert">{error && <p className="alert alert-error">{error}</p>}</div>
@@ -84,12 +76,24 @@ export default function SiteSettingsForm({ settings, media: library }: { setting
         </div>
         <div className="field">
           <label htmlFor="tagline">Tagline</label>
-          <input id="tagline" value={values.tagline} onChange={set("tagline")} maxLength={200} />
+          <input id="tagline" value={values.tagline} onChange={set("tagline")} maxLength={200} aria-describedby="tagline-hint" />
+          <span id="tagline-hint" className="field-hint">
+            Shown above the title on the home page. Empty: &quot;Tasted, reviewed, shared&quot;.
+          </span>
         </div>
         <div className="field span-2">
           <label htmlFor="meta_description">Description for search engines</label>
-          <textarea id="meta_description" value={values.meta_description} onChange={set("meta_description")} maxLength={170} />
-          <span className="field-hint">{values.meta_description.length} / 170 characters</span>
+          <textarea
+            id="meta_description"
+            value={values.meta_description}
+            onChange={set("meta_description")}
+            maxLength={170}
+            aria-describedby="description-hint"
+          />
+          <span id="description-hint" className="field-hint">
+            {values.meta_description.length} / 170 characters. The text under the home page in Google, and for any page
+            without a description of its own. About 120–160 characters; say what makes the site yours.
+          </span>
         </div>
         <div className="field">
           <label htmlFor="contact_email">Public contact email</label>
@@ -98,27 +102,9 @@ export default function SiteSettingsForm({ settings, media: library }: { setting
             Shown on the About page. Use a shared address, not your sign-in email.
           </span>
         </div>
-        <div className="field">
-          <label htmlFor="logo">Logo</label>
-          <select id="logo" value={values.logo_media_id} onChange={set("logo_media_id")}>
-            <option value="">(none)</option>
-            {media.map((m) => (
-              <option key={m.id} value={m.id}>
-                {m.label}
-              </option>
-            ))}
-          </select>
-          <PhotoUpload
-            label="Upload a new logo"
-            onUploaded={(p) => {
-              setUploaded((list) => [p, ...list]);
-              setValues((v) => ({ ...v, logo_media_id: p.id }));
-            }}
-          />
-          {logo && <MediaImage media={{ ...logo, alt: "" }} sizes="160px" className="photo-thumb" />}
-        </div>
         <p className="field-hint span-2">
-          The wording on the home and About pages is edited under <Link href="/juniper/pages">Page texts</Link>.
+          The rest of the wording on the home and About pages, including the home page&apos;s title in Google, is
+          edited under <Link href="/juniper/pages">Page texts</Link>.
         </p>
         <div className="field-checkbox span-2">
           <input id="default_gin_public" type="checkbox" checked={values.default_gin_public} onChange={set("default_gin_public")} />
