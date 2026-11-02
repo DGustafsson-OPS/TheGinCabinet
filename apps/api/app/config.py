@@ -40,6 +40,9 @@ class Settings(BaseSettings):
     session_absolute_hours: int = 12
     # How long a user has to enter their MFA code after the password step.
     mfa_pending_minutes: int = 5
+    # "Trust this browser": how many days it may skip the 6-digit code (0 = never).
+    trusted_device_days: int = 30
+    trusted_device_cookie_name: str = "gc_trusted"
 
     # --- Login throttling (spec §9) ---
     login_max_attempts: int = 5

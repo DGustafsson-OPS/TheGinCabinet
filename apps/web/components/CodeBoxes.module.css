@@ -1,0 +1,59 @@
+/* Six boxes for the authenticator code (see CodeBoxes.tsx). */
+.wrap {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+}
+
+/* The real input: invisible, but covering the boxes, so a tap or click
+   anywhere on them puts the cursor in it. */
+.input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  border: 0;
+  padding: 0;
+  font-size: 16px; /* stops iPhones zooming in on focus */
+  caret-color: transparent;
+  cursor: text;
+}
+
+.boxes {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.box {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 3.25rem;
+  border: 1px solid var(--color-sage);
+  border-radius: var(--radius-sm);
+  background: var(--color-white);
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  color: var(--color-charcoal);
+}
+.filled {
+  border-color: var(--color-brass-600);
+}
+/* The box the next digit goes in. */
+.active {
+  border-color: var(--color-brass-600);
+  box-shadow: 0 0 0 3px rgba(199, 164, 107, 0.45);
+}
+/* A little space in the middle: "123 456" is easier to read. */
+.gapAfter {
+  margin-right: var(--space-2);
+}
+
+@media (max-width: 380px) {
+  .box {
+    width: 2.3rem;
+    height: 2.9rem;
+    font-size: 1.35rem;
+  }
+}

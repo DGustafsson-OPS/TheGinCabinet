@@ -17,7 +17,7 @@ Losing your phone and recovery codes is handled on the server with
 import uuid
 from datetime import timedelta
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Request, Response
 from sqlalchemy import func, select, update
 
 from app.api.deps import (
@@ -30,7 +30,7 @@ from app.api.deps import (
 )
 from app.config import get_settings
 from app.errors import ApiError
-from app.models import AuditEvent, AuthSession, RecoveryCode, User, UserRole
+from app.models import AuditEvent, AuthSession, RecoveryCode, TrustedDevice, User, UserRole
 from app.models._types import utcnow
 from app.schemas.settings import (
     AccountInvite,
@@ -48,9 +48,11 @@ from app.schemas.settings import (
     SecurityNotice,
     SiteSettingsOut,
     SiteSettingsPatch,
+    TrustedBrowserOut,
 )
 from app.security import crypto, mfa
 from app.security.passwords import hash_password, password_problems, verify_password
+from app.security.tokens import hash_token
 from app.services import accounts, audit, sessions
 from app.services.common import apply_patch, get_or_404
 from app.services.editorial import check_cover, media_summary
@@ -129,7 +131,9 @@ def _check_new_password(password: str, username: str) -> None:
 
 
 def _revoke_other_sessions(db, user: User, keep: AuthSession) -> None:
-    """Sign out everywhere except this browser (after a password or MFA change)."""
+    """Sign out everywhere except this browser (after a password or MFA change).
+    Trusted browsers are forgotten: each one needs the code again."""
+    sessions.forget_trusted_devices(db, user)
     db.execute(
         update(AuthSession)
         .where(
@@ -238,6 +242,55 @@ def change_password(
         ip_address=client_ip(request),
     )
     db.commit()
+
+
+@router.get("/profile/trusted-browsers", response_model=list[TrustedBrowserOut])
+def list_trusted_browsers(request: Request, admin: CurrentStaff, db: DbSession):
+    """Your browsers that may skip the 6-digit code, newest first."""
+    cookie = request.cookies.get(get_settings().trusted_device_cookie_name)
+    mine = hash_token(cookie) if cookie else None
+    rows = db.scalars(
+        select(TrustedDevice)
+        .where(TrustedDevice.user_id == admin.user.id, TrustedDevice.expires_at > utcnow())
+        .order_by(TrustedDevice.created_at.desc())
+    )
+    return [
+        TrustedBrowserOut(
+            id=r.id,
+            user_agent=r.user_agent,
+            created_at=r.created_at,
+            last_used_at=r.last_used_at,
+            expires_at=r.expires_at,
+            this_browser=r.token_hash == mine,
+        )
+        for r in rows
+    ]
+
+
+@router.delete("/profile/trusted-browsers", status_code=204)
+def forget_trusted_browsers(request: Request, admin: CurrentStaffWrite, db: DbSession):
+    """Every one of your browsers asks for the 6-digit code again (e.g. after
+    losing a laptop). You stay signed in here."""
+    sessions.forget_trusted_devices(db, admin.user)
+    audit.record(
+        db,
+        action="user.trusted_browsers_forgotten",
+        entity_type="user",
+        entity_id=admin.user.id,
+        actor_id=admin.user.id,
+        ip_address=client_ip(request),
+    )
+    db.commit()
+    settings = get_settings()
+    response = Response(status_code=204)
+    response.delete_cookie(
+        settings.trusted_device_cookie_name,
+        path="/",
+        secure=settings.cookie_secure,
+        httponly=True,
+        samesite="lax",
+    )
+    return response
 
 
 @router.post("/profile/recovery-codes", response_model=RecoveryCodesOut)

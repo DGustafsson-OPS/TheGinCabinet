@@ -8,10 +8,10 @@ import Link from "next/link";
 import Tabs from "@/components/admin/Tabs";
 import { formatDateTime } from "@/lib/format";
 import { apiGet, requireStaff } from "@/lib/server-api";
-import type { AdminAccount, ConsentStats, Profile, SiteSettings } from "@/lib/types";
+import type { AdminAccount, ConsentStats, Profile, SiteSettings, TrustedBrowser } from "@/lib/types";
 
 import AdminsPanel from "./AdminsPanel";
-import { MfaChange, PasswordForm, ProfileForm, RecoveryCodes } from "./ProfileForms";
+import { MfaChange, PasswordForm, ProfileForm, RecoveryCodes, TrustedBrowsers } from "./ProfileForms";
 import SiteSettingsForm from "./SiteSettingsForm";
 
 export const metadata: Metadata = { title: "Settings" };
@@ -76,11 +76,12 @@ export default async function SettingsPage() {
   const isAdmin = session.user.role === "admin";
   const none = { data: null };
   // The admin-only parts are only asked for when you're an admin.
-  const [site, profile, admins, consent] = await Promise.all([
+  const [site, profile, admins, consent, trusted] = await Promise.all([
     isAdmin ? apiGet<SiteSettings>("/admin/settings") : none,
     apiGet<Profile>("/admin/profile"),
     isAdmin ? apiGet<AdminAccount[]>("/admin/admins") : none,
     isAdmin ? apiGet<ConsentStats>("/admin/consent/stats?days=30") : none,
+    apiGet<TrustedBrowser[]>("/admin/profile/trusted-browsers"),
   ]);
   if (!profile.data || (isAdmin && (!site.data || !admins.data))) {
     return (
@@ -144,6 +145,7 @@ export default async function SettingsPage() {
                   <PasswordForm />
                   <MfaChange pending={me.mfa_setup_pending} />
                   <RecoveryCodes left={me.recovery_codes_left} />
+                  <TrustedBrowsers browsers={trusted.data ?? []} />
                 </div>
               ),
             },

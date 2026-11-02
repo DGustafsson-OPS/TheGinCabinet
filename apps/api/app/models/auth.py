@@ -5,6 +5,9 @@
   used to hijack sessions.
 * ``recovery_codes``: one-time MFA backup codes, stored hashed.
 * ``login_attempts``: recent sign-in attempts, used to slow down password guessing.
+* ``trusted_devices``: browsers that may skip the 6-digit code for a while
+  (the "Trust this browser for 30 days" box). The password is still needed.
+  Like sessions, the cookie holds a random token and we store only its hash.
 """
 
 import uuid
@@ -59,3 +62,18 @@ class LoginAttempt(Base):
     ip_address: Mapped[str | None] = mapped_column(String(64), nullable=True)
     succeeded: Mapped[bool] = mapped_column(Boolean, default=False)
     attempted_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)
+
+
+class TrustedDevice(Base):
+    __tablename__ = "trusted_devices"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUIDType, primary_key=True, default=new_uuid)
+    token_hash: Mapped[str] = mapped_column(String(64), unique=True)
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), index=True
+    )
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)
+    last_used_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)
+    expires_at: Mapped[datetime] = mapped_column(UTCDateTime)
+    # Shown in Settings so you can tell your browsers apart ("Firefox on Mac").
+    user_agent: Mapped[str | None] = mapped_column(String(255), nullable=True)

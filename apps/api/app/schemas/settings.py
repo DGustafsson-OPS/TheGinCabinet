@@ -83,6 +83,17 @@ class ProfilePatch(BaseModel):
     current_password: str | None = Field(default=None, max_length=256)
 
 
+class TrustedBrowserOut(BaseModel):
+    """A browser that may skip the 6-digit code ("Trust this browser")."""
+
+    id: uuid.UUID
+    user_agent: str | None
+    created_at: datetime
+    last_used_at: datetime
+    expires_at: datetime
+    this_browser: bool  # the one you are using now
+
+
 class PasswordChange(BaseModel):
     current_password: str = Field(min_length=1, max_length=256)
     new_password: str = Field(min_length=1, max_length=256)

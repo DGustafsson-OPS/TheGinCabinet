@@ -3,10 +3,13 @@
 // and submitting. The flow matches the API (see apps/api/README.md §4):
 //   1. username + password  →  POST /api/v1/auth/login
 //   2. 6-digit code         →  POST /api/v1/auth/mfa/verify
+// On a trusted browser ("Trust this browser for 30 days" ticked at step 2
+// earlier), step 1 already signs in and step 2 is skipped.
 
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
+import CodeBoxes from "@/components/CodeBoxes";
 import { ApiError, apiFetch } from "@/lib/api-client";
 
 type Step = "password" | "mfa";
@@ -49,14 +52,20 @@ export default function LoginForm({ initialStep }: { initialStep: Step }) {
     setBusy(true);
     setError(null);
     try {
-      await apiFetch("/auth/login", {
+      const result = await apiFetch<{ mfa_required: boolean }>("/auth/login", {
         method: "POST",
         body: { username: form.get("username"), password: form.get("password") },
       });
-      setStep("mfa");
+      if (result.mfa_required) {
+        setStep("mfa");
+        setBusy(false);
+      } else {
+        // A trusted browser: the password was enough.
+        router.replace("/juniper");
+        router.refresh();
+      }
     } catch (err) {
       showError(err);
-    } finally {
       setBusy(false);
     }
   }
@@ -67,7 +76,10 @@ export default function LoginForm({ initialStep }: { initialStep: Step }) {
     setBusy(true);
     setError(null);
     try {
-      await apiFetch("/auth/mfa/verify", { method: "POST", body: { code: form.get("code") } });
+      await apiFetch("/auth/mfa/verify", {
+        method: "POST",
+        body: { code: form.get("code"), remember_device: form.get("remember_device") === "on" },
+      });
       router.replace("/juniper");
       router.refresh(); // re-run server components so they see the new session
     } catch (err) {
@@ -110,22 +122,26 @@ export default function LoginForm({ initialStep }: { initialStep: Step }) {
         <form key="code-step" onSubmit={submitCode}>
           <div className="field">
             <label htmlFor="code">{useRecovery ? "Recovery code" : "Authentication code"}</label>
-            <input
-              ref={codeInput}
-              id="code"
-              name="code"
-              required
-              autoComplete="one-time-code"
-              inputMode={useRecovery ? "text" : "numeric"}
-              pattern={useRecovery ? undefined : "[0-9 ]{6,7}"}
-              aria-describedby="code-hint"
-            />
+            {useRecovery ? (
+              <input ref={codeInput} id="code" name="code" required autoComplete="off" aria-describedby="code-hint" />
+            ) : (
+              // Six boxes; underneath, one ordinary input named "code".
+              <CodeBoxes ref={codeInput} id="code" name="code" describedBy="code-hint" />
+            )}
             <span id="code-hint" className="field-hint">
               {useRecovery
                 ? "One of the codes you saved when your account was created, like a1b2c-3d4e5."
                 : "The 6-digit code from your authenticator app."}
             </span>
           </div>
+          <div className="field-checkbox">
+            <input id="remember_device" name="remember_device" type="checkbox" aria-describedby="remember-hint" />
+            <label htmlFor="remember_device">Trust this browser for 30 days</label>
+          </div>
+          <p id="remember-hint" className="field-hint" style={{ marginTop: 0 }}>
+            You&apos;ll still need your password, but not the code, on this browser. Only tick this on your own
+            computer or phone.
+          </p>
           <button className="button button-primary" type="submit" disabled={busy}>
             {busy ? "Verifying…" : "Sign in"}
           </button>

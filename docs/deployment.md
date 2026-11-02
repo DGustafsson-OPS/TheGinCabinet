@@ -150,6 +150,7 @@ passwords and keys as secret/locked so they're hidden in the dashboard.
 Optional, with sensible defaults (see `apps/api/app/config.py`):
 `GC_MAX_UPLOAD_MB` (15), `GC_MAX_IMAGE_SIDE` (3000 px),
 `GC_SESSION_IDLE_MINUTES` (30), `GC_SESSION_ABSOLUTE_HOURS` (12),
+`GC_TRUSTED_DEVICE_DAYS` (30: how long "Trust this browser" skips the 6-digit code; 0 turns the option off),
 `GC_TOTP_ISSUER` ("The Gin Cabinet", the name shown in authenticator apps),
 `GC_CONTACT_PER_HOUR` (5 messages per IP address per hour),
 `GC_CONTACT_RETENTION_DAYS` (365, then messages are deleted).

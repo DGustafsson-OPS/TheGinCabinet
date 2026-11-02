@@ -14,11 +14,11 @@ session) takes effect immediately.
 
 from datetime import timedelta
 
-from sqlalchemy import select, update
+from sqlalchemy import delete, select, update
 from sqlalchemy.orm import Session
 
 from app.config import get_settings
-from app.models import AuthSession, User
+from app.models import AuthSession, TrustedDevice, User
 from app.models._types import as_utc, utcnow
 from app.security.tokens import hash_token, new_token
 
@@ -92,9 +92,45 @@ def revoke_session(db: Session, row: AuthSession) -> None:
 
 
 def revoke_all_for_user(db: Session, user: User) -> None:
-    """Log a user out everywhere, e.g. after a password reset."""
+    """Log a user out everywhere, e.g. after a password reset. Trusted
+    browsers are forgotten too, so every browser needs the code again."""
     db.execute(
         update(AuthSession)
         .where(AuthSession.user_id == user.id, AuthSession.revoked_at.is_(None))
         .values(revoked_at=utcnow())
     )
+    forget_trusted_devices(db, user)
+
+
+# ---------------- Trusted browsers ("Trust this browser for 30 days") ----------------
+
+
+def trust_device(db: Session, user: User, user_agent: str | None) -> tuple[str, TrustedDevice]:
+    """Remember this browser; returns ``(raw_token, row)``. The token goes in a cookie."""
+    token = new_token()
+    now = utcnow()
+    row = TrustedDevice(
+        token_hash=hash_token(token),
+        user_id=user.id,
+        created_at=now,
+        last_used_at=now,
+        expires_at=now + timedelta(days=get_settings().trusted_device_days),
+        user_agent=(user_agent or "")[:255] or None,
+    )
+    db.add(row)
+    return token, row
+
+
+def trusted_device(db: Session, user: User, token: str | None) -> TrustedDevice | None:
+    """The trusted-browser row for this cookie, if it is valid for this user."""
+    if not token or get_settings().trusted_device_days <= 0:
+        return None
+    row = db.scalar(select(TrustedDevice).where(TrustedDevice.token_hash == hash_token(token)))
+    if row is None or row.user_id != user.id or as_utc(row.expires_at) <= utcnow():
+        return None
+    return row
+
+
+def forget_trusted_devices(db: Session, user: User) -> None:
+    """Every browser of this user asks for the 6-digit code again."""
+    db.execute(delete(TrustedDevice).where(TrustedDevice.user_id == user.id))
