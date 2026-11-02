@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import Junipers from "@/components/Junipers";
 import MediaImage from "@/components/MediaImage";
 import { formatDate, formatStrength, humanize } from "@/lib/format";
 import { SITE_URL, publicGet } from "@/lib/public-api";
@@ -51,7 +52,7 @@ export default async function TonicPage({ params }: { params: Params }) {
           <p className={styles.meta}>{[humanize(tonic.style), tonic.country].filter(Boolean).join(" · ")}</p>
           {tonic.rating && (
             <p className={styles.rating}>
-              <strong>{tonic.rating}</strong>/10{" "}
+              <Junipers outOfTen={tonic.rating} size="medium" showNumber />{" "}
               <span className="field-hint">
                 (average of {tonic.review_count} review{tonic.review_count === 1 ? "" : "s"})
               </span>
@@ -82,9 +83,10 @@ export default async function TonicPage({ params }: { params: Params }) {
             {tonic.reviews.map((review, index) => (
               <li key={index} className={styles.review}>
                 <div className={styles.reviewHead}>
-                  <strong>
-                    {review.rating ? `${review.rating}/10` : "Not rated"} · {review.author_name}
-                  </strong>
+                  <span>
+                    {review.rating ? <Junipers outOfTen={review.rating} /> : "Not rated"} ·{" "}
+                    <strong>{review.author_name}</strong>
+                  </span>
                   {review.published_at && (
                     <time dateTime={review.published_at} className="field-hint">
                       {formatDate(review.published_at)}
@@ -160,7 +162,7 @@ export default async function TonicPage({ params }: { params: Params }) {
                   <Link href={`/reviews/${review.slug}`}>
                     <strong>{review.gin.display_name}</strong>
                   </Link>
-                  {review.rating && <span className="field-hint">{review.rating}/10</span>}
+                  {review.rating && <Junipers outOfTen={review.rating} />}
                 </div>
                 <p className={styles.reviewText}>{review.teaser}</p>
               </li>

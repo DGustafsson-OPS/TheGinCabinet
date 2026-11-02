@@ -6,6 +6,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import Junipers from "@/components/Junipers";
 import GinGrid from "@/components/GinGrid";
 import MediaImage from "@/components/MediaImage";
 import { formatDate, formatStrength, humanize, param } from "@/lib/format";
@@ -67,10 +68,11 @@ export default async function GinPage({ params, searchParams }: { params: Params
     ...(gin.rating && {
       aggregateRating: {
         "@type": "AggregateRating",
-        ratingValue: gin.rating,
-        bestRating: "10",
+        // Shown as juniper berries out of five, so search engines get the same.
+        ratingValue: String(Number(gin.rating) / 2),
+        bestRating: "5",
         worstRating: "0",
-        reviewCount: gin.review_count,
+        ratingCount: gin.review_count + gin.quick_review_count,
       },
     }),
   };
@@ -131,7 +133,7 @@ export default async function GinPage({ params, searchParams }: { params: Params
             </li>
             {gin.rating && (
               <li>
-                <strong>Our rating</strong> {gin.rating}/10
+                <strong>Our rating</strong> <Junipers outOfTen={gin.rating} size="medium" showNumber />
               </li>
             )}
           </ul>
@@ -165,10 +167,35 @@ export default async function GinPage({ params, searchParams }: { params: Params
                   <Link href={`/reviews/${review.slug}`}>{review.title}</Link>
                 </h3>
                 <p className="field-hint">
-                  {review.rating && <strong>{review.rating}/10 · </strong>}
+                  {review.rating && (
+                    <>
+                      <Junipers outOfTen={review.rating} /> ·{" "}
+                    </>
+                  )}
                   {review.author_name} · {formatDate(review.published_at)}
                 </p>
                 <p>{review.teaser}</p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {gin.quick_reviews.length > 0 && (
+        <section aria-labelledby="quick-title" className={styles.section}>
+          <h2 id="quick-title" className={styles.sectionTitle}>
+            Quick verdicts
+          </h2>
+          <ul className={styles.reviews}>
+            {gin.quick_reviews.map((q) => (
+              <li key={`${q.author_name}-${q.created_at}`} className="card">
+                <p style={{ margin: 0 }}>
+                  <Junipers berries={q.rating} size="medium" />{" "}
+                  <span className="field-hint">
+                    {q.author_name} · {formatDate(q.created_at)}
+                  </span>
+                </p>
+                {q.note && <p style={{ margin: "var(--space-2) 0 0" }}>{q.note}</p>}
               </li>
             ))}
           </ul>

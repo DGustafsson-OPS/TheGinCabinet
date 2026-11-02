@@ -82,7 +82,9 @@ test("tasting → review → publish → withdraw", async ({ page, browser, base
   await expect(visitor.getByText("Buy two bottles.")).toBeVisible();
   await expect(visitor.getByRole("img", { name: altText })).toBeVisible();
   const jsonLd = await visitor.locator('script[type="application/ld+json"]').textContent();
-  expect(JSON.parse(jsonLd!).reviewRating.ratingValue).toBe("8.5");
+  // 8.5 out of 10 is given to search engines out of 5, as the site shows it.
+  expect(JSON.parse(jsonLd!).reviewRating).toMatchObject({ ratingValue: "4.25", bestRating: "5" });
+  await expect(visitor.getByRole("img", { name: "4.5 out of 5 juniper berries" })).toBeVisible();
 
   // 6. Withdraw: gone from the list and the page (spec §11).
   await page.getByRole("button", { name: "Withdraw" }).click();

@@ -50,7 +50,8 @@ export default async function PublicReviewPage({ params }: { params: Params }) {
     author: { "@type": "Person", name: review.author_name },
     itemReviewed: { "@type": "Product", name: review.gin.display_name, category: "Gin" },
     ...(review.rating && {
-      reviewRating: { "@type": "Rating", ratingValue: review.rating, bestRating: "10", worstRating: "0" },
+      // Out of five, the way the site shows it (juniper berries).
+      reviewRating: { "@type": "Rating", ratingValue: String(Number(review.rating) / 2), bestRating: "5", worstRating: "0" },
     }),
   };
 

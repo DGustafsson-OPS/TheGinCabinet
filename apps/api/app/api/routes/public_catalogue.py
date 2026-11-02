@@ -16,6 +16,7 @@ from app.models import (
     Distillery,
     GinProduct,
     GinTonicPairing,
+    QuickReview,
     Review,
     ReviewStatus,
     Tonic,
@@ -31,25 +32,16 @@ from app.schemas.public import (
     PublicGinCard,
     PublicStats,
 )
+from app.schemas.quick_reviews import PublicQuickReview
 from app.services import cocktails as cocktail_service
 from app.services import editorial
 from app.services.catalogue import gin_images
 from app.services.common import contains
-from app.services.public_catalogue import cards, public_gins, related_gins
+from app.services.public_catalogue import cards, public_gins, rating_subquery, related_gins
 
 router = APIRouter(prefix="/public", tags=["public: catalogue"])
 
 GinSort = Literal["name", "newest", "abv", "rating"]
-
-
-def rating_subquery():
-    """Average published rating per gin, to filter and sort by."""
-    return (
-        select(Review.gin_id.label("gin_id"), func.avg(Review.rating).label("avg_rating"))
-        .where(Review.status == ReviewStatus.PUBLISHED)
-        .group_by(Review.gin_id)
-        .subquery()
-    )
 
 
 @router.get("/gins", response_model=Page[PublicGinCard])
@@ -155,6 +147,19 @@ def get_public_gin(slug: str, db: DbSession):
         botanicals=[b.name for b in gin.botanicals],
         images=gin_images(gin),
         reviews=[editorial.public_card(r) for r in reviews],
+        quick_reviews=[
+            PublicQuickReview(
+                author_name=q.author.display_name,
+                rating=q.rating,
+                note=q.note,
+                created_at=q.created_at,
+            )
+            for q in db.scalars(
+                select(QuickReview)
+                .where(QuickReview.gin_id == gin.id)
+                .order_by(QuickReview.created_at.desc())
+            ).unique()
+        ],
         cocktails=[cocktail_service.public_card(r) for r in recipes],
         # Tonics that suit it (set on the tonic), public tonics only.
         tonics=[

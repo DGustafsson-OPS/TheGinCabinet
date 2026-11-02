@@ -12,6 +12,7 @@ from pydantic import BaseModel
 from app.schemas.cocktails import PublicCocktailCard, PublicTonicLink
 from app.schemas.common import Fixed1, Fixed2, MediaSummary
 from app.schemas.editorial import PublicReviewCard
+from app.schemas.quick_reviews import PublicQuickReview
 
 # "owned": at least one bottle is in the cabinet now; "previously_owned": we
 # had it but the bottles are finished or given away (spec P02 badge).
@@ -34,8 +35,11 @@ class PublicGinCard(BaseModel):
     distillery: PublicDistilleryRef | None
     image: MediaSummary | None
     collection_status: CollectionStatus
-    rating: Fixed1 | None  # average of published review ratings
-    review_count: int
+    # Out of 10: published full reviews and quick reviews (berries × 2)
+    # together. The website shows it as juniper berries out of five.
+    rating: Fixed1 | None
+    review_count: int  # published full reviews
+    quick_review_count: int = 0
 
 
 class PublicGin(PublicGinCard):
@@ -44,6 +48,7 @@ class PublicGin(PublicGinCard):
     botanicals: list[str]
     images: list[MediaSummary]
     reviews: list[PublicReviewCard]
+    quick_reviews: list[PublicQuickReview] = []
     cocktails: list[PublicCocktailCard]
     tonics: list[PublicTonicLink]  # tonics that suit it (public ones only)
     related: list[PublicGinCard]

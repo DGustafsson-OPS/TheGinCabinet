@@ -2,6 +2,7 @@
 // rating and an Owned / Previously owned badge; never prices or counts).
 import Link from "next/link";
 
+import Junipers from "@/components/Junipers";
 import MediaImage from "@/components/MediaImage";
 import { formatStrength, humanize } from "@/lib/format";
 import type { PublicGinCard } from "@/lib/types";
@@ -35,10 +36,10 @@ export default function GinCard({ gin }: { gin: PublicGinCard }) {
         </p>
         {gin.rating && (
           <p className={styles.rating}>
-            <strong>{gin.rating}</strong>/10
+            <Junipers outOfTen={gin.rating} />
             <span className={styles.ratingCount}>
               {" "}
-              · {gin.review_count} review{gin.review_count === 1 ? "" : "s"}
+              · {gin.review_count + gin.quick_review_count} rating{gin.review_count + gin.quick_review_count === 1 ? "" : "s"}
             </span>
           </p>
         )}

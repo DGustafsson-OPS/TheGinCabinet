@@ -4,6 +4,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { berriesText, toBerries } from "@/components/Junipers";
 import GinGrid from "@/components/GinGrid";
 import PublicPagination from "@/components/PublicPagination";
 import { humanize, param } from "@/lib/format";
@@ -51,7 +52,7 @@ export default async function CollectionPage({ searchParams }: { searchParams: S
     botanical: (v) => `With ${v}`,
     abv_min: (v) => `Alcohol from ${v} % vol`,
     abv_max: (v) => `Alcohol up to ${v} % vol`,
-    min_rating: (v) => `Rated ${v}+`,
+    min_rating: (v) => `${berriesText(toBerries(v))}+ junipers`,
   };
 
   return (
@@ -115,9 +116,10 @@ export default async function CollectionPage({ searchParams }: { searchParams: S
             <label htmlFor="min_rating">Rating</label>
             <select id="min_rating" name="min_rating" defaultValue={filters.min_rating ?? ""}>
               <option value="">Any rating</option>
+              {/* Values are out of 10 (as the API stores them); shown as berries. */}
               {["9", "8", "7", "6"].map((r) => (
                 <option key={r} value={r}>
-                  {r}+ out of 10
+                  {berriesText(Number(r) / 2)}+ junipers
                 </option>
               ))}
             </select>

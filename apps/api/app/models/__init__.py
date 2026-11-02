@@ -47,6 +47,7 @@ from app.models.editorial import (
 )
 from app.models.guide import GuidePage
 from app.models.purchases import Purchase, PurchaseLine
+from app.models.quick_reviews import QuickReview
 from app.models.settings import SETTINGS_ID, SiteSettings
 from app.models.site_content import ContactMessage, ContactMessageNote, MessageFolder, PageText
 from app.models.tonics import GinTonicPairing, Tonic, TonicReview, TonicReviewStatus, TonicStyle
@@ -58,6 +59,7 @@ __all__ = [
     "MessageFolder",
     "GuidePage",
     "GinTonicPairing",
+    "QuickReview",
     "Tonic",
     "TonicReview",
     "TonicReviewStatus",

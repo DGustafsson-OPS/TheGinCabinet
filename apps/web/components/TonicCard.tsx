@@ -2,6 +2,7 @@
 // Uses the gin cards' styles, so both look the same.
 import Link from "next/link";
 
+import Junipers from "@/components/Junipers";
 import MediaImage from "@/components/MediaImage";
 import { humanize } from "@/lib/format";
 import type { PublicTonicCard } from "@/lib/types";
@@ -25,7 +26,7 @@ export function TonicCard({ tonic }: { tonic: PublicTonicCard }) {
         <p className={styles.meta}>{[humanize(tonic.style), tonic.country].filter(Boolean).join(" · ")}</p>
         {tonic.rating && (
           <p className={styles.rating}>
-            <strong>{tonic.rating}</strong>/10
+            <Junipers outOfTen={tonic.rating} />
             <span className={styles.ratingCount}>
               {" "}
               · {tonic.review_count} review{tonic.review_count === 1 ? "" : "s"}

@@ -2,6 +2,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import Junipers from "@/components/Junipers";
 import MediaImage from "@/components/MediaImage";
 import { formatDate, param } from "@/lib/format";
 import { publicGet } from "@/lib/public-api";
@@ -87,7 +88,11 @@ export default async function PublicReviewsPage({ searchParams }: { searchParams
                     </Link>
                   </h2>
                   <p className={styles.cardMeta}>
-                    {review.rating && <strong>{review.rating}/10 · </strong>}
+                    {review.rating && (
+                      <>
+                        <Junipers outOfTen={review.rating} /> ·{" "}
+                      </>
+                    )}
                     {review.author_name} · <time dateTime={review.published_at}>{formatDate(review.published_at)}</time>
                   </p>
                   <p className={styles.cardTeaser}>{review.teaser}</p>

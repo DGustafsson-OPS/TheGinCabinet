@@ -3,13 +3,14 @@
 import uuid
 from decimal import Decimal
 
-from sqlalchemy import case, func, select
+from sqlalchemy import case, func, select, union_all
 from sqlalchemy.orm import Session
 
 from app.models import (
     IN_CABINET,
     Bottle,
     GinProduct,
+    QuickReview,
     Review,
     ReviewStatus,
     gin_botanicals,
@@ -25,18 +26,55 @@ def public_gins():
     return select(GinProduct).where(GinProduct.public_visible.is_(True))
 
 
-def ratings(db: Session, gin_ids: list[uuid.UUID]) -> dict[uuid.UUID, tuple[Decimal, int]]:
-    """Average rating and count of *published* reviews, per gin."""
+def rating_subquery():
+    """Each gin's average score out of 10, from all its ratings together.
+
+    Published full reviews count with their 0–10 score; quick reviews count
+    as twice their juniper berries (4.5 berries → 9.0). Gins without any
+    rating have no row.
+    """
+    scores = union_all(
+        select(Review.gin_id.label("gin_id"), Review.rating.label("score")).where(
+            Review.status == ReviewStatus.PUBLISHED, Review.rating.is_not(None)
+        ),
+        select(QuickReview.gin_id.label("gin_id"), (QuickReview.rating * 2).label("score")),
+    ).subquery()
+    return (
+        select(scores.c.gin_id, func.avg(scores.c.score).label("avg_rating"))
+        .group_by(scores.c.gin_id)
+        .subquery()
+    )
+
+
+def _counts(db: Session, gin_col, extra_where, gin_ids) -> dict[uuid.UUID, int]:
+    query = select(gin_col, func.count()).where(gin_col.in_(gin_ids), *extra_where)
+    return dict(db.execute(query.group_by(gin_col)).all())
+
+
+def ratings(
+    db: Session, gin_ids: list[uuid.UUID]
+) -> dict[uuid.UUID, tuple[Decimal | None, int, int]]:
+    """Per gin: the combined average out of 10, the number of published full
+    reviews, and the number of quick reviews."""
     if not gin_ids:
         return {}
-    rows = db.execute(
-        select(Review.gin_id, func.avg(Review.rating), func.count())
-        .where(Review.gin_id.in_(gin_ids), Review.status == ReviewStatus.PUBLISHED)
-        .group_by(Review.gin_id)
-    ).all()
+    rated = rating_subquery()
+    averages = dict(
+        db.execute(
+            select(rated.c.gin_id, rated.c.avg_rating).where(rated.c.gin_id.in_(gin_ids))
+        ).all()
+    )
+    full = _counts(db, Review.gin_id, [Review.status == ReviewStatus.PUBLISHED], gin_ids)
+    quick = _counts(db, QuickReview.gin_id, [], gin_ids)
     return {
-        gin_id: (Decimal(avg).quantize(Decimal("0.1")) if avg is not None else None, count)
-        for gin_id, avg, count in rows
+        gin_id: (
+            Decimal(averages[gin_id]).quantize(Decimal("0.1"))
+            if averages.get(gin_id) is not None
+            else None,
+            full.get(gin_id, 0),
+            quick.get(gin_id, 0),
+        )
+        for gin_id in gin_ids
     }
 
 
@@ -67,7 +105,7 @@ def cards(db: Session, gins: list[GinProduct]) -> list[PublicGinCard]:
     status_map = collection_statuses(db, ids)
     result = []
     for gin in gins:
-        avg, count = rating_map.get(gin.id, (None, 0))
+        avg, count, quick_count = rating_map.get(gin.id, (None, 0, 0))
         images = gin_images(gin)
         distillery = gin.distillery
         result.append(
@@ -87,6 +125,7 @@ def cards(db: Session, gins: list[GinProduct]) -> list[PublicGinCard]:
                 collection_status=status_map.get(gin.id),
                 rating=avg,
                 review_count=count,
+                quick_review_count=quick_count,
             )
         )
     return result
