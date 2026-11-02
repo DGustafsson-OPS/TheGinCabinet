@@ -8,6 +8,7 @@
 import Link from "next/link";
 import { useId, useState } from "react";
 
+import CodeBoxes from "@/components/CodeBoxes";
 import { ApiError, apiFetch } from "@/lib/api-client";
 
 type Setup = { secret: string; uri: string };
@@ -121,7 +122,7 @@ export default function WelcomeForm({ token, username }: { token: string; userna
         </ol>
         <div className="field">
           <label htmlFor={`${id}-code`}>Code from the app</label>
-          <input id={`${id}-code`} inputMode="numeric" autoComplete="one-time-code" value={code} onChange={(e) => setCode(e.target.value)} required />
+          <CodeBoxes id={`${id}-code`} value={code} onChange={setCode} />
         </div>
         <button className="button button-primary" type="submit" disabled={busy}>
           {busy ? "Checking…" : "Finish setting up"}

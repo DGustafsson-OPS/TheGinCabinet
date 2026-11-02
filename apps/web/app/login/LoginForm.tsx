@@ -9,6 +9,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
+import CodeBoxes from "@/components/CodeBoxes";
 import { ApiError, apiFetch } from "@/lib/api-client";
 
 type Step = "password" | "mfa";
@@ -121,16 +122,12 @@ export default function LoginForm({ initialStep }: { initialStep: Step }) {
         <form key="code-step" onSubmit={submitCode}>
           <div className="field">
             <label htmlFor="code">{useRecovery ? "Recovery code" : "Authentication code"}</label>
-            <input
-              ref={codeInput}
-              id="code"
-              name="code"
-              required
-              autoComplete="one-time-code"
-              inputMode={useRecovery ? "text" : "numeric"}
-              pattern={useRecovery ? undefined : "[0-9 ]{6,7}"}
-              aria-describedby="code-hint"
-            />
+            {useRecovery ? (
+              <input ref={codeInput} id="code" name="code" required autoComplete="off" aria-describedby="code-hint" />
+            ) : (
+              // Six boxes; underneath, one ordinary input named "code".
+              <CodeBoxes ref={codeInput} id="code" name="code" describedBy="code-hint" />
+            )}
             <span id="code-hint" className="field-hint">
               {useRecovery
                 ? "One of the codes you saved when your account was created, like a1b2c-3d4e5."

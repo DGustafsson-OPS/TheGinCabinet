@@ -9,6 +9,7 @@
 import { useRouter } from "next/navigation";
 import { useId, useState } from "react";
 
+import CodeBoxes from "@/components/CodeBoxes";
 import { errorMessage, useAdmin } from "@/components/admin/AdminProvider";
 import ConfirmButton from "@/components/admin/ConfirmButton";
 import { ApiError } from "@/lib/api-client";
@@ -256,7 +257,7 @@ export function MfaChange({ pending }: { pending: boolean }) {
           </ol>
           <div className="field">
             <label htmlFor={`${id}-code`}>Code from the new app</label>
-            <input id={`${id}-code`} inputMode="numeric" autoComplete="one-time-code" value={code} onChange={(e) => setCode(e.target.value)} required />
+            <CodeBoxes id={`${id}-code`} value={code} onChange={setCode} />
           </div>
           <div className="form-actions">
             <button className="button button-primary" type="submit" disabled={busy}>
