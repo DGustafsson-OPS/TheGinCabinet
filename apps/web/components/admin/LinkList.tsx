@@ -14,6 +14,7 @@ type Props = {
   noun: string; // "tonic" or "gin", used in labels: "Tonic 1", "Add a tonic"
   privateIds?: string[]; // chosen items visitors can't see: shown with a warning
   notePlaceholder?: string;
+  withNote?: boolean; // false: just the menu, no note box
 };
 
 /** Turn saved links into rows on screen; `tag` keeps React keys unique. */
@@ -28,7 +29,7 @@ export function linkPayload<K extends string>(rows: LinkRow[], idField: K) {
     .map((r) => ({ [idField]: r.id, pairing_note: r.note.trim() || null }) as Record<K, string> & { pairing_note: string | null });
 }
 
-export default function LinkList({ rows, onChange, options, noun, privateIds = [], notePlaceholder }: Props) {
+export default function LinkList({ rows, onChange, options, noun, privateIds = [], notePlaceholder, withNote = true }: Props) {
   const formId = useId();
   const counter = useRef(0);
   const Noun = noun[0].toUpperCase() + noun.slice(1);
@@ -66,21 +67,23 @@ export default function LinkList({ rows, onChange, options, noun, privateIds = [
                     ))}
                   </select>
                   {privateIds.includes(row.id) && (
-                    <span className="field-hint">⚠ This {noun} is private, so visitors won&apos;t see the link.</span>
+                    <span className="field-hint">⚠ This {noun} isn&apos;t public yet, so visitors won&apos;t see the link.</span>
                   )}
                 </div>
-                <div className="field">
-                  <label htmlFor={`${formId}-note-${row.key}`}>
-                    Note<span className="visually-hidden"> for {noun} {n}</span> (optional)
-                  </label>
-                  <input
-                    id={`${formId}-note-${row.key}`}
-                    value={row.note}
-                    maxLength={300}
-                    placeholder={notePlaceholder}
-                    onChange={(e) => update(row.key, { note: e.target.value })}
-                  />
-                </div>
+                {withNote && (
+                  <div className="field">
+                    <label htmlFor={`${formId}-note-${row.key}`}>
+                      Note<span className="visually-hidden"> for {noun} {n}</span> (optional)
+                    </label>
+                    <input
+                      id={`${formId}-note-${row.key}`}
+                      value={row.note}
+                      maxLength={300}
+                      placeholder={notePlaceholder}
+                      onChange={(e) => update(row.key, { note: e.target.value })}
+                    />
+                  </div>
+                )}
               </div>
               <div className="form-actions" style={{ marginTop: 0 }}>
                 <button type="button" className="button button-secondary" disabled={index === 0} onClick={() => move(index, -1)}>

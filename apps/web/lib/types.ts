@@ -402,6 +402,7 @@ export type Cocktail = {
   steps: string[];
   gins: Pairing[];
   tonics: TonicLink[];
+  variations: { id: string; slug: string; title: string; status: CocktailStatus }[];
   published_at: string | null;
   version: number;
   created_at: string;
@@ -431,6 +432,7 @@ export type PublicCocktail = PublicCocktailCard & {
   steps: string[];
   recommended_gins: PublicGinLink[];
   recommended_tonics: PublicTonicLink[];
+  variations: PublicCocktailCard[]; // published ones only
   seo_title: string | null;
   seo_description: string | null;
   published_at: string;

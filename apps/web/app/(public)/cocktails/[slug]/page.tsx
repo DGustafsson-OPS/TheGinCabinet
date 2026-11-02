@@ -235,6 +235,28 @@ export default async function CocktailPage({ params, searchParams }: { params: P
           )}
         </section>
       </div>
+      {/* Only when a linked variation is published (see the editor's Variations tab). */}
+      {recipe.variations.length > 0 && (
+        <section aria-labelledby="variations-title">
+          <h2 id="variations-title" className={styles.sectionTitle}>
+            Variations
+          </h2>
+          <ul className={styles.pairings}>
+            {recipe.variations.map((v) => (
+              <li key={v.slug} className="card">
+                <strong>
+                  <Link href={`/cocktails/${v.slug}`}>{v.title}</Link>
+                </strong>
+                <div className="field-hint">
+                  {humanize(v.method)}
+                  {v.prep_minutes != null && ` · ${v.prep_minutes} min`}
+                </div>
+                {v.teaser && <p style={{ margin: "var(--space-2) 0 0" }}>{v.teaser}</p>}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
       <p>
         <Link href="/cocktails">← All cocktails</Link>
       </p>
