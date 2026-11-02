@@ -1,0 +1,52 @@
+/* Juniper berries out of five (see Junipers.tsx). */
+.junipers {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  vertical-align: middle;
+  line-height: 1;
+}
+.row {
+  display: inline-flex;
+  gap: 0.12em;
+}
+.small {
+  --berry: 1em;
+}
+.medium {
+  --berry: 1.4em;
+}
+.large {
+  --berry: 2.2em;
+}
+
+/* Each berry: a faded one underneath and, for a full or half berry, the
+   coloured one on top, cut to 100% or 50% of its width. */
+.slot {
+  position: relative;
+  display: inline-block;
+  width: var(--berry);
+  height: var(--berry);
+}
+.slot svg {
+  display: block;
+  width: var(--berry);
+  height: var(--berry);
+}
+.empty {
+  position: absolute;
+  inset: 0;
+  opacity: 0.22;
+  filter: grayscale(1);
+}
+.full {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  overflow: hidden;
+}
+.number {
+  font-weight: 700;
+  color: var(--color-charcoal);
+}

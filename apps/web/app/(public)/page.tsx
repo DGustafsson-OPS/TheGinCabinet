@@ -4,6 +4,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import Junipers from "@/components/Junipers";
 import GinCard from "@/components/GinCard";
 import MediaImage from "@/components/MediaImage";
 import { formatDate, humanize } from "@/lib/format";
@@ -100,7 +101,11 @@ export default async function HomePage() {
                     </Link>
                   </h3>
                   <p className={styles.tileMeta}>
-                    {review.rating && <strong>{review.rating}/10 · </strong>}
+                    {review.rating && (
+                      <>
+                        <Junipers outOfTen={review.rating} /> ·{" "}
+                      </>
+                    )}
                     {review.author_name} · {formatDate(review.published_at)}
                   </p>
                 </div>

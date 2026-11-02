@@ -37,6 +37,7 @@ from app.api.routes import (
     public_cocktails,
     public_reviews,
     public_site,
+    quick_reviews,
     tonics,
 )
 from app.config import get_settings
@@ -121,6 +122,7 @@ def create_app() -> FastAPI:
     app.include_router(consent.router, prefix=API_PREFIX)
     app.include_router(guide.router, prefix=API_PREFIX)
     app.include_router(guide.public_router, prefix=API_PREFIX)
+    app.include_router(quick_reviews.router, prefix=API_PREFIX)
     app.include_router(tonics.router, prefix=API_PREFIX)
     app.include_router(tonics.public_router, prefix=API_PREFIX)
     app.include_router(page_texts.router, prefix=API_PREFIX)

@@ -36,9 +36,14 @@ export default async function GinPage({ params }: { params: Params }) {
       </Link>
       <div className="page-header">
         <h1>{gin.data.display_name}</h1>
-        <Link className="button button-secondary" href={`/juniper/bottles/new?gin=${id}`}>
-          Add bottles
-        </Link>
+        <div style={{ display: "flex", gap: "var(--space-2)", flexWrap: "wrap" }}>
+          <Link className="button button-secondary" href={`/juniper/quick-reviews?gin=${id}`}>
+            Quick review
+          </Link>
+          <Link className="button button-secondary" href={`/juniper/bottles/new?gin=${id}`}>
+            Add bottles
+          </Link>
+        </div>
       </div>
 
       <div className="card">

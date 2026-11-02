@@ -6,6 +6,7 @@
 // everything, so nothing an editor types can run as code on the site.
 import Link from "next/link";
 
+import Junipers, { berriesText, toBerries } from "@/components/Junipers";
 import MediaImage from "@/components/MediaImage";
 import { formatDate, formatStrength } from "@/lib/format";
 import type { MediaSummary } from "@/lib/types";
@@ -89,8 +90,8 @@ export default function ReviewArticle({ review }: { review: ReviewArticleData })
         </p>
         {review.rating && (
           <p className={styles.rating}>
-            <span className={styles.ratingValue}>{review.rating}</span>
-            <span className={styles.ratingScale}> / 10</span>
+            <Junipers outOfTen={review.rating} size="large" />
+            <span className={styles.ratingScale}> {berriesText(toBerries(review.rating))} out of 5</span>
           </p>
         )}
       </header>

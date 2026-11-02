@@ -54,7 +54,8 @@ test("add a tonic, review and publish it; visitors see only what's published", a
   await gotoReady(visitor, `/tonics?search=${encodeURIComponent(tag)}`);
   await expect(visitor.getByRole("link", { name: `Garden ${name}` })).toBeVisible();
   await expect(visitor.getByText(`Hidden Tonic ${tag}`)).toHaveCount(0);
-  await expect(visitor.getByText("8.5")).toBeVisible();
+  // 8.5 out of 10, shown as 4½ juniper berries.
+  await expect(visitor.getByRole("img", { name: "4.5 out of 5 juniper berries" })).toBeVisible();
   await visitor.getByRole("link", { name: `Garden ${name}` }).click();
   await expect(visitor.getByRole("heading", { level: 1, name: `Garden ${name}` })).toBeVisible();
   await expect(visitor.getByText("Floral and light, gentle quinine.")).toBeVisible();

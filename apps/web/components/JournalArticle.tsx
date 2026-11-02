@@ -3,6 +3,7 @@
 // and stories. The admin preview uses this same component.
 import Link from "next/link";
 
+import { berriesText, toBerries } from "@/components/Junipers";
 import GinGrid from "@/components/GinGrid";
 import { FormattedLine } from "@/components/FormattedText";
 import MediaImage from "@/components/MediaImage";
@@ -27,7 +28,9 @@ function EmbeddedCard({ block }: { block: Extract<PublicBlock, { type: "card" }>
             href: `/reviews/${block.card.slug}`,
             kicker: "Review",
             title: block.card.title,
-            meta: block.card.rating ? `${block.card.rating}/10 · ${block.card.gin.display_name}` : block.card.gin.display_name,
+            meta: block.card.rating
+              ? `${berriesText(toBerries(block.card.rating))} of 5 junipers · ${block.card.gin.display_name}`
+              : block.card.gin.display_name,
           }
         : block.kind === "cocktail"
           ? {

@@ -439,8 +439,26 @@ export type PublicGinCard = {
   distillery: { slug: string; name: string; country: string | null } | null;
   image: MediaSummary | null;
   collection_status: "owned" | "previously_owned" | null;
+  /** Out of 10: full reviews and quick reviews together (shown as berries). */
   rating: string | null;
-  review_count: number;
+  review_count: number; // published full reviews
+  quick_review_count: number;
+};
+
+/** A quick review on the public gin page: berries (1.0–5.0) and a line or two. */
+export type PublicQuickReview = { author_name: string; rating: string; note: string | null; created_at: string };
+
+/** A quick review in the admin area. */
+export type QuickReview = {
+  id: string;
+  gin: GinSummary;
+  gin_public: boolean;
+  author: { id: string; display_name: string };
+  rating: string; // berries, 1.0–5.0
+  note: string | null;
+  version: number;
+  created_at: string;
+  updated_at: string;
 };
 
 export type PublicGin = PublicGinCard & {
@@ -449,6 +467,7 @@ export type PublicGin = PublicGinCard & {
   botanicals: string[];
   images: MediaSummary[];
   reviews: PublicReviewCard[];
+  quick_reviews: PublicQuickReview[];
   cocktails: PublicCocktailCard[];
   tonics: PublicTonicLink[]; // tonics that suit it
   related: PublicGinCard[];
