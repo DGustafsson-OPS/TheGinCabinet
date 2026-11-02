@@ -8,7 +8,7 @@ import Junipers from "@/components/Junipers";
 import GinCard from "@/components/GinCard";
 import MediaImage from "@/components/MediaImage";
 import { formatDate, humanize } from "@/lib/format";
-import { SITE_URL, getSite, publicGet, siteText } from "@/lib/public-api";
+import { DEFAULT_SHARE_IMAGES, SITE_URL, getSite, publicGet, siteText } from "@/lib/public-api";
 import type { Page, PublicCocktailCard, PublicGinCard, PublicReviewCard, PublicStats } from "@/lib/types";
 
 import styles from "./public.module.css";
@@ -24,7 +24,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title: { absolute: title },
     description,
     alternates: { canonical: "/" },
-    openGraph: { title, description, url: `${SITE_URL}/`, type: "website" },
+    openGraph: { title, description, url: `${SITE_URL}/`, type: "website", images: DEFAULT_SHARE_IMAGES },
   };
 }
 
@@ -40,8 +40,22 @@ export default async function HomePage() {
   // The wording is edited in Admin → Page texts.
   const text = (key: string) => siteText(site, key);
 
+  // Tells search engines the site's name and logo (schema.org WebSite and
+  // Organization), so results can show "The Gin Cabinet" with the cabinet.
+  const jsonLd = [
+    { "@context": "https://schema.org", "@type": "WebSite", name: site?.site_name ?? "The Gin Cabinet", url: `${SITE_URL}/` },
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      name: site?.site_name ?? "The Gin Cabinet",
+      url: `${SITE_URL}/`,
+      logo: `${SITE_URL}/logo.png`,
+    },
+  ];
+
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       <section className={styles.hero} aria-labelledby="hero-title">
         <div className={styles.heroInner}>
           <p className={styles.eyebrow}>{text("home.eyebrow")}</p>

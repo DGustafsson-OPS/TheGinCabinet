@@ -1,11 +1,18 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <!-- The Gin Cabinet's browser icon: a brass gin bottle on forest green. -->
+  <!-- The Gin Cabinet's icon: a brass serif G (Liberation Serif, SIL Open Font
+       License) with a juniper sprig in its curve. -->
   <rect width="64" height="64" rx="14" fill="#19251f"/>
-  <!-- Cap -->
-  <rect x="26.5" y="6.5" width="11" height="6" rx="1.2" fill="#c7a46b"/>
-  <!-- Bottle: neck, square shoulders and body, with the gin inside -->
-  <path d="M28.5 13 H35.5 V19 L43.5 25 V53 A3 3 0 0 1 40.5 56 H23.5 A3 3 0 0 1 20.5 53 V25 L28.5 19 Z" fill="#c7a46b" fill-opacity="0.3" stroke="#c7a46b" stroke-width="3" stroke-linejoin="round"/>
-  <!-- Label with a juniper berry -->
-  <rect x="24.5" y="33" width="15" height="13" rx="1.5" fill="#f5f0e6"/>
-  <circle cx="32" cy="39.5" r="3" fill="#19251f"/>
+  <path transform="translate(8.014 53.360) scale(0.03198 -0.03198)" fill="#c7a46b" d="M1284 70Q1168 32 1043.0 6.0Q918 -20 774 -20Q448 -20 266.0 156.0Q84 332 84 655Q84 1007 260.5 1181.5Q437 1356 778 1356Q1022 1356 1249 1296V1008H1182L1155 1174Q1086 1223 989.5 1249.5Q893 1276 786 1276Q530 1276 411.5 1123.5Q293 971 293 657Q293 362 415.0 209.5Q537 57 776 57Q860 57 952.0 77.0Q1044 97 1092 125V506L920 532V586H1415V532L1284 506Z"/>
+  <!-- the sprig: a twig with short needles -->
+  <g stroke="#9aab8c" stroke-width="1.3" stroke-linecap="round" fill="none">
+    <path d="M22.5 37 Q29 27 40.5 17.5"/>
+    <path d="M26 32.2 l-3.4 -1.2 M26 32.2 l0.4 -3.6 M30.6 26.6 l-3.2 -1.6 M30.6 26.6 l1 -3.4 M35.4 22 l-2.6 -2.2 M35.4 22 l1.8 -3 M39 18.8 l-1.4 -2.6 M39 18.8 l2.6 -1.2"/>
+  </g>
+  <!-- three juniper berries -->
+  <circle cx="27.8" cy="31.2" r="3.4" fill="#7d8fb8"/>
+  <circle cx="32.6" cy="29.6" r="3.4" fill="#7d8fb8"/>
+  <circle cx="30" cy="25.6" r="3.4" fill="#7d8fb8"/>
+  <circle cx="26.9" cy="30.2" r="1" fill="#c9d3e8"/>
+  <circle cx="31.7" cy="28.6" r="1" fill="#c9d3e8"/>
+  <circle cx="29.1" cy="24.6" r="1" fill="#c9d3e8"/>
 </svg>

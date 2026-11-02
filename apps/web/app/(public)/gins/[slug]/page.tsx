@@ -10,7 +10,7 @@ import Junipers from "@/components/Junipers";
 import GinGrid from "@/components/GinGrid";
 import MediaImage from "@/components/MediaImage";
 import { formatDate, formatStrength, humanize, param } from "@/lib/format";
-import { SITE_URL, publicGet } from "@/lib/public-api";
+import { DEFAULT_SHARE_IMAGES, SITE_URL, publicGet } from "@/lib/public-api";
 import type { PublicGin } from "@/lib/types";
 
 import styles from "./gin.module.css";
@@ -46,7 +46,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
       title: gin.display_name,
       description,
       url: `${SITE_URL}/gins/${gin.slug}`,
-      images: gin.image ? [{ url: `${SITE_URL}${gin.image.url}`, alt: gin.image.alt ?? "" }] : undefined,
+      images: gin.image ? [{ url: `${SITE_URL}${gin.image.url}`, alt: gin.image.alt ?? "" }] : DEFAULT_SHARE_IMAGES,
     },
   };
 }

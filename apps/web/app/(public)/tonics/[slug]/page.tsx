@@ -8,7 +8,7 @@ import { notFound } from "next/navigation";
 import Junipers from "@/components/Junipers";
 import MediaImage from "@/components/MediaImage";
 import { formatDate, formatStrength, humanize } from "@/lib/format";
-import { SITE_URL, publicGet } from "@/lib/public-api";
+import { DEFAULT_SHARE_IMAGES, SITE_URL, publicGet } from "@/lib/public-api";
 import type { PublicTonic } from "@/lib/types";
 
 import styles from "../tonics.module.css";
@@ -30,7 +30,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
       title: tonic.display_name,
       description,
       url: `${SITE_URL}/tonics/${tonic.slug}`,
-      images: tonic.image ? [{ url: `${SITE_URL}${tonic.image.url}`, alt: tonic.image.alt ?? "" }] : undefined,
+      images: tonic.image ? [{ url: `${SITE_URL}${tonic.image.url}`, alt: tonic.image.alt ?? "" }] : DEFAULT_SHARE_IMAGES,
     },
   };
 }

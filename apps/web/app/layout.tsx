@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   // Base for canonical and social-image URLs. Set SITE_URL in production.
   metadataBase: new URL(process.env.SITE_URL ?? "http://localhost:3000"),
   title: { default: "The Gin Cabinet", template: "%s · The Gin Cabinet" },
-  description: "A shared gin collection: profiles, reviews, cocktails and the Gin Journal.",
+  description: "Honest gin reviews, tasting notes and cocktail recipes from a home gin cabinet. Tasted, reviewed, shared.",
 };
 
 export const viewport: Viewport = {

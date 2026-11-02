@@ -53,7 +53,7 @@ PAGE_TEXTS: tuple[PageTextDef, ...] = (
         "home.seo_title",
         "Home page",
         "Title in Google and the browser tab",
-        "Gin reviews, tasting notes & cocktail recipes · The Gin Cabinet",
+        "Honest gin reviews & cocktail recipes · The Gin Cabinet",
         hint="About 50–60 characters; longer titles are cut off in search results.",
         max_length=70,
     ),
@@ -61,16 +61,16 @@ PAGE_TEXTS: tuple[PageTextDef, ...] = (
         "home.seo_description",
         "Home page",
         "Description in Google search results",
-        "Honest gin reviews, tasting notes and cocktail recipes from a home gin cabinet: "
-        "what we pour, how it tastes and which tonic suits it.",
+        "Honest gin reviews, tasting notes and cocktail recipes from our home gin cabinet: "
+        "every bottle tasted neat and with tonic, and rated in juniper berries.",
         hint="About 120–160 characters. Say what makes the site yours.",
         max_length=160,
     ),
     PageTextDef(
         "home.eyebrow",
         "Home page",
-        "Small line above the title",
-        "A shared collection",
+        "Small line above the title (the tagline)",
+        "Tasted, reviewed, shared",
         max_length=80,
     ),
     PageTextDef(

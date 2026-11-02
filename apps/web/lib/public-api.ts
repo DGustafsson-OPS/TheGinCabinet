@@ -11,6 +11,20 @@ const API_URL = process.env.API_INTERNAL_URL ?? "http://127.0.0.1:8000";
 /** The site's own address, for canonical URLs and social images. */
 export const SITE_URL = (process.env.SITE_URL ?? "http://localhost:3000").replace(/\/$/, "");
 
+/**
+ * The picture shown when a page without a photo of its own is shared (the
+ * logo on forest green, app/opengraph-image.png). Pages that set their own
+ * share details must list it themselves, or they would have no picture.
+ */
+export const DEFAULT_SHARE_IMAGES = [
+  {
+    url: `${SITE_URL}/opengraph-image.png`,
+    width: 1200,
+    height: 630,
+    alt: "The Gin Cabinet: an open cabinet with a gin bottle inside. Tasted, reviewed, shared.",
+  },
+];
+
 export async function publicGet<T>(path: string): Promise<T | null> {
   const response = await fetch(`${API_URL}/api/v1/public${path}`, {
     headers: { accept: "application/json" },

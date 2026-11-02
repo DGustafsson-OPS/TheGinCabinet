@@ -9,7 +9,7 @@ import { notFound } from "next/navigation";
 
 import MediaImage from "@/components/MediaImage";
 import { formatAmount, formatStrength, humanize, param } from "@/lib/format";
-import { SITE_URL, getSite, publicGet } from "@/lib/public-api";
+import { DEFAULT_SHARE_IMAGES, SITE_URL, getSite, publicGet } from "@/lib/public-api";
 import type { PublicCocktail } from "@/lib/types";
 
 import styles from "../cocktails.module.css";
@@ -39,7 +39,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
       title: recipe.title,
       description,
       url: `${SITE_URL}/cocktails/${recipe.slug}`,
-      images: recipe.cover ? [{ url: `${SITE_URL}${recipe.cover.url}`, alt: recipe.cover.alt ?? "" }] : undefined,
+      images: recipe.cover ? [{ url: `${SITE_URL}${recipe.cover.url}`, alt: recipe.cover.alt ?? "" }] : DEFAULT_SHARE_IMAGES,
     },
   };
 }
