@@ -52,9 +52,9 @@ export default async function TonicPage({ params }: { params: Params }) {
           <p className={styles.meta}>{[humanize(tonic.style), tonic.country].filter(Boolean).join(" · ")}</p>
           {tonic.rating && (
             <p className={styles.rating}>
-              <Junipers outOfTen={tonic.rating} size="medium" showNumber />{" "}
+              <Junipers outOfTen={tonic.rating} size="medium" showNumber symbol="bottle" />{" "}
               <span className="field-hint">
-                (average of {tonic.review_count} review{tonic.review_count === 1 ? "" : "s"})
+                (average of {tonic.review_count + tonic.quick_review_count} rating{tonic.review_count + tonic.quick_review_count === 1 ? "" : "s"})
               </span>
             </p>
           )}
@@ -72,38 +72,64 @@ export default async function TonicPage({ params }: { params: Params }) {
         </div>
       </div>
 
-      <section aria-labelledby="tonic-reviews" className={styles.section}>
-        <h2 id="tonic-reviews" className={styles.sectionTitle}>
-          Our reviews
-        </h2>
-        {tonic.reviews.length === 0 ? (
-          <p className="empty-state">Not reviewed yet.</p>
-        ) : (
+      {/* Hidden when the tonic only has quick verdicts: no empty heading. */}
+      {(tonic.reviews.length > 0 || tonic.quick_reviews.length === 0) && (
+        <section aria-labelledby="tonic-reviews" className={styles.section}>
+          <h2 id="tonic-reviews" className={styles.sectionTitle}>
+            Our reviews
+          </h2>
+          {tonic.reviews.length === 0 ? (
+            <p className="empty-state">Not reviewed yet.</p>
+          ) : (
+            <ul className={styles.reviews}>
+              {tonic.reviews.map((review, index) => (
+                <li key={index} className={styles.review}>
+                  <div className={styles.reviewHead}>
+                    <span>
+                      {review.rating ? <Junipers outOfTen={review.rating} symbol="bottle" /> : "Not rated"} ·{" "}
+                      <strong>{review.author_name}</strong>
+                    </span>
+                    {review.published_at && (
+                      <time dateTime={review.published_at} className="field-hint">
+                        {formatDate(review.published_at)}
+                      </time>
+                    )}
+                  </div>
+                  {review.notes && <p className={styles.reviewText}>{review.notes}</p>}
+                  {review.pairs_with && (
+                    <p className={styles.pairs}>
+                      <strong>Pairs well with:</strong> {review.pairs_with}
+                    </p>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      )}
+
+      {tonic.quick_reviews.length > 0 && (
+        <section aria-labelledby="tonic-quick" className={styles.section}>
+          <h2 id="tonic-quick" className={styles.sectionTitle}>
+            Quick verdicts
+          </h2>
           <ul className={styles.reviews}>
-            {tonic.reviews.map((review, index) => (
-              <li key={index} className={styles.review}>
+            {tonic.quick_reviews.map((q) => (
+              <li key={`${q.author_name}-${q.created_at}`} className={styles.review}>
                 <div className={styles.reviewHead}>
                   <span>
-                    {review.rating ? <Junipers outOfTen={review.rating} /> : "Not rated"} ·{" "}
-                    <strong>{review.author_name}</strong>
+                    <Junipers berries={q.rating} size="medium" symbol="bottle" /> · <strong>{q.author_name}</strong>
                   </span>
-                  {review.published_at && (
-                    <time dateTime={review.published_at} className="field-hint">
-                      {formatDate(review.published_at)}
-                    </time>
-                  )}
+                  <time dateTime={q.created_at} className="field-hint">
+                    {formatDate(q.created_at)}
+                  </time>
                 </div>
-                {review.notes && <p className={styles.reviewText}>{review.notes}</p>}
-                {review.pairs_with && (
-                  <p className={styles.pairs}>
-                    <strong>Pairs well with:</strong> {review.pairs_with}
-                  </p>
-                )}
+                {q.note && <p className={styles.reviewText}>{q.note}</p>}
               </li>
             ))}
           </ul>
-        )}
-      </section>
+        </section>
+      )}
 
       {tonic.gins.length > 0 && (
         <section aria-labelledby="tonic-suits" className={styles.section}>

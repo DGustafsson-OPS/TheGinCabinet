@@ -37,7 +37,9 @@ def rating_subquery():
         select(Review.gin_id.label("gin_id"), Review.rating.label("score")).where(
             Review.status == ReviewStatus.PUBLISHED, Review.rating.is_not(None)
         ),
-        select(QuickReview.gin_id.label("gin_id"), (QuickReview.rating * 2).label("score")),
+        select(QuickReview.gin_id.label("gin_id"), (QuickReview.rating * 2).label("score")).where(
+            QuickReview.gin_id.is_not(None)  # quick reviews of tonics don't count here
+        ),
     ).subquery()
     return (
         select(scores.c.gin_id, func.avg(scores.c.score).label("avg_rating"))

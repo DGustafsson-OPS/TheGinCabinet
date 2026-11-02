@@ -80,4 +80,37 @@ def test_private_gins_keep_their_quick_reviews_private(api, client):
     assert client.get(f"{PUBLIC}/{gin['slug']}").status_code == 404
     assert gin["slug"] not in [c["slug"] for c in client.get(PUBLIC).json()["items"]]
     # The admin list flags it.
-    assert api.get(QUICK).json()[0]["gin_public"] is False
+    assert api.get(QUICK).json()[0]["public"] is False
+
+
+def test_quick_reviews_of_tonics(api, client):
+    from tests.test_tonics import make_tonic
+
+    tonic = make_tonic(api)
+    gin = make_gin(api, public_visible=True)
+    review = api.post(
+        QUICK, json={"tonic_id": tonic["id"], "rating": "4", "note": "Crisp and dry."}
+    ).json()
+    assert (review["tonic"]["slug"], review["gin"], review["public"]) == (tonic["slug"], None, True)
+
+    # A gin or a tonic, not both and not neither; one per person per tonic.
+    both = {"gin_id": gin["id"], "tonic_id": tonic["id"], "rating": "3"}
+    assert api.post(QUICK, json=both).status_code == 422
+    assert api.post(QUICK, json={"rating": "3"}).status_code == 422
+    assert api.post(QUICK, json={"tonic_id": tonic["id"], "rating": "2"}).status_code == 409
+    # Rating the gin is separate.
+    assert api.post(QUICK, json={"gin_id": gin["id"], "rating": "2"}).status_code == 201
+
+    # The tonic page shows it and counts it (4 bottles = 8/10); the gin's rating
+    # is untouched by it.
+    page = client.get(f"/api/v1/public/tonics/{tonic['slug']}").json()
+    assert (page["rating"], page["quick_review_count"]) == ("8.0", 1)
+    assert page["quick_reviews"][0]["note"] == "Crisp and dry."
+    assert client.get(f"{PUBLIC}/{gin['slug']}").json()["rating"] == "4.0"
+    assert [q["id"] for q in api.get(QUICK, params={"tonic_id": tonic["id"]}).json()] == [
+        review["id"]
+    ]
+
+    # Deleting the tonic deletes its quick reviews.
+    assert api.delete(f"/api/v1/admin/tonics/{tonic['id']}").status_code == 204
+    assert api.get(QUICK, params={"tonic_id": tonic["id"]}).json() == []
