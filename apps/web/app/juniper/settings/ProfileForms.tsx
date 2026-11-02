@@ -1,6 +1,6 @@
 "use client";
 // Your own account (spec A10): name and email, password, moving sign-in codes
-// to a new phone, and fresh recovery codes. Anything security-related asks
+// to a new phone, fresh recovery codes and trusted browsers. Anything security-related asks
 // for your current password first, so an unlocked laptop isn't enough.
 //
 // Several forms share this page, so every element id gets a useId() prefix
@@ -12,7 +12,8 @@ import { useId, useState } from "react";
 import { errorMessage, useAdmin } from "@/components/admin/AdminProvider";
 import ConfirmButton from "@/components/admin/ConfirmButton";
 import { ApiError } from "@/lib/api-client";
-import type { Profile } from "@/lib/types";
+import { formatDate } from "@/lib/format";
+import type { Profile, TrustedBrowser } from "@/lib/types";
 
 /** Show an API error; "weak_password" lists each problem. */
 function useErrors() {
@@ -325,6 +326,84 @@ export function RecoveryCodes({ left }: { left: number }) {
           Make new recovery codes
         </button>
       </form>
+    </section>
+  );
+}
+
+/** "Firefox on Mac" from a browser's user-agent text (a best guess, for display only). */
+function browserName(userAgent: string | null): string {
+  if (!userAgent) return "Unknown browser";
+  const ua = userAgent;
+  const browser = /Edg\//.test(ua)
+    ? "Edge"
+    : /Firefox\//.test(ua)
+      ? "Firefox"
+      : /Chrome\//.test(ua)
+        ? "Chrome"
+        : /Safari\//.test(ua)
+          ? "Safari"
+          : "A browser";
+  const system = /iPhone/.test(ua)
+    ? "iPhone"
+    : /iPad/.test(ua)
+      ? "iPad"
+      : /Android/.test(ua)
+        ? "Android"
+        : /Mac OS X|Macintosh/.test(ua)
+          ? "Mac"
+          : /Windows/.test(ua)
+            ? "Windows"
+            : /Linux/.test(ua)
+              ? "Linux"
+              : "";
+  return system ? `${browser} on ${system}` : browser;
+}
+
+/** Browsers that skip the 6-digit code, and a button to forget them all. */
+export function TrustedBrowsers({ browsers }: { browsers: TrustedBrowser[] }) {
+  const router = useRouter();
+  const { call, toast } = useAdmin();
+  const id = useId();
+
+  return (
+    <section aria-labelledby={`${id}-title`}>
+      <h2 id={`${id}-title`} style={{ fontSize: "var(--font-size-h3)" }}>
+        Trusted browsers
+      </h2>
+      <p className="field-hint">
+        Browsers where you ticked &quot;Trust this browser for 30 days&quot;. They still need your password, but not
+        the 6-digit code. Changing your password or authenticator forgets them all.
+      </p>
+      {browsers.length === 0 ? (
+        <p className="empty-state">No trusted browsers.</p>
+      ) : (
+        <>
+          <ul style={{ paddingLeft: "1.2em" }}>
+            {browsers.map((b) => (
+              <li key={b.id}>
+                <strong>{browserName(b.user_agent)}</strong>
+                {b.this_browser && " (this browser)"}: trusted since {formatDate(b.created_at)}, until{" "}
+                {formatDate(b.expires_at)}
+              </li>
+            ))}
+          </ul>
+          <ConfirmButton
+            label="Forget trusted browsers"
+            title="Forget all trusted browsers?"
+            description="Every browser will ask for the 6-digit code at the next sign-in, including this one. You stay signed in now."
+            confirmLabel="Forget them"
+            onConfirm={async () => {
+              try {
+                await call("/admin/profile/trusted-browsers", "DELETE");
+                toast("Trusted browsers forgotten. The code is needed at the next sign-in.");
+                router.refresh();
+              } catch (err) {
+                toast(errorMessage(err), "error");
+              }
+            }}
+          />
+        </>
+      )}
     </section>
   );
 }

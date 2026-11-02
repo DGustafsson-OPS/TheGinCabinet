@@ -6,6 +6,10 @@ The login is a two-step flow:
    *pending* session cookie that is not yet allowed into the admin area.
 2. ``POST /auth/mfa/verify`` with the 6-digit code (or a recovery code).
    If correct, the pending session is swapped for a full one.
+
+With "Trust this browser" ticked at step 2, the browser also gets a separate
+long-lived cookie. While it is valid, step 1 alone signs in (the password is
+still needed); changing your password or authenticator forgets it.
 """
 
 from fastapi import APIRouter, Request, Response
@@ -42,6 +46,19 @@ def _set_session_cookie(response: Response, token: str) -> None:
         secure=settings.cookie_secure,  # only sent over HTTPS (True in production)
         samesite="lax",  # not sent on most cross-site requests
         max_age=settings.session_absolute_hours * 3600,
+        path="/",
+    )
+
+
+def _set_trusted_cookie(response: Response, token: str) -> None:
+    settings = get_settings()
+    response.set_cookie(
+        key=settings.trusted_device_cookie_name,
+        value=token,
+        httponly=True,
+        secure=settings.cookie_secure,
+        samesite="lax",
+        max_age=settings.trusted_device_days * 86400,
         path="/",
     )
 
@@ -84,8 +101,33 @@ def login(body: LoginRequest, request: Request, response: Response, db: DbSessio
         # Same message whatever went wrong, so attackers learn nothing.
         raise ApiError(401, "invalid_credentials", "Incorrect username or password.")
 
+    user_agent = request.headers.get("user-agent")
+    trusted = sessions.trusted_device(
+        db, user, request.cookies.get(get_settings().trusted_device_cookie_name)
+    )
+    if trusted is not None:
+        # A browser that proved the 6-digit code recently: the password is enough.
+        trusted.last_used_at = utcnow()
+        token, _ = sessions.create_session(
+            db, user, mfa_verified=True, ip_address=ip, user_agent=user_agent
+        )
+        user.last_login_at = utcnow()
+        throttle.record_attempt(db, username, ip, succeeded=True)
+        audit.record(
+            db,
+            action="auth.login",
+            entity_type="user",
+            entity_id=user.id,
+            actor_id=user.id,
+            summary={"mfa_method": "trusted_browser"},
+            ip_address=ip,
+        )
+        db.commit()
+        _set_session_cookie(response, token)
+        return LoginResponse(mfa_required=False)
+
     token, _ = sessions.create_session(
-        db, user, mfa_verified=False, ip_address=ip, user_agent=request.headers.get("user-agent")
+        db, user, mfa_verified=False, ip_address=ip, user_agent=user_agent
     )
     db.commit()
     _set_session_cookie(response, token)
@@ -175,17 +217,22 @@ def verify_mfa(
     )
     user.last_login_at = utcnow()
     throttle.record_attempt(db, user.username, ip, succeeded=True)
+    trusted_token = None
+    if body.remember_device and get_settings().trusted_device_days > 0:
+        trusted_token, _ = sessions.trust_device(db, user, request.headers.get("user-agent"))
     audit.record(
         db,
         action="auth.login",
         entity_type="user",
         entity_id=user.id,
         actor_id=user.id,
-        summary={"mfa_method": method},
+        summary={"mfa_method": method, "trusted_browser": trusted_token is not None},
         ip_address=ip,
     )
     db.commit()
     _set_session_cookie(response, token)
+    if trusted_token:
+        _set_trusted_cookie(response, trusted_token)
     return _session_out(user, full)
 
 

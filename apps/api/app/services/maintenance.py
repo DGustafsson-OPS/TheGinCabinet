@@ -27,6 +27,7 @@ from app.models import (
     ContactMessage,
     ContactMessageNote,
     LoginAttempt,
+    TrustedDevice,
 )
 from app.models._types import utcnow
 from app.services.blog import publish_due
@@ -50,6 +51,10 @@ def prune_auth_records(db: Session) -> None:
         )
     )
     db.execute(delete(LoginAttempt).where(LoginAttempt.attempted_at < now - KEEP_LOGIN_ATTEMPTS))
+    db.execute(
+        delete(TrustedDevice).where(TrustedDevice.expires_at < now),
+        execution_options={"synchronize_session": "fetch"},
+    )
     db.execute(delete(ConsentRecord).where(ConsentRecord.recorded_at < now - KEEP_CONSENT_RECORDS))
     keep_messages = timedelta(days=get_settings().contact_retention_days)
     expired = or_(

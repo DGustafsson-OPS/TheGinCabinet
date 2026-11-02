@@ -12,13 +12,16 @@ class LoginRequest(BaseModel):
 
 
 class LoginResponse(BaseModel):
-    # Always True in V1: every admin must complete MFA after the password.
+    # False when this browser is trusted ("Trust this browser for 30 days"):
+    # the password alone signs in, and the session cookie is already full.
     mfa_required: bool = True
 
 
 class MfaVerifyRequest(BaseModel):
     # Either the 6-digit app code or a recovery code like "a1b2c-3d4e5".
     code: str = Field(min_length=6, max_length=32)
+    # "Trust this browser for 30 days": skip the code here next time.
+    remember_device: bool = False
 
 
 class UserOut(BaseModel):

@@ -197,6 +197,16 @@ export type ConflictDetails<T> = {
 
 export type AdminName = { id: string; display_name: string };
 
+/** A browser that may skip the 6-digit code ("Trust this browser for 30 days"). */
+export type TrustedBrowser = {
+  id: string;
+  user_agent: string | null;
+  created_at: string;
+  last_used_at: string;
+  expires_at: string;
+  this_browser: boolean;
+};
+
 // ---------- Editorial ----------
 
 export type Media = {
