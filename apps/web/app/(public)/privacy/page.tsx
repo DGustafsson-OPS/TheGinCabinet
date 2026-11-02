@@ -1,7 +1,8 @@
 // P09 Privacy (spec §4, §9 "Privacy notices"). Plain-language, and true to
 // what the code actually does. The analytics section appears only when
 // Google Analytics is switched on (GA_MEASUREMENT_ID is set), and the contact
-// form section only when the form is (Cloudflare Turnstile keys set).
+// form section only when the form is (Cloudflare Turnstile keys set), and the
+// email section only when a contact address is set (Admin → Settings → Website).
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -19,7 +20,9 @@ export const metadata: Metadata = {
 
 export default async function PrivacyPage() {
   const analytics = Boolean(gaMeasurementId());
-  const contact = contactFormOn(await getSite());
+  const site = await getSite();
+  const contact = contactFormOn(site);
+  const email = site?.contact_email;
   return (
     <article className={styles.prose}>
       <h1>Privacy</h1>
@@ -42,6 +45,14 @@ export default async function PrivacyPage() {
           Like every website, our server briefly logs technical details of requests (such as IP
           address and time) to keep the site secure and working. These logs are not used to
           profile anyone.
+        </li>
+        <li>
+          The site is delivered through Cloudflare&apos;s network, which protects it from attacks and makes it
+          faster. To do that, Cloudflare processes the same technical details of each visit on our behalf. See{" "}
+          <a href="https://www.cloudflare.com/privacypolicy/" rel="noopener noreferrer">
+            Cloudflare&apos;s privacy policy
+          </a>
+          .
         </li>
       </ul>
 
@@ -86,8 +97,9 @@ export default async function PrivacyPage() {
           <ul>
             <li>
               When you send a message, we store your name, email address, message and the time, only to read
-              and answer it. Messages are deleted after a year at most, or sooner when we no longer need them.
-              Only the site&apos;s admins can read them.
+              and answer it. We may add our own notes to it, such as a copy of our reply. Messages and their
+              notes are deleted after a year at most, or sooner when we no longer need them; messages we mark as
+              spam are deleted after 90 days. Only the site&apos;s admins can read them.
             </li>
             <li>
               To limit how many messages one connection can send, we store a scrambled code made from your IP
@@ -107,6 +119,28 @@ export default async function PrivacyPage() {
         </>
       )}
 
+      {email && (
+        <>
+          <h2>Emailing us</h2>
+          <ul>
+            <li>
+              If you email <a href={`mailto:${email}`}>{email}</a>, Cloudflare Email Routing forwards your email to
+              our own inboxes.
+            </li>
+            <li>
+              We use your email only to answer you, and delete it when we no longer need it. The legal basis is our
+              legitimate interest in answering you (GDPR art. 6(1)(f)).
+            </li>
+          </ul>
+        </>
+      )}
+
+      <h2>Your rights</h2>
+      <p>
+        You can ask to see the personal data we hold about you, have it corrected, or have it deleted, and you can
+        object to how we use it. You also have the right to complain to your data protection authority.
+      </p>
+
       <h2>Photos</h2>
       <p>
         Location data and other hidden details are removed from every photo before it is
@@ -115,7 +149,15 @@ export default async function PrivacyPage() {
 
       <h2>Questions</h2>
       <p>
-        If you have a question about your data, {contact ? <Link href="/contact">send us a message</Link> : "use the contact details on the About page"}.
+        If you have a question about your data or want to use your rights,{" "}
+        {contact && <Link href="/contact">send us a message</Link>}
+        {contact && email && " or "}
+        {email && (
+          <>
+            email <a href={`mailto:${email}`}>{email}</a>
+          </>
+        )}
+        {!contact && !email && "use the contact details on the About page"}.
       </p>
     </article>
   );
