@@ -46,14 +46,6 @@ export default async function PrivacyPage() {
           address and time) to keep the site secure and working. These logs are not used to
           profile anyone.
         </li>
-        <li>
-          The site is delivered through Cloudflare&apos;s network, which protects it from attacks and makes it
-          faster. To do that, Cloudflare processes the same technical details of each visit on our behalf. See{" "}
-          <a href="https://www.cloudflare.com/privacypolicy/" rel="noopener noreferrer">
-            Cloudflare&apos;s privacy policy
-          </a>
-          .
-        </li>
       </ul>
 
       {analytics && (
