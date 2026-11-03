@@ -108,10 +108,11 @@ export default async function DashboardPage() {
               Private inventory
             </h2>
             <div className={styles.tiles}>
-              <Tile label="Unique gins" value={data.unique_gins} />
-              <Tile label="Bottles in the cabinet" value={data.physical_bottles} />
-              <Tile label="Open bottles" value={data.open_bottles} />
-              <div className={`card ${styles.tile}`}>
+              {/* Each tile opens the list behind its number, already filtered. */}
+              <Tile label="Unique gins" value={data.unique_gins} href="/juniper/gins" />
+              <Tile label="Bottles in the cabinet" value={data.physical_bottles} href="/juniper/bottles?status=in_cabinet" />
+              <Tile label="Open bottles" value={data.open_bottles} href="/juniper/bottles?status=open" />
+              <Link href="/juniper/purchases" className={`card ${styles.tile} ${styles.tileLink}`}>
                 <p className={styles.tileLabel}>Inventory value</p>
                 {data.inventory_value.length === 0 ? (
                   <p className={styles.tileValue}>–</p>
@@ -129,7 +130,7 @@ export default async function DashboardPage() {
                     {data.bottles_without_cost === 1 ? "" : "s"} with unknown cost
                   </p>
                 )}
-              </div>
+              </Link>
             </div>
           </section>
 
@@ -159,9 +160,13 @@ export default async function DashboardPage() {
                 Public site
               </h2>
               <dl className={styles.facts}>
-                <dt>Gins visible to the public</dt>
+                <dt>
+                  <Link href="/juniper/gins?public=true">Gins visible to the public</Link>
+                </dt>
                 <dd>{data.public_gins}</dd>
-                <dt>Wishlist (private)</dt>
+                <dt>
+                  <Link href="/juniper/wishlist">Wishlist (private)</Link>
+                </dt>
                 <dd>{data.wishlist_wanted} wanted</dd>
               </dl>
             </section>
@@ -172,11 +177,12 @@ export default async function DashboardPage() {
   );
 }
 
-function Tile({ label, value }: { label: string; value: number }) {
+/** A number on the dashboard; the whole card is a link to the list behind it. */
+function Tile({ label, value, href }: { label: string; value: number; href: string }) {
   return (
-    <div className={`card ${styles.tile}`}>
+    <Link href={href} className={`card ${styles.tile} ${styles.tileLink}`}>
       <p className={styles.tileLabel}>{label}</p>
       <p className={styles.tileValue}>{value}</p>
-    </div>
+    </Link>
   );
 }

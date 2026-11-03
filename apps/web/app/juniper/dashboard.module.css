@@ -46,6 +46,21 @@
 .tile:hover {
   box-shadow: var(--shadow-card-hover);
 }
+/* A tile that is a link: looks like the card, not like link text. */
+.tileLink {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+.tileLink:hover .tileLabel,
+.tileLink:focus-visible .tileLabel {
+  color: var(--color-brass-600);
+}
+.tileLink:focus-visible {
+  outline: 3px solid var(--color-brass-600);
+  outline-offset: 2px;
+}
+
 .tileLabel {
   margin: 0 0 var(--space-2);
   color: var(--color-muted);
