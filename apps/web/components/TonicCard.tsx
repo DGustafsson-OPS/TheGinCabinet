@@ -26,10 +26,10 @@ export function TonicCard({ tonic }: { tonic: PublicTonicCard }) {
         <p className={styles.meta}>{[humanize(tonic.style), tonic.country].filter(Boolean).join(" · ")}</p>
         {tonic.rating && (
           <p className={styles.rating}>
-            <Junipers outOfTen={tonic.rating} />
+            <Junipers outOfTen={tonic.rating} symbol="bottle" />
             <span className={styles.ratingCount}>
               {" "}
-              · {tonic.review_count} review{tonic.review_count === 1 ? "" : "s"}
+              · {tonic.review_count + tonic.quick_review_count} rating{tonic.review_count + tonic.quick_review_count === 1 ? "" : "s"}
             </span>
           </p>
         )}

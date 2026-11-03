@@ -15,10 +15,11 @@ type Params = Promise<{ id: string }>;
 export default async function CocktailPage({ params }: { params: Params }) {
   await requireStaff();
   const { id } = await params;
-  const [{ data: cocktail }, gins, tonics, media, ingredients] = await Promise.all([
+  const [{ data: cocktail }, gins, tonics, cocktails, media, ingredients] = await Promise.all([
     apiGet<Cocktail>(`/admin/cocktails/${id}`),
     apiGet<Page<Gin>>("/admin/gins?page_size=100"),
     apiGet<Page<Tonic>>("/admin/tonics?page_size=100"),
+    apiGet<Page<Cocktail>>("/admin/cocktails?page_size=100"),
     apiGet<Page<Media>>("/admin/media?page_size=100"),
     apiGet<{ name: string }[]>("/admin/ingredients"),
   ]);
@@ -41,6 +42,7 @@ export default async function CocktailPage({ params }: { params: Params }) {
         cocktail={cocktail}
         gins={(gins.data?.items ?? []).map((g) => ({ id: g.id, slug: g.slug, display_name: g.display_name }))}
         tonics={(tonics.data?.items ?? []).map((t) => ({ id: t.id, label: t.display_name }))}
+        cocktails={(cocktails.data?.items ?? []).map((c) => ({ id: c.id, label: c.status === "published" ? c.title : `${c.title} (${c.status})` }))}
         media={options}
         knownIngredients={(ingredients.data ?? []).map((i) => i.name)}
       />

@@ -1,6 +1,6 @@
 "use client";
 // The recipe editor (spec §5 A07): tabs for basics / ingredients / steps /
-// imagery / gin pairings / tonics / SEO / publishing, all in one form so switching tabs
+// imagery / gin pairings / tonics / variations / SEO / publishing, all in one form so switching tabs
 // never loses unsaved work.
 
 import Link from "next/link";
@@ -61,7 +61,7 @@ const splitList = (value: string) => value.split(",").map((t) => t.trim()).filte
 const decimal = (value: string) => (value.trim() ? value.replace(",", ".").trim() : null);
 
 /** Everything on screen, as the JSON the API expects. */
-function payload(basics: Basics, lines: LineRow[], steps: StepRow[], gins: GinRow[], tonics: LinkRow[]) {
+function payload(basics: Basics, lines: LineRow[], steps: StepRow[], gins: GinRow[], tonics: LinkRow[], variations: LinkRow[]) {
   return {
     title: basics.title.trim(),
     slug: basics.slug.trim(),
@@ -92,6 +92,7 @@ function payload(basics: Basics, lines: LineRow[], steps: StepRow[], gins: GinRo
       pairing_note: text(g.pairing_note),
     })),
     tonics: linkPayload(tonics, "tonic_id"),
+    variations: variations.filter((v) => v.id).map((v) => v.id),
   };
 }
 
@@ -108,6 +109,7 @@ type Props = {
   cocktail: Cocktail;
   gins: GinSummary[];
   tonics: { id: string; label: string }[];
+  cocktails: { id: string; label: string }[];
   media: (MediaSummary & { label: string })[];
   knownIngredients: string[];
 };
@@ -121,8 +123,10 @@ const toGinRows = (c: Cocktail, tag = "init"): GinRow[] =>
   c.gins.map((g, i) => ({ key: `${tag}-${i}`, gin_id: g.gin.id, priority: String(g.priority), pairing_note: g.pairing_note ?? "" }));
 const toTonicRows = (c: Cocktail, tag = "init"): LinkRow[] =>
   toLinkRows(c.tonics.map((t) => ({ id: t.tonic.id, note: t.pairing_note })), tag);
+const toVariationRows = (c: Cocktail, tag = "init"): LinkRow[] =>
+  toLinkRows(c.variations.map((v) => ({ id: v.id, note: null })), tag);
 
-export default function CocktailEditor({ cocktail, gins, tonics, media: library, knownIngredients }: Props) {
+export default function CocktailEditor({ cocktail, gins, tonics, cocktails, media: library, knownIngredients }: Props) {
   // Photos uploaded from this form (PhotoUpload) join the library's list.
   const [uploaded, setUploaded] = useState<Props["media"]>([]);
   const media = [...uploaded, ...library];
@@ -139,9 +143,10 @@ export default function CocktailEditor({ cocktail, gins, tonics, media: library,
   const [steps, setSteps] = useState<StepRow[]>(() => toSteps(cocktail));
   const [ginRows, setGinRows] = useState<GinRow[]>(() => toGinRows(cocktail));
   const [tonicRows, setTonicRows] = useState<LinkRow[]>(() => toTonicRows(cocktail));
+  const [variationRows, setVariationRows] = useState<LinkRow[]>(() => toVariationRows(cocktail));
   // The last saved state. After a save we update these from the API's answer
   // instead of rebuilding the editor, so you stay on the tab you were using.
-  const [original, setOriginal] = useState(() => payload(basics, lines, steps, ginRows, tonicRows));
+  const [original, setOriginal] = useState(() => payload(basics, lines, steps, ginRows, tonicRows, variationRows));
   const [version, setVersion] = useState(cocktail.version);
   const [status, setStatusState] = useState<CocktailStatus>(cocktail.status);
   const [conflict, setConflict] = useState<ConflictDetails<Cocktail> | null>(null);
@@ -155,18 +160,20 @@ export default function CocktailEditor({ cocktail, gins, tonics, media: library,
     const next = {
       basics: initialBasics(saved), lines: toLines(saved, tag), steps: toSteps(saved, tag), gins: toGinRows(saved, tag),
       tonics: toTonicRows(saved, tag),
+      variations: toVariationRows(saved, tag),
     };
     setBasics(next.basics);
     setLines(next.lines);
     setSteps(next.steps);
     setGinRows(next.gins);
     setTonicRows(next.tonics);
-    setOriginal(payload(next.basics, next.lines, next.steps, next.gins, next.tonics));
+    setVariationRows(next.variations);
+    setOriginal(payload(next.basics, next.lines, next.steps, next.gins, next.tonics, next.variations));
     setVersion(saved.version);
     setStatusState(saved.status);
   }
 
-  const current = payload(basics, lines, steps, ginRows, tonicRows);
+  const current = payload(basics, lines, steps, ginRows, tonicRows, variationRows);
   const changes = Object.fromEntries(
     Object.entries(current).filter(
       ([key, value]) => JSON.stringify(value) !== JSON.stringify(original[key as keyof typeof original]),
@@ -533,6 +540,23 @@ export default function CocktailEditor({ cocktail, gins, tonics, media: library,
     </>
   );
 
+  const variationsTab = (
+    <>
+      <p className="field-hint">
+        Other recipes that are variations of this one (e.g. Negroni → Boulevardier). The link shows on both recipes, under
+        &quot;Variations&quot;, but only once both are published.
+      </p>
+      <LinkList
+        rows={variationRows}
+        onChange={setVariationRows}
+        options={cocktails.filter((c) => c.id !== cocktail.id)}
+        noun="cocktail"
+        privateIds={cocktail.variations.filter((v) => v.status !== "published").map((v) => v.id)}
+        withNote={false}
+      />
+    </>
+  );
+
   const seoTab = (
     <div className="form-grid">
       <div className="field">
@@ -616,6 +640,7 @@ export default function CocktailEditor({ cocktail, gins, tonics, media: library,
           { id: "imagery", label: "Imagery", content: imageryTab },
           { id: "gins", label: "Gin pairings", badge: String(ginRows.length), content: pairingsTab },
           { id: "tonics", label: "Tonics", badge: String(tonicRows.length), content: tonicsTab },
+          { id: "variations", label: "Variations", badge: String(variationRows.length), content: variationsTab },
           { id: "seo", label: "SEO", content: seoTab },
           { id: "publishing", label: "Publishing", content: publishingTab },
         ]}

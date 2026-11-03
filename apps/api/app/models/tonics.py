@@ -17,7 +17,7 @@ import uuid
 from datetime import datetime
 from decimal import Decimal
 from enum import StrEnum
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import CheckConstraint, ForeignKey, Integer, Numeric, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -28,6 +28,9 @@ from app.models._types import JSONType, UTCDateTime, UUIDType, new_uuid
 from app.models.catalogue import GinProduct
 from app.models.editorial import MediaAsset
 from app.models.user import User
+
+if TYPE_CHECKING:
+    from app.models.quick_reviews import QuickReview
 
 
 class TonicStyle(StrEnum):
@@ -67,6 +70,12 @@ class Tonic(Versioned, Base):
         cascade="all, delete-orphan",
         lazy="selectin",
         order_by="TonicReview.created_at",
+    )
+    # Quick reviews (1–5 tonic bottles), newest first. Defined in quick_reviews.py.
+    quick_reviews: Mapped[list["QuickReview"]] = relationship(
+        lazy="selectin",
+        order_by="QuickReview.created_at.desc()",
+        viewonly=True,
     )
     gin_pairings: Mapped[list["GinTonicPairing"]] = relationship(
         back_populates="tonic",

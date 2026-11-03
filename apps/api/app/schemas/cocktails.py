@@ -96,6 +96,8 @@ class CocktailIn(BaseModel):
     steps: list[StepIn] = Field(default_factory=list, max_length=30)
     gins: list[PairingIn] = Field(default_factory=list, max_length=10)
     tonics: list[TonicLinkIn] = Field(default_factory=list, max_length=10)
+    # Other recipes that are variations of this one (linked both ways).
+    variations: list[uuid.UUID] = Field(default_factory=list, max_length=20)
 
     _tags = field_validator("tags")(_clean_tags)
     _equipment = field_validator("equipment")(_clean_equipment)
@@ -124,6 +126,7 @@ class CocktailPatch(BaseModel):
     steps: list[StepIn] | None = Field(default=None, max_length=30)
     gins: list[PairingIn] | None = Field(default=None, max_length=10)
     tonics: list[TonicLinkIn] | None = Field(default=None, max_length=10)
+    variations: list[uuid.UUID] | None = Field(default=None, max_length=20)
 
     _tags = field_validator("tags")(_clean_tags)
     _equipment = field_validator("equipment")(_clean_equipment)
@@ -172,6 +175,17 @@ class TonicLinkOut(BaseModel):
     pairing_note: str | None
 
 
+class VariationOut(BaseModel):
+    """A linked variation in the editor; ``status`` warns about unpublished ones."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    slug: str
+    title: str
+    status: str
+
+
 class CocktailOut(BaseModel):
     id: uuid.UUID
     slug: str
@@ -196,6 +210,7 @@ class CocktailOut(BaseModel):
     steps: list[str]
     gins: list[PairingOut]
     tonics: list[TonicLinkOut]
+    variations: list[VariationOut]
     published_at: datetime | None
     version: int
     created_at: datetime
@@ -247,6 +262,7 @@ class PublicCocktail(PublicCocktailCard):
     steps: list[str]
     recommended_gins: list[PublicGinPairing]
     recommended_tonics: list[PublicTonicLink]
+    variations: list[PublicCocktailCard]  # published ones only
     seo_title: str | None
     seo_description: str | None
     published_at: datetime
