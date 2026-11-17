@@ -30,6 +30,10 @@ test("a wrong password shows a clear error", async ({ page }) => {
 });
 
 test("two-step sign-in, dashboard numbers, mobile menu and sign-out", async ({ page, baseURL }) => {
+  // This test signs in twice (API, then the form). Each sign-in needs an
+  // unused 6-digit code, so it may wait up to a 30-second code window each
+  // time (see freshCode in totp.ts): allow for that on top of the usual limit.
+  test.setTimeout(90_000);
   // Prepare: add a gin and a purchase through the API.
   const { api, csrf } = await signedInApi(baseURL!);
   const gin = await api.post("/api/v1/admin/gins", {

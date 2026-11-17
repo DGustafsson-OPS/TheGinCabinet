@@ -4,6 +4,7 @@ import Link from "next/link";
 
 import Junipers from "@/components/Junipers";
 import MediaImage from "@/components/MediaImage";
+import PhotoPlaceholder from "@/components/PhotoPlaceholder";
 import { humanize } from "@/lib/format";
 import type { PublicTonicCard } from "@/lib/types";
 
@@ -15,7 +16,7 @@ export function TonicCard({ tonic }: { tonic: PublicTonicCard }) {
       {tonic.image ? (
         <MediaImage media={tonic.image} className={styles.image} sizes="(min-width: 1200px) 280px, (min-width: 768px) 50vw, 100vw" />
       ) : (
-        <div className={styles.image} aria-hidden="true" />
+        <PhotoPlaceholder kind="tonic" className={styles.image} />
       )}
       <div className={styles.body}>
         <h3 className={styles.title}>

@@ -4,6 +4,7 @@ import Link from "next/link";
 
 import Junipers from "@/components/Junipers";
 import MediaImage from "@/components/MediaImage";
+import PhotoPlaceholder from "@/components/PhotoPlaceholder";
 import { formatStrength, humanize } from "@/lib/format";
 import type { PublicGinCard } from "@/lib/types";
 
@@ -17,7 +18,7 @@ export default function GinCard({ gin }: { gin: PublicGinCard }) {
       {gin.image ? (
         <MediaImage media={gin.image} className={styles.image} sizes="(min-width: 1200px) 280px, (min-width: 768px) 50vw, 100vw" />
       ) : (
-        <div className={styles.image} aria-hidden="true" />
+        <PhotoPlaceholder kind="gin" className={styles.image} />
       )}
       {gin.collection_status && (
         <span className={gin.collection_status === "owned" ? styles.badgeOwned : styles.badgePast}>

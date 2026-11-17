@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500" role="img" aria-label="Picture coming soon">
+  <!-- Shown in place of a gin's photo until a real one is added. The background
+       is transparent: the page's own colour shows through. -->
+  <defs>
+    <linearGradient id="glass" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.75"/>
+      <stop offset="0.5" stop-color="#ffffff" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0.6"/>
+    </linearGradient>
+  </defs>
+  <!-- soft shadow under the bottle -->
+  <ellipse cx="200" cy="392" rx="88" ry="9" fill="#19251f" opacity="0.08"/>
+  <!-- the bottle: square shoulders, short neck -->
+  <path d="M182 104 L182 138 Q182 150 170 156 L134 172 Q118 180 118 198 L118 372 Q118 388 134 388 L266 388 Q282 388 282 372 L282 198 Q282 180 266 172 L230 156 Q218 150 218 138 L218 104 Z"
+        fill="url(#glass)" stroke="#c7a46b" stroke-width="4" stroke-linejoin="round"/>
+  <!-- light reflection on the glass -->
+  <path d="M136 206 L136 360" stroke="#ffffff" stroke-width="7" stroke-linecap="round" opacity="0.8"/>
+  <!-- the cap -->
+  <rect x="176" y="70" width="48" height="36" rx="5" fill="#19251f"/>
+  <rect x="176" y="96" width="48" height="6" fill="#c7a46b"/>
+  <!-- the label, with a juniper sprig and three berries -->
+  <rect x="146" y="226" width="108" height="112" rx="6" fill="#fbf9f4" stroke="#c7a46b" stroke-width="2.5"/>
+  <g stroke="#718173" stroke-width="2.4" stroke-linecap="round" fill="none">
+    <path d="M168 314 Q186 282 232 248"/>
+    <path d="M179 296 l-8 -3 M179 296 l1 -8 M192 281 l-7 -4 M192 281 l2 -8 M206 268 l-6 -5 M206 268 l4 -7 M219 258 l-4 -6 M219 258 l6 -3"/>
+  </g>
+  <circle cx="186" cy="300" r="8" fill="#7d8fb8"/>
+  <circle cx="199" cy="295" r="8" fill="#7d8fb8"/>
+  <circle cx="192" cy="284" r="8" fill="#7d8fb8"/>
+  <circle cx="184" cy="298" r="2.4" fill="#c9d3e8"/>
+  <circle cx="197" cy="293" r="2.4" fill="#c9d3e8"/>
+  <circle cx="190" cy="282" r="2.4" fill="#c9d3e8"/>
+  <text x="200" y="448" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="26" fill="#7d5f2e">Picture coming soon</text>
+</svg>
