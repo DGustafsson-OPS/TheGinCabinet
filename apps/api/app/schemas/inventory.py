@@ -256,3 +256,21 @@ class DashboardOut(BaseModel):
     public_gins: int
     wishlist_wanted: int
     recent_activity: list[AuditEventOut]
+
+
+class BottleLevelChange(BaseModel):
+    """One row of the "Update levels" page: a new level and/or a new state."""
+
+    id: uuid.UUID
+    version: int
+    # The bottle's new state; leave out to keep it. Sealed -> open -> empty only.
+    status: Literal["sealed", "open", "empty"] | None = None
+    remaining_ml: int | None = Field(default=None, ge=0)  # for open bottles
+
+
+class BottleLevels(BaseModel):
+    changes: list[BottleLevelChange] = Field(min_length=1, max_length=300)
+
+
+class BottleLevelsResult(BaseModel):
+    changed: int

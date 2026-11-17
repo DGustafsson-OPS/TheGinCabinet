@@ -183,3 +183,14 @@ class GinOut(GinSummary):
     def _names(cls, value):
         # The model holds Botanical objects; the API shows just their names, A-Z.
         return sorted(b if isinstance(b, str) else b.name for b in value)
+
+
+class GinVisibility(BaseModel):
+    """Make many gins public or private at once (Gins → tick several → action)."""
+
+    ids: list[uuid.UUID] = Field(min_length=1, max_length=200)
+    public_visible: bool
+
+
+class GinVisibilityResult(BaseModel):
+    changed: int  # gins whose setting actually changed (the others already had it)

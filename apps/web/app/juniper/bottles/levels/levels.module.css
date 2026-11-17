@@ -1,0 +1,53 @@
+/* The "Update levels" table (see LevelsEditor.tsx). */
+.level {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+}
+.level input[type="range"] {
+  flex: 1 1 10rem;
+  max-width: 18rem;
+}
+.ml {
+  width: 6rem;
+}
+/* A row with an unsaved change: a brass bar on the left. */
+.changed td:first-child {
+  box-shadow: inset 4px 0 0 var(--color-brass);
+}
+/* The row the last save failed on. */
+.problem td {
+  background: var(--color-danger-bg);
+}
+.problem td:first-child {
+  box-shadow: inset 4px 0 0 var(--color-danger);
+}
+.saveBar {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+  margin-top: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: 0 -4px 12px rgba(25, 37, 31, 0.08);
+}
+
+/* The table's own controls, styled like the admin's form fields. */
+.control {
+  min-height: var(--touch-target);
+  padding: 0 var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font: inherit;
+  background: var(--color-white);
+  color: var(--color-charcoal);
+}
+.control:focus-visible {
+  border-color: var(--color-brass-600);
+}

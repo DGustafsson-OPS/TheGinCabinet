@@ -46,5 +46,5 @@ test("import gins from CSV: preview, confirm, then duplicates are skipped", asyn
   // The imported gin is in the catalogue.
   await gotoReady(page, "/juniper/gins");
   await page.getByLabel("Search").fill(name);
-  await expect(page.getByRole("link", { name: `E2E ${name}` })).toBeVisible();
+  await expect(page.getByRole("link", { name: `E2E ${name}`, exact: true })).toBeVisible();
 });
