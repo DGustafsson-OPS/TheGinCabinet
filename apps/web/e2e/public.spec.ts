@@ -47,7 +47,7 @@ test("the public site shows public gins with their reviews and cocktails, and no
   const secret = await createGin(api, csrf, { brand: "Secret", name: `Gin ${tag}`, country, public_visible: false });
   await post(api, csrf, "/api/v1/admin/purchases", {
     purchased_on: "2026-10-01", retailer: "Shop", currency: "SEK",
-    lines: [{ gin_id: gin.id, size_ml: 700, unit_price: "777" }],
+    lines: [{ gin_id: gin.id, size_ml: 700, unit_price: "777.77" }],
   });
   // A published review and a published cocktail for the public gin.
   let review = await post(api, csrf, "/api/v1/admin/reviews", {
@@ -97,7 +97,9 @@ test("the public site shows public gins with their reviews and cocktails, and no
   await expect(page.getByText("In the cabinet", { exact: true }).first()).toBeVisible();
   await expect(page.getByRole("link", { name: `Review ${tag}` })).toBeVisible();
   await expect(page.getByRole("link", { name: new RegExp(`Cooler ${tag}`) })).toBeVisible();
-  await expect(page.locator("main")).not.toContainText("777"); // the price stays private
+  // The price stays private. Checked with its decimals: a bare "777" can turn up
+  // in other test gins' random names ("E2E Gin …777") listed on this page.
+  await expect(page.locator("main")).not.toContainText(/777[.,]77/);
   await expect(page.locator("main")).not.toContainText("SEK");
   // A botanical links to the collection filtered by it.
   await page.getByRole("link", { name: new RegExp(`herb${tag}`, "i") }).click();
