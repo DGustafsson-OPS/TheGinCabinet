@@ -124,6 +124,17 @@ DISTILLERY_NAME_OVERRIDES = {
     "house-spirits": "Aviation American Gin Distillery",
     "hope-distillery": "Hope Distillery",
     "bombay-laverstoke": "Bombay Sapphire Distillery",
+    # Names of the 25 distilleries added with full profiles by migration
+    # apps/api/migrations/versions/20261117_0024_photo_survey_distilleries.py:
+    "plymouth-black-friars": "Black Friars Distillery",
+    "affreschi-affreschi": "J.Rose",
+    "moe-distillery": "Moe Distillery",
+    "edelranz": "edelranz",
+    "maison-ferrand": "Maison Ferrand",
+    "greenall-opihr": "G&J Distillers",
+    "imea": "Antica Distilleria Quaglia",
+    "nordic-premium-beverages": "Nordic Premium Beverages",
+    "polmos-zielona-gora": "Henkell Freixenet Polska",
 }
 
 
