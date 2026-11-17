@@ -5,6 +5,8 @@ __pycache__/
 .pytest_cache/
 .ruff_cache/
 *.egg-info/
+# Left behind by "pip install ." (a production-style install of the API)
+apps/api/build/
 .coverage
 htmlcov/
 
