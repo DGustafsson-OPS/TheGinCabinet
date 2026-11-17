@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500" role="img" aria-label="Picture coming soon">
+  <!-- Shown in place of a tonic's photo until a real one is added: a small
+       clear tonic bottle, like the bottles used for tonic ratings.
+       The background is transparent. -->
+  <defs>
+    <clipPath id="inside">
+      <path d="M186 118 L186 160 Q186 176 172 188 Q150 206 150 236 L150 368 Q150 384 166 384 L234 384 Q250 384 250 368 L250 236 Q250 206 228 188 Q214 176 214 160 L214 118 Z"/>
+    </clipPath>
+  </defs>
+  <ellipse cx="200" cy="390" rx="62" ry="8" fill="#19251f" opacity="0.08"/>
+  <!-- the glass -->
+  <path d="M186 118 L186 160 Q186 176 172 188 Q150 206 150 236 L150 368 Q150 384 166 384 L234 384 Q250 384 250 368 L250 236 Q250 206 228 188 Q214 176 214 160 L214 118 Z"
+        fill="#e3eef2"/>
+  <!-- the tonic inside, with rising bubbles -->
+  <g clip-path="url(#inside)">
+    <rect x="140" y="214" width="120" height="180" fill="#c9dfe7"/>
+    <path d="M140 214 Q170 206 200 214 T260 214" fill="#d8e9ef"/>
+    <g fill="#ffffff" opacity="0.9">
+      <circle cx="178" cy="350" r="4"/>
+      <circle cx="186" cy="318" r="3"/>
+      <circle cx="176" cy="290" r="2.5"/>
+      <circle cx="218" cy="342" r="3.5"/>
+      <circle cx="226" cy="300" r="2.5"/>
+      <circle cx="212" cy="264" r="3"/>
+      <circle cx="198" cy="236" r="2"/>
+      <circle cx="232" cy="248" r="2"/>
+    </g>
+  </g>
+  <path d="M186 118 L186 160 Q186 176 172 188 Q150 206 150 236 L150 368 Q150 384 166 384 L234 384 Q250 384 250 368 L250 236 Q250 206 228 188 Q214 176 214 160 L214 118 Z"
+        fill="none" stroke="#6f8a95" stroke-width="4" stroke-linejoin="round"/>
+  <!-- light reflection -->
+  <path d="M164 246 L164 360" stroke="#ffffff" stroke-width="6" stroke-linecap="round" opacity="0.85"/>
+  <!-- the cap -->
+  <rect x="180" y="92" width="40" height="28" rx="4" fill="#5f7480"/>
+  <path d="M184 100 h32 M184 108 h32" stroke="#7d93a0" stroke-width="2"/>
+  <text x="200" y="448" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="26" fill="#7d5f2e">Picture coming soon</text>
+</svg>

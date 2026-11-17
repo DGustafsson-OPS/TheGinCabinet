@@ -7,6 +7,7 @@ import { notFound } from "next/navigation";
 
 import Junipers from "@/components/Junipers";
 import MediaImage from "@/components/MediaImage";
+import PhotoPlaceholder from "@/components/PhotoPlaceholder";
 import { formatDate, formatStrength, humanize } from "@/lib/format";
 import { SITE_URL, publicGet, shareImages } from "@/lib/public-api";
 import type { PublicTonic } from "@/lib/types";
@@ -45,7 +46,7 @@ export default async function TonicPage({ params }: { params: Params }) {
         {tonic.image ? (
           <MediaImage media={tonic.image} className={styles.photo} sizes="(min-width: 900px) 400px, 100vw" priority />
         ) : (
-          <div className={styles.photo} aria-hidden="true" />
+          <PhotoPlaceholder kind="tonic" className={styles.photo} priority />
         )}
         <div>
           <h1 className={styles.title}>{tonic.display_name}</h1>

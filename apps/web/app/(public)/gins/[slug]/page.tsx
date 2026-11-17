@@ -9,6 +9,7 @@ import { notFound } from "next/navigation";
 import Junipers from "@/components/Junipers";
 import GinGrid from "@/components/GinGrid";
 import MediaImage from "@/components/MediaImage";
+import PhotoPlaceholder from "@/components/PhotoPlaceholder";
 import { formatDate, formatStrength, humanize, param } from "@/lib/format";
 import { SITE_URL, publicGet, shareImages } from "@/lib/public-api";
 import type { PublicGin } from "@/lib/types";
@@ -86,7 +87,7 @@ export default async function GinPage({ params, searchParams }: { params: Params
           {photo ? (
             <MediaImage media={photo} className={styles.hero} sizes="(min-width: 900px) 440px, 100vw" priority />
           ) : (
-            <div className={styles.hero} aria-hidden="true" />
+            <PhotoPlaceholder kind="gin" className={styles.hero} priority />
           )}
           {gin.images.length > 1 && (
             <ul className={styles.thumbs} aria-label="More photos">
