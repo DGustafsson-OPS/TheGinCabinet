@@ -21,6 +21,8 @@ from app.schemas.common import Page, PageParams
 from app.schemas.inventory import (
     BottleDetailOut,
     BottleIn,
+    BottleLevels,
+    BottleLevelsResult,
     BottleOut,
     BottlePatch,
     BottleStatusChange,
@@ -115,6 +117,68 @@ def create_bottles(body: BottleIn, admin: CurrentAdminWrite, db: DbSession):
     )
     db.commit()
     return [BottleOut.model_validate(b) for b in bottles]
+
+
+@router.post("/bottles/levels", response_model=BottleLevelsResult)
+def update_levels(body: BottleLevels, admin: CurrentAdminWrite, db: DbSession):
+    """Save the "Update levels" page: new levels, opened and finished bottles.
+
+    All or nothing: if one row can't be saved, nothing is, and the error says
+    which bottle it was, so the page can point at it.
+    """
+    changed = 0
+    for change in body.changes:
+        bottle = get_or_404(db, Bottle, change.id, "Bottle")
+        name = f"{bottle.gin.display_name} ({bottle.size_ml} ml)"
+        if bottle.version != change.version:
+            raise ApiError(
+                409,
+                "version_conflict",
+                f"{name} was changed meanwhile. Reload the page to see the latest.",
+                details={"bottle_id": str(bottle.id)},
+            )
+        if bottle.status not in IN_CABINET:
+            raise ApiError(
+                422,
+                "not_in_cabinet",
+                f"{name} is no longer in the cabinet.",
+                details={"bottle_id": str(bottle.id)},
+            )
+        target = BottleStatus(change.status or bottle.status)
+        try:
+            if target != bottle.status:
+                change_status(
+                    db,
+                    bottle,
+                    new_status=target,
+                    actor_id=admin.user.id,
+                    remaining_ml=change.remaining_ml if target == BottleStatus.OPEN else None,
+                )
+                changed += 1
+            elif (
+                target == BottleStatus.OPEN
+                and change.remaining_ml is not None
+                and change.remaining_ml != bottle.remaining_ml
+            ):
+                update_level(db, bottle, change.remaining_ml, admin.user.id)
+                changed += 1
+        except ApiError as exc:
+            # Say which bottle: "Hernö (700 ml): Remaining must be between 0 and 700 ml."
+            raise ApiError(
+                exc.status_code,
+                exc.code,
+                f"{name}: {exc.message}",
+                details={"bottle_id": str(bottle.id)},
+            ) from exc
+    audit.record(
+        db,
+        action="bottle.bulk_levels",
+        entity_type="bottle",
+        actor_id=admin.user.id,
+        summary={"bottles": changed},
+    )
+    db.commit()
+    return BottleLevelsResult(changed=changed)
 
 
 @router.get("/bottles/{bottle_id}", response_model=BottleDetailOut)

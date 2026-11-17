@@ -9,6 +9,8 @@ import { humanize, param } from "@/lib/format";
 import { apiGet, requireAdmin } from "@/lib/server-api";
 import { GIN_STYLES, type Gin, type Page } from "@/lib/types";
 
+import GinTable from "./GinTable";
+
 export const metadata: Metadata = { title: "Gins" };
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
@@ -74,70 +76,7 @@ export default async function GinsPage({ searchParams }: { searchParams: SearchP
         </div>
       ) : (
         <>
-          <div className="table-wrap">
-            <table className="table">
-              <thead>
-                <tr>
-                  <th scope="col">Gin</th>
-                  <th scope="col">Style</th>
-                  <th scope="col" className="num">
-                    ABV
-                  </th>
-                  <th scope="col">Country</th>
-                  <th scope="col" className="num">
-                    Bottles
-                  </th>
-                  <th scope="col" className="num">
-                    Rating
-                  </th>
-                  <th scope="col">Public site</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.items.map((gin) => (
-                  <tr key={gin.id}>
-                    <td>
-                      <Link href={`/juniper/gins/${gin.id}`}>{gin.display_name}</Link>
-                      {gin.distillery && <div>{gin.distillery.name}</div>}
-                    </td>
-                    <td>{humanize(gin.style)}</td>
-                    <td className="num">{gin.abv} %</td>
-                    <td>{gin.country ?? "–"}</td>
-                    <td className="num">
-                      {gin.bottles_in_cabinet}
-                      {gin.bottles_total > gin.bottles_in_cabinet && (
-                        <span title="Including finished or given-away bottles">
-                          {" "}
-                          / {gin.bottles_total}
-                        </span>
-                      )}
-                    </td>
-                    <td className="num">
-                      {gin.review_rating ? (
-                        <span title={`Average of ${gin.review_count} published review${gin.review_count === 1 ? "" : "s"}`}>
-                          {gin.review_rating}
-                        </span>
-                      ) : (
-                        "–"
-                      )}
-                      {gin.tasting_rating && (
-                        <div className="field-hint" title={`Average of ${gin.tasting_count} tasting${gin.tasting_count === 1 ? "" : "s"}`}>
-                          tastings {gin.tasting_rating}
-                        </div>
-                      )}
-                    </td>
-                    <td>
-                      {gin.public_visible ? (
-                        <span className="badge badge-public">Public</span>
-                      ) : (
-                        <span className="badge badge-private">Private</span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <GinTable gins={data.items} />
           <Pagination meta={data.meta} basePath="/juniper/gins" params={filters} />
         </>
       )}

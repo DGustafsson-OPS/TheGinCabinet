@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy import func, or_, select
 
 from app.api.deps import CurrentAdminWrite, CurrentStaff, DbSession
+from app.errors import ApiError
 from app.models import Botanical, Distillery, GinProduct, GinStyle
 from app.schemas.catalogue import (
     DistilleryIn,
@@ -15,6 +16,8 @@ from app.schemas.catalogue import (
     GinIn,
     GinOut,
     GinPatch,
+    GinVisibility,
+    GinVisibilityResult,
 )
 from app.schemas.common import Page, PageParams
 from app.services import audit
@@ -194,6 +197,29 @@ def create_gin_route(body: GinIn, admin: CurrentAdminWrite, db: DbSession):
     )
     db.commit()
     return gin_out(gin)
+
+
+@router.post("/gins/visibility", response_model=GinVisibilityResult)
+def set_gins_visibility(body: GinVisibility, admin: CurrentAdminWrite, db: DbSession):
+    """Make the ticked gins public (shown on the website) or private, in one go."""
+    ids = set(body.ids)
+    gins = db.scalars(select(GinProduct).where(GinProduct.id.in_(ids))).all()
+    if len(gins) != len(ids):
+        raise ApiError(404, "not_found", "Some of those gins no longer exist. Reload the page.")
+    changed = 0
+    for gin in gins:
+        if gin.public_visible != body.public_visible:
+            gin.public_visible = body.public_visible  # also raises the gin's version
+            changed += 1
+    audit.record(
+        db,
+        action="gin.bulk_visibility",
+        entity_type="gin",
+        actor_id=admin.user.id,
+        summary={"public_visible": body.public_visible, "gins": changed},
+    )
+    db.commit()
+    return GinVisibilityResult(changed=changed)
 
 
 @router.get("/gins/{gin_id}", response_model=GinOut)

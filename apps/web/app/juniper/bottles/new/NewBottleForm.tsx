@@ -71,21 +71,21 @@ export default function NewBottleForm({
           <label htmlFor="quantity">How many bottles</label>
           <input id="quantity" name="quantity" type="number" min={1} max={24} defaultValue={1} required />
         </div>
-        <div className="field">
-          <label htmlFor="status">State</label>
-          <select
-            id="status"
-            value={status}
-            onChange={(event) => setStatus(event.target.value as "sealed" | "open")}
-          >
-            <option value="sealed">Sealed</option>
-            <option value="open">Already open</option>
-          </select>
-        </div>
+        <fieldset className="field" style={{ border: 0, padding: 0, margin: 0 }}>
+          <legend style={{ fontWeight: 600, marginBottom: "var(--space-2)" }}>Sealed or opened?</legend>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "var(--space-2) var(--space-5)" }}>
+            {(["sealed", "open"] as const).map((value) => (
+              <label key={value} style={{ display: "flex", alignItems: "center", gap: "var(--space-2)" }}>
+                <input type="radio" name="status" value={value} checked={status === value} onChange={() => setStatus(value)} />
+                {value === "sealed" ? "Sealed" : "Opened"}
+              </label>
+            ))}
+          </div>
+        </fieldset>
         {status === "open" && (
           <div className="field">
             <label htmlFor="remaining_ml">About how much is left (ml)</label>
-            <input id="remaining_ml" name="remaining_ml" type="number" min={0} />
+            <input id="remaining_ml" name="remaining_ml" type="number" min={0} placeholder="Leave empty if it's still full" />
           </div>
         )}
         <div className="field">

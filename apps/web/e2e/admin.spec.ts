@@ -123,7 +123,7 @@ test("every admin page sends signed-out visitors to the login page", async ({ pa
   // One URL per admin page file (ids don't need to exist: the check comes first).
   const urls = [
     "/juniper", "/juniper/gins", "/juniper/gins/new", "/juniper/gins/x", "/juniper/distilleries",
-    "/juniper/bottles", "/juniper/bottles/new", "/juniper/bottles/x", "/juniper/purchases",
+    "/juniper/bottles", "/juniper/bottles/new", "/juniper/bottles/levels", "/juniper/bottles/x", "/juniper/purchases",
     "/juniper/purchases/new", "/juniper/purchases/x", "/juniper/wishlist", "/juniper/wishlist/x/convert",
     "/juniper/media", "/juniper/media/x", "/juniper/tastings", "/juniper/tastings/new", "/juniper/tastings/x",
     "/juniper/reviews", "/juniper/reviews/new", "/juniper/reviews/x", "/juniper/reviews/x/preview",

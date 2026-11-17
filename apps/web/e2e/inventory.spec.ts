@@ -25,7 +25,7 @@ test("add a gin through the form", async ({ page }) => {
   // It shows up in the searchable list.
   await gotoReady(page, "/juniper/gins");
   await page.getByLabel("Search").fill(name);
-  await expect(page.getByRole("link", { name: `E2E ${name}` })).toBeVisible();
+  await expect(page.getByRole("link", { name: `E2E ${name}`, exact: true })).toBeVisible();
 });
 
 test("two admins editing the same gin get a conflict screen, not a silent overwrite", async ({

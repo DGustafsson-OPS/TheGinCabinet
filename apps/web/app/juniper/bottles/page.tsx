@@ -39,9 +39,14 @@ export default async function BottlesPage({ searchParams }: { searchParams: Sear
     <>
       <div className="page-header">
         <h1>Bottles</h1>
-        <Link className="button button-primary" href="/juniper/bottles/new">
-          Add bottles
-        </Link>
+        <div style={{ display: "flex", gap: "var(--space-2)", flexWrap: "wrap" }}>
+          <Link className="button button-secondary" href="/juniper/bottles/levels">
+            Update levels
+          </Link>
+          <Link className="button button-primary" href="/juniper/bottles/new">
+            Add bottles
+          </Link>
+        </div>
       </div>
 
       <div className="toolbar">
