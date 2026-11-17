@@ -130,7 +130,8 @@ def import_gins(
             "abv": row.get("abv", "").replace(",", ".").rstrip("%").strip(),
             "country": row.get("country") or None,
             "description": row.get("description") or None,
-            "public_visible": _to_bool(row.get("public_visible", "")),
+            # Gins imported with an API key always start private (a person publishes).
+            "public_visible": _to_bool(row.get("public_visible", "")) and admin.api_key is None,
             "botanicals": [b for b in row.get("botanicals", "").split(BOTANICAL_SEPARATOR) if b],
         }
         # Reuse the API's own validation rules: one source of truth.

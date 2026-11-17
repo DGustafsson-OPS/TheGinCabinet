@@ -15,8 +15,9 @@ from sqlalchemy.orm import Session
 from app.config import get_settings
 from app.db import get_db
 from app.errors import ApiError
-from app.models import AuthSession, User, UserRole
+from app.models import ApiKey, AuthSession, User, UserRole
 from app.security.tokens import tokens_match
+from app.services.api_keys import resolve_api_key
 from app.services.sessions import resolve_session
 
 # `Annotated[Session, Depends(get_db)]` means: "this parameter is a Session,
@@ -47,14 +48,36 @@ OptionalSession = Annotated[AuthSession | None, Depends(get_optional_session)]
 
 @dataclass
 class AdminContext:
-    """Everything a protected admin route needs to know about the caller."""
+    """Everything a protected admin route needs to know about the caller.
+
+    A person signed in through the website has a ``session``. A program using
+    an API key has ``api_key`` instead (and no session): it acts as the admin
+    who created the key.
+    """
 
     user: User
-    session: AuthSession
+    session: AuthSession | None
+    api_key: ApiKey | None = None
 
 
-def require_staff(session: OptionalSession, db: DbSession) -> AdminContext:
-    """Allow anyone fully signed in (password **and** MFA): an admin or an editor."""
+def bearer_key(request: Request) -> str | None:
+    """The key from an ``Authorization: Bearer gck_...`` header, if any."""
+    scheme, _, value = request.headers.get("authorization", "").partition(" ")
+    return value.strip() if scheme.lower() == "bearer" and value.strip() else None
+
+
+def require_staff(request: Request, session: OptionalSession, db: DbSession) -> AdminContext:
+    """Allow anyone fully signed in (password **and** MFA): an admin or an editor.
+
+    Or a program with a valid API key, which acts as the key's admin.
+    """
+    if (key := bearer_key(request)) is not None:
+        api_key = resolve_api_key(db, key)
+        if api_key is None or not api_key.user.enabled or api_key.user.role != UserRole.ADMIN:
+            raise ApiError(401, "invalid_api_key", "That API key is wrong, expired or revoked.")
+        # audit.record() reads this, so the log says "via API key: Claude".
+        db.info["via"] = f"API key: {api_key.name}"
+        return AdminContext(user=api_key.user, session=None, api_key=api_key)
     if session is None or not session.mfa_verified:
         raise ApiError(401, "not_authenticated", "Please sign in.")
     user = db.get(User, session.user_id)
@@ -79,7 +102,7 @@ CurrentStaff = Annotated[AdminContext, Depends(require_staff)]
 CurrentAdmin = Annotated[AdminContext, Depends(require_admin)]
 
 
-def check_csrf(request: Request, session: AuthSession) -> None:
+def check_csrf(request: Request, session: AuthSession | None) -> None:
     """Block Cross-Site Request Forgery on state-changing requests (spec §8, §9).
 
     The attack: a malicious site makes *your* logged-in browser send a request
@@ -91,7 +114,9 @@ def check_csrf(request: Request, session: AuthSession) -> None:
        our own frontend knows (it got it from GET /auth/session). Another site
        cannot read it, so it cannot forge the header.
     """
-    if request.method in SAFE_METHODS:
+    if request.method in SAFE_METHODS or session is None:
+        # session is None only for API keys. They come in a header a browser
+        # never adds by itself, so another site can't forge them: no CSRF risk.
         return
     origin = request.headers.get("origin")
     if origin and origin.rstrip("/") not in get_settings().allowed_origin_list:
@@ -116,3 +141,50 @@ def require_staff_write(request: Request, staff: CurrentStaff) -> AdminContext:
 
 
 CurrentStaffWrite = Annotated[AdminContext, Depends(require_staff_write)]
+
+
+# ---------- Things only a person may do ----------
+
+
+def require_person(staff: CurrentStaff) -> AdminContext:
+    """Refuse API keys: for accounts, passwords, 2FA, trusted browsers and keys."""
+    if staff.api_key is not None:
+        raise ApiError(403, "person_only", "This needs a person signed in, not an API key.")
+    return staff
+
+
+def require_person_write(
+    request: Request, staff: Annotated[AdminContext, Depends(require_person)]
+) -> AdminContext:
+    check_csrf(request, staff.session)
+    return staff
+
+
+def require_admin_person(staff: Annotated[AdminContext, Depends(require_person)]) -> AdminContext:
+    return require_admin(staff)
+
+
+def require_admin_person_write(
+    request: Request, admin: Annotated[AdminContext, Depends(require_admin_person)]
+) -> AdminContext:
+    check_csrf(request, admin.session)
+    return admin
+
+
+CurrentPerson = Annotated[AdminContext, Depends(require_person)]
+CurrentPersonWrite = Annotated[AdminContext, Depends(require_person_write)]
+CurrentAdminPerson = Annotated[AdminContext, Depends(require_admin_person)]
+CurrentAdminPersonWrite = Annotated[AdminContext, Depends(require_admin_person_write)]
+
+
+def forbid_key_publishing(who: AdminContext, what: str = "publish or make things public") -> None:
+    """New content from an API key stays a draft: a person publishes it.
+
+    Call this wherever something would become visible to visitors.
+    """
+    if who.api_key is not None:
+        raise ApiError(
+            403,
+            "publish_needs_person",
+            f"An API key can't {what}. It's saved as a draft: publish it in the admin.",
+        )

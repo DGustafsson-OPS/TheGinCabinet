@@ -6,7 +6,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy import func, or_, select
 
-from app.api.deps import CurrentStaff, CurrentStaffWrite, DbSession
+from app.api.deps import CurrentStaff, CurrentStaffWrite, DbSession, forbid_key_publishing
 from app.models import GinProduct, Review, ReviewRevision, ReviewStatus, Tasting, User
 from app.schemas.common import Page, PageParams
 from app.schemas.editorial import (
@@ -158,6 +158,8 @@ def set_review_status(
     review_id: uuid.UUID, body: ReviewStatusChange, admin: CurrentStaffWrite, db: DbSession
 ):
     """Move a review through draft → ready → published → archived."""
+    if body.status == ReviewStatus.PUBLISHED:
+        forbid_key_publishing(admin, "publish a review")
     review = get_or_404(db, Review, review_id, "Review")
     check_version(
         current_version=review.version,

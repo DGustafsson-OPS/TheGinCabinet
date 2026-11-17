@@ -6,7 +6,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy import func, or_, select
 
-from app.api.deps import CurrentAdminWrite, CurrentStaff, DbSession
+from app.api.deps import CurrentAdminWrite, CurrentStaff, DbSession, forbid_key_publishing
 from app.errors import ApiError
 from app.models import Botanical, Distillery, GinProduct, GinStyle
 from app.schemas.catalogue import (
@@ -185,6 +185,8 @@ def list_gins(
 
 @router.post("/gins", response_model=GinOut, status_code=201)
 def create_gin_route(body: GinIn, admin: CurrentAdminWrite, db: DbSession):
+    if body.public_visible:
+        forbid_key_publishing(admin, "add a gin straight to the website")
     gin = create_gin(db, body.model_dump())
     db.flush()
     audit.record(
@@ -202,6 +204,8 @@ def create_gin_route(body: GinIn, admin: CurrentAdminWrite, db: DbSession):
 @router.post("/gins/visibility", response_model=GinVisibilityResult)
 def set_gins_visibility(body: GinVisibility, admin: CurrentAdminWrite, db: DbSession):
     """Make the ticked gins public (shown on the website) or private, in one go."""
+    if body.public_visible:
+        forbid_key_publishing(admin, "make gins public")
     ids = set(body.ids)
     gins = db.scalars(select(GinProduct).where(GinProduct.id.in_(ids))).all()
     if len(gins) != len(ids):
@@ -241,6 +245,8 @@ def update_gin(
         changes=changes,
         current=gin_out_with_counts(db, gin),
     )
+    if changes.get("public_visible") and not gin.public_visible:
+        forbid_key_publishing(admin, "make a gin public")
     fields = sorted(changes)
     apply_gin_changes(db, gin, changes)
     audit.record(

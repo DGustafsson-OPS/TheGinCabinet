@@ -807,3 +807,16 @@ export type PublicGuidePage = PublicGuideCard & {
   previous: PublicGuideCard | null;
   next: PublicGuideCard | null;
 };
+
+/** Settings → API keys (the key itself is only returned once, when created). */
+export type ApiKey = {
+  id: string;
+  name: string;
+  prefix: string;
+  owner: string;
+  created_at: string;
+  expires_at: string;
+  last_used_at: string | null;
+  revoked_at: string | null;
+  active: boolean;
+};

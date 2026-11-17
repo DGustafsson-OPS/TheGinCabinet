@@ -11,7 +11,7 @@ import uuid
 from fastapi import APIRouter
 from sqlalchemy import select
 
-from app.api.deps import CurrentStaff, CurrentStaffWrite, DbSession
+from app.api.deps import CurrentStaff, CurrentStaffWrite, DbSession, forbid_key_publishing
 from app.errors import ApiError
 from app.models import GinProduct, QuickReview, Tonic, User
 from app.schemas.catalogue import GinSummary
@@ -80,9 +80,12 @@ def list_quick_reviews(
 @router.post("", response_model=QuickReviewOut, status_code=201)
 def create_quick_review(body: QuickReviewIn, admin: CurrentStaffWrite, db: DbSession):
     if body.gin_id:
-        get_or_404(db, GinProduct, body.gin_id, "Gin")
+        target = get_or_404(db, GinProduct, body.gin_id, "Gin")
     else:
-        get_or_404(db, Tonic, body.tonic_id, "Tonic")
+        target = get_or_404(db, Tonic, body.tonic_id, "Tonic")
+    # Quick reviews have no draft stage: on a public gin or tonic they show at once.
+    if target.public_visible:
+        forbid_key_publishing(admin, "add a quick review to something already on the website")
     if body.author_id:
         get_or_404(db, User, body.author_id, "Author")
     review = QuickReview(
