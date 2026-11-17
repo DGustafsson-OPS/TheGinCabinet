@@ -34,9 +34,14 @@ export default async function GinsPage({ searchParams }: { searchParams: SearchP
     <>
       <div className="page-header">
         <h1>Gins</h1>
-        <Link className="button button-primary" href="/juniper/gins/new">
-          Add gin
-        </Link>
+        <div className="form-actions" style={{ marginTop: 0 }}>
+          <Link className="button button-secondary" href="/juniper/gins/import">
+            Import CSV
+          </Link>
+          <Link className="button button-primary" href="/juniper/gins/new">
+            Add gin
+          </Link>
+        </div>
       </div>
 
       <div className="toolbar">
