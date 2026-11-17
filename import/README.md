@@ -1,6 +1,15 @@
 # Gin import from the bottle photos (November 2026)
 
 45 gins from 39 producers, identified from 45 photos of the collection.
+44 of them are in the import file (Kyrö Napue is left out, see below).
+
+## How to import (after this branch is deployed)
+
+1. Sign in to the admin area and go to **Gins → Import CSV**.
+2. Choose `import/gins_for_import.csv` and click **Preview import**. Nothing is saved yet.
+3. Read the preview. Check that the *Will be added* list has no gins you already have
+   under a slightly different name.
+4. Click **Import 44 gins**. The number is lower if some were found as duplicates.
 
 | File | What it is |
 | --- | --- |
@@ -29,6 +38,12 @@ python3 import/prepare_gin_import.py
   * Teerenpeli Pyy Gin: **45%** (was 44%)
   * Lubuski Gin Original: **37.5%** (was 40%; 40% is the Lubuski 7 Year Old)
 * **Producer fix:** Arctic Blue is made by *Arctic Blue Beverages* (was "Arctic Brands Group").
+* **Producer names match the site.** The site already has 15 distilleries (added by the
+  migration `20261102_0020_starter_distilleries.py`). Six research names were changed to
+  the site's names, e.g. "Hendrick's / William Grant & Sons (Girvan)" becomes
+  "Hendrick's Gin Distillery", so gins are linked to them instead of creating duplicates.
+* **Kyrö Napue is left out.** It was only seen in the background of two photos, and Napue
+  is the old name of Kyrö Gin, which is already on the site.
 * **Bottle-specific details** (Stockholms Bränneri "Batch 6", Berliner Brandstifter
   "Edition 7/2019 bottle 368/9999") are removed from the gin. Add them to the
   bottle/purchase record instead.
@@ -37,9 +52,11 @@ python3 import/prepare_gin_import.py
 
 ## Tested
 
-The file was run through the app's real importer on a test PostgreSQL database:
-45 gins created, 39 producers created, 0 rejected. Importing the same file a second
-time added nothing (45 duplicates), so gins already in the catalogue are skipped.
+The file was run through the app's real importer and the new import page on a test
+PostgreSQL database with the same migrations as the live site: 44 gins created, 0
+rejected, and the gins were linked to the existing distilleries. On the live site,
+expect about 25 new distilleries. Importing the same file a second time added nothing
+(44 duplicates), so gins already in the catalogue are skipped.
 
 The importer skips a gin only if brand, name **and** edition match exactly (upper/lower
 case is ignored). If you already entered a gin under a slightly different name (e.g.
@@ -54,7 +71,9 @@ a second time. Check the preview list before confirming.
   back label may name the actual distillery.
 * **Imea Gineprina d'Olanda:** sources disagree on the producer (Imea vs. Antica
   Distilleria Quaglia).
-* **Kyrö Napue:** only seen in the background of two photos. Is it in the collection?
+* **Bombay Sapphire London Dry Gin:** a Bombay gin is already on the site. If the preview
+  lists this one under *Will be added*, it is probably under another name: remove the row
+  or rename it to match.
 * **Producer details:** the importer creates each producer with just a name and a country.
   Region, website and notes are in `source/distilleries.csv` and can be added on each
   producer's admin page.

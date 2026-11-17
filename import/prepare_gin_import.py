@@ -108,10 +108,30 @@ NAME_OVERRIDES = {
     "imea-gineprina-dolanda": ("Gineprina d'Olanda", ""),  # "1897 recipe" is a description
 }
 
-# 4. Producer name fixes (keyed by the distillery slug).
+# 4. Producer names (keyed by the distillery slug).
+#    The importer links a gin to an existing distillery only when the names
+#    match exactly (upper/lower case ignored); otherwise it creates a new one.
+#    The site already has 15 distilleries, added by the database migration
+#    apps/api/migrations/versions/20261102_0020_starter_distilleries.py, so
+#    we use THEIR names here to avoid creating duplicates.
 DISTILLERY_NAME_OVERRIDES = {
     # The company behind Arctic Blue Gin is Arctic Blue Beverages Oy.
     "arctic-brands": "Arctic Blue Beverages",
+    # Names as they already are on the site:
+    "anora-arcus": "Gjelleråsen Distillery",
+    "tanqueray-cameronbridge": "Cameronbridge Distillery",
+    "hendricks-girvan": "Hendrick's Gin Distillery",
+    "house-spirits": "Aviation American Gin Distillery",
+    "hope-distillery": "Hope Distillery",
+    "bombay-laverstoke": "Bombay Sapphire Distillery",
+}
+
+
+# 5. Rows left out of the import file.
+SKIP = {
+    # Only seen in the background of two photos, and Napue is the old name of
+    # Kyrö Gin, which is already on the site (see the migration above).
+    "napue",
 }
 
 
@@ -155,6 +175,9 @@ def main() -> None:
     output_rows = []
     for row in read_csv(SOURCE_GINS):
         slug = row["slug"]
+        if slug in SKIP:
+            print(f"Skipped {row['name']} (see SKIP)")
+            continue  # jump straight to the next row
 
         if slug in NAME_OVERRIDES:
             name, edition = NAME_OVERRIDES[slug]
