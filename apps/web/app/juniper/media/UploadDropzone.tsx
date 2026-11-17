@@ -10,7 +10,7 @@ import type { Media } from "@/lib/types";
 
 import styles from "./media.module.css";
 
-const ACCEPTED = ["image/jpeg", "image/png", "image/webp"];
+const ACCEPTED = ["image/jpeg", "image/png", "image/webp", "image/avif"];
 
 /** `folder`: new images are filed there (the folder being viewed). */
 export default function UploadDropzone({ folder }: { folder?: string }) {
@@ -30,7 +30,7 @@ export default function UploadDropzone({ folder }: { folder?: string }) {
     let done = 0;
     for (const file of list) {
       if (!ACCEPTED.includes(file.type)) {
-        toast(`${file.name}: only JPEG, PNG and WebP images are allowed.`, "error");
+        toast(`${file.name}: only JPEG, PNG, WebP and AVIF images are allowed.`, "error");
         continue;
       }
       const form = new FormData();
@@ -78,7 +78,7 @@ export default function UploadDropzone({ folder }: { folder?: string }) {
         </button>
       </p>
       <p className="field-hint">
-        JPEG, PNG or WebP{folder ? `, filed in ${folder}` : ""}. Location data and other hidden details are removed
+        JPEG, PNG, WebP or AVIF{folder ? `, filed in ${folder}` : ""}. Location data and other hidden details are removed
         automatically.
       </p>
       <div className={styles.uploadMarks}>

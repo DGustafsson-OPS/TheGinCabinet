@@ -4,8 +4,8 @@ Every upload goes through the same steps:
 
 1. **Size check**: refuse files above ``GC_MAX_UPLOAD_MB``.
 2. **Decode** with Pillow. We trust what the file *is*, not its name or the
-   type the browser claims. Only JPEG, PNG and WebP are accepted; SVG never
-   (it can contain scripts).
+   type the browser claims. Only JPEG, PNG, WebP and AVIF are accepted; SVG
+   never (it can contain scripts).
 3. **Re-encode** into a brand-new file. This drops all metadata, including
    EXIF GPS coordinates that phones store in photos, and any hidden payload.
 4. **Save under a random name** such as ``3f2a....jpg``: never the uploader's
@@ -27,6 +27,9 @@ ALLOWED_FORMATS = {
     "JPEG": ("image/jpeg", "jpg"),
     "PNG": ("image/png", "png"),
     "WEBP": ("image/webp", "webp"),
+    # AVIF: a newer format that makes much smaller files than JPEG at the same
+    # quality. Pillow reads and writes it itself (pyproject.toml asks for 12+).
+    "AVIF": ("image/avif", "avif"),
 }
 
 # Refuse "decompression bombs": tiny files that unpack into gigantic images.
@@ -68,7 +71,7 @@ def process_image(raw: bytes) -> ProcessedImage:
         raise ApiError(
             422,
             "unsupported_image_type",
-            "Upload a JPEG, PNG or WebP image.",
+            "Upload a JPEG, PNG, WebP or AVIF image.",
             details={"allowed": sorted(mime for mime, _ in ALLOWED_FORMATS.values())},
         )
     mime, extension = ALLOWED_FORMATS[image.format]
@@ -82,6 +85,8 @@ def process_image(raw: bytes) -> ProcessedImage:
 
     if extension == "jpg" and image.mode not in ("RGB", "L"):
         image = image.convert("RGB")  # JPEG can't store transparency
+    if extension == "avif" and image.mode not in ("RGB", "RGBA"):
+        image = image.convert("RGBA" if "A" in image.mode else "RGB")
 
     output = io.BytesIO()
     # Saving without passing `exif=` writes a file with no EXIF data at all.
@@ -89,6 +94,10 @@ def process_image(raw: bytes) -> ProcessedImage:
         image.save(output, format="JPEG", quality=88, optimize=True)
     elif extension == "png":
         image.save(output, format="PNG", optimize=True)
+    elif extension == "avif":
+        # AVIF's quality scale is stricter than JPEG's: 80 already looks like
+        # JPEG's 88, at a fraction of the size.
+        image.save(output, format="AVIF", quality=80)
     else:
         image.save(output, format="WEBP", quality=88)
     return ProcessedImage(output.getvalue(), mime, extension, image.width, image.height)

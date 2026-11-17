@@ -123,3 +123,25 @@ def test_watermark_text_uses_the_site_name(api, client):
     assert r.status_code == 200, r.text
     second = upload(api, watermark="true")
     assert mark_width(pixels(client, second["url"])) > short
+
+
+def test_avif_images_can_be_marked_too(api, client):
+    buffer = io.BytesIO()
+    Image.new("RGB", PNG_SIZE, (120, 120, 120)).save(buffer, format="AVIF", quality=100)
+    r = api.post(MEDIA, files={"file": ("photo.avif", buffer.getvalue(), "image/avif")})
+    assert r.status_code == 201, r.text
+    asset = r.json()
+    r = api.patch(f"{MEDIA}/{asset['id']}", json={"version": asset["version"], "watermark": True})
+    image = r.json()
+    assert image["url"].endswith(".avif") and image["url"] != asset["url"]
+    served = client.get(image["url"])
+    assert served.headers["content-type"] == "image/avif"
+    shown = Image.open(io.BytesIO(served.content))
+    assert shown.format == "AVIF" and shown.size == PNG_SIZE
+    # AVIF is lossy, so compare the corner's brightness rather than exact pixels:
+    # the white mark makes the bottom-right corner clearly lighter than the top.
+    grey = shown.convert("L")
+    w, h = grey.size
+    corner = grey.crop((w - 250, h - 60, w, h)).getextrema()[1]
+    top = grey.crop((0, 0, w, h // 2)).getextrema()[1]
+    assert corner > top + 60

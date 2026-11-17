@@ -30,6 +30,16 @@ export const DEFAULT_SHARE_IMAGES = [
   },
 ];
 
+/**
+ * The share picture for a page with a photo of its own: that photo, or the
+ * default picture when there is none. AVIF photos also get the default:
+ * Facebook, LinkedIn and others don't show AVIF in link previews yet.
+ */
+export function shareImages(photo: { url: string; alt?: string | null } | null | undefined) {
+  if (!photo || photo.url.toLowerCase().endsWith(".avif")) return DEFAULT_SHARE_IMAGES;
+  return [{ url: `${SITE_URL}${photo.url}`, alt: photo.alt ?? "" }];
+}
+
 export async function publicGet<T>(path: string): Promise<T | null> {
   const response = await fetch(`${API_URL}/api/v1/public${path}`, {
     headers: { accept: "application/json" },

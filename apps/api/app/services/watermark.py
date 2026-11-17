@@ -19,8 +19,8 @@ from PIL import Image, ImageDraw, ImageFont
 
 AI_LABEL = "AI-generated"
 
-# Pillow's names for our three formats, by file extension.
-_FORMATS = {"jpg": "JPEG", "png": "PNG", "webp": "WEBP"}
+# Pillow's names for our formats, by file extension.
+_FORMATS = {"jpg": "JPEG", "png": "PNG", "webp": "WEBP", "avif": "AVIF"}
 
 
 def site_mark(site_name: str) -> str:
@@ -63,6 +63,9 @@ def draw_marks(data: bytes, extension: str, *, mark: str | None, ai: bool) -> by
         (marked if image.mode in ("RGBA", "LA", "P") else marked.convert("RGB")).save(
             output, format="PNG", optimize=True
         )
+    elif extension == "avif":
+        keep_alpha = image.mode in ("RGBA", "LA", "P")
+        (marked if keep_alpha else marked.convert("RGB")).save(output, format="AVIF", quality=80)
     else:
         marked.save(output, format=_FORMATS["webp"], quality=88)
     return output.getvalue()

@@ -13,7 +13,7 @@ import { errorMessage, useAdmin } from "@/components/admin/AdminProvider";
 import { type MediaOption, mediaLabel } from "@/lib/media-options";
 import type { Media } from "@/lib/types";
 
-const ACCEPTED = ["image/jpeg", "image/png", "image/webp"];
+const ACCEPTED = ["image/jpeg", "image/png", "image/webp", "image/avif"];
 
 type Props = {
   /** Called with the new photo, ready to use as an option in the form's picker. */
@@ -35,7 +35,7 @@ export default function PhotoUpload({ onUploaded, label = "Upload a new photo" }
     const file = fileInput.current?.files?.[0];
     setError(null);
     if (!file) return setError("Choose a photo first.");
-    if (!ACCEPTED.includes(file.type)) return setError("Only JPEG, PNG and WebP photos are allowed.");
+    if (!ACCEPTED.includes(file.type)) return setError("Only JPEG, PNG, WebP and AVIF photos are allowed.");
     if (!alt.trim()) return setError("Describe the photo in a few words.");
     const form = new FormData();
     form.append("file", file);
@@ -69,7 +69,7 @@ export default function PhotoUpload({ onUploaded, label = "Upload a new photo" }
       <div className="field">
         <label htmlFor={`${id}-file`}>Photo file</label>
         <input id={`${id}-file`} ref={fileInput} type="file" accept={ACCEPTED.join(",")} />
-        <span className="field-hint">JPEG, PNG or WebP. Location data and other hidden details are removed.</span>
+        <span className="field-hint">JPEG, PNG, WebP or AVIF. Location data and other hidden details are removed.</span>
       </div>
       <div className="field">
         <label htmlFor={`${id}-alt`}>Describe the photo</label>
