@@ -30,7 +30,7 @@ Progress against the delivery phases in
 | Wishlist + convert to purchase (A08) | ✅ | Notes kept, linked to the purchase |
 | Dashboard numbers (A01) | ✅ | Value per currency; unknown cost shown separately |
 | Optimistic locking: 409 + diff, `?force=true` (§6) | ✅ | Plus database-level `WHERE version = ?` check |
-| CSV import with preview / dedupe / reasons (§6, §11) | ✅ | Gins; `,` or `;` separated; `|` between botanicals |
+| CSV import with preview / dedupe / reasons (§6, §11) | ✅ | Gins; `,` or `;` separated; `|` between botanicals; admin page Gins → Import CSV |
 | Export (§6) | ✅ | Full JSON export + gins CSV (formula-injection safe) |
 | Admin UI screens for inventory | ✅ | Gins (with 409 conflict screen), distilleries, bottles (actions + history), purchases, wishlist |
 | Editing distilleries and purchase headers in the UI | ⬜ | The API supports it; screens to follow |

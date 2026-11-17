@@ -189,6 +189,18 @@ export type WishlistItem = {
   updated_at: string;
 };
 
+/** The report from POST /admin/import/gins (see apps/api/app/api/routes/admin_data.py). */
+export type ImportRow = { row: number; name: string };
+export type ImportIssue = ImportRow & { reasons: string[] };
+export type ImportResult = {
+  dry_run: boolean;
+  total_rows: number;
+  created: ImportRow[];
+  duplicates: ImportIssue[];
+  rejected: ImportIssue[];
+  new_distilleries: string[];
+};
+
 /** The body of a 409 version_conflict error (see apps/api/app/services/versioning.py). */
 export type ConflictDetails<T> = {
   current: T;
