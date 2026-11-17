@@ -66,17 +66,28 @@ a second time. Check the preview list before confirming.
 ## Still to check on the bottles
 
 * **Junimperium Cherry Edition:** confirm 40% on the label.
-* **Kada Kirsi Gin:** producer not found online; check the back label.
-* **Vinogin Vienna Dry Gin:** Vinogin is a gin bar in Vienna (Fleischmarkt 28); the
-  back label may name the actual distillery.
-* **Imea Gineprina d'Olanda:** sources disagree on the producer (Imea vs. Antica
-  Distilleria Quaglia).
+* **Kada Kirsi Gin:** producer not confirmed (probably Koch OÜ, Näpi); check the back label.
+* **Vinogin Vienna Dry Gin:** Vinogin is a gin bar in Vienna; the gin is probably made by
+  Weinhaus Schumich (Oslip). The back label may confirm it.
+* **Wolf & Oak:** the only Wolf & Oak gin found online is Wilczy Gin (47%, 70cl), not a
+  40% 50cl bottle; check which gin this is.
+* **Oath Gin:** only retailers name Nordic Premium Beverages as the distiller.
+* **Websites:** Plymouth Gin and KWV block automated checks, and sashundfritz.de failed
+  its secure connection; click these three to confirm.
 * **Bombay Sapphire London Dry Gin:** a Bombay gin is already on the site. If the preview
   lists this one under *Will be added*, it is probably under another name: remove the row
   or rename it to match.
-* **Producer details:** the importer creates each producer with just a name and a country.
-  Region, website and notes are in `source/distilleries.csv` and can be added on each
-  producer's admin page.
+
+## Producer details
+
+The importer can only give a new producer a name and a country. The full profiles
+(country, region, website, description) of the 25 new producers come with the database
+migration `apps/api/migrations/versions/20261117_0024_photo_survey_distilleries.py`,
+which runs automatically on deploy. It works in either order: if the gins were imported
+first, it renames those bare producers to the clean names and fills in the empty fields,
+keeping anything typed in the admin area. The research behind it changed some producers:
+Lubuski is now made by Henkell Freixenet Polska (Toruń), Imea by Antica Distilleria
+Quaglia, Plymouth at the Black Friars Distillery and Opihr by G&J Distillers.
 
 Three bottles were left out because their labels are only partly visible:
 a Bombay "...can Juniper" 47% (IMG_5917), an Italian "M... Premium Blended Dry"
