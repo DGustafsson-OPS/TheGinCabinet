@@ -3,6 +3,9 @@
 import csv
 import io
 
+from sqlalchemy import func, select
+
+from app.models import Distillery
 from tests.test_catalogue import make_gin
 
 IMPORT = "/api/v1/admin/import/gins"
@@ -96,3 +99,41 @@ def test_full_export(api):
     assert len(data["bottles"]) == 1
     assert data["bottles"][0]["events"][0]["to_status"] == "sealed"
     assert "password_hash" not in r.text
+
+
+# Names with letters outside A-Z (Å, Ö, É...). SQLite's built-in lower() only
+# lower-cases A-Z, so without the fix in app/db.py these comparisons failed on
+# SQLite while working on PostgreSQL.
+NON_ASCII_CSV = """brand,name,edition,style,abv,country,distillery
+Åland Distillery,Archipelago Gin,,london_dry,42,Finland,Åland Distillery
+"""
+
+
+def count_distilleries(db) -> int:
+    return db.scalar(select(func.count()).select_from(Distillery))
+
+
+def test_import_twice_with_non_ascii_brand_finds_duplicate(api, db):
+    first = upload(api, NON_ASCII_CSV, dry_run=False)
+    assert first.status_code == 200, first.text
+    assert len(first.json()["created"]) == 1
+
+    # Importing the same file again must report a duplicate, not crash with a
+    # unique-constraint error (500).
+    second = upload(api, NON_ASCII_CSV, dry_run=False)
+    assert second.status_code == 200, second.text
+    assert len(second.json()["created"]) == 0
+    assert len(second.json()["duplicates"]) == 1
+    assert count_distilleries(db) == 1
+
+
+def test_import_reuses_non_ascii_distillery_ignoring_case(api, db):
+    text = """brand,name,edition,style,abv,country,distillery
+Åland Distillery,Archipelago Gin,,london_dry,42,Finland,Åland Distillery
+Åland Distillery,Navy Strength,,london_dry,57,Finland,ÅLAND DISTILLERY
+"""
+    r = upload(api, text, dry_run=False)
+    assert r.status_code == 200, r.text
+    assert len(r.json()["created"]) == 2
+    assert r.json()["new_distilleries"] == ["Åland Distillery"]  # only one created
+    assert count_distilleries(db) == 1
