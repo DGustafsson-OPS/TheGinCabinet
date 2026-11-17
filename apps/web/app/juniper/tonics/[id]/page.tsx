@@ -32,11 +32,16 @@ export default async function TonicPage({ params }: { params: Params }) {
       </Link>
       <div className="page-header">
         <h1>{tonic.display_name}</h1>
-        {tonic.public_visible && (
-          <Link className="button button-secondary" href={`/tonics/${tonic.slug}`}>
-            View on the site
+        <div style={{ display: "flex", gap: "var(--space-2)", flexWrap: "wrap" }}>
+          <Link className="button button-secondary" href={`/juniper/quick-reviews?tonic=${tonic.id}`}>
+            Quick review
           </Link>
-        )}
+          {tonic.public_visible && (
+            <Link className="button button-secondary" href={`/tonics/${tonic.slug}`}>
+              View on the site
+            </Link>
+          )}
+        </div>
       </div>
       {/* `key`: after each save the page reloads and the form starts fresh. */}
       <TonicForm

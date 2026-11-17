@@ -55,6 +55,28 @@ def test_upload_strips_gps_and_renames(api):
     assert len(stored.getexif()) == 0  # no EXIF at all: GPS and camera details are gone
 
 
+def test_avif_uploads_stay_avif_without_location(api):
+    """AVIF (a newer, smaller format) is accepted, kept as AVIF, and cleaned."""
+    image = Image.new("RGB", (64, 48), (199, 164, 107))
+    exif = Image.Exif()
+    exif[GPS_TAG] = {1: "N", 2: (59.0, 19.0, 0.0), 3: "E", 4: (18.0, 4.0, 0.0)}
+    buffer = io.BytesIO()
+    image.save(buffer, format="AVIF", exif=exif)
+    assert GPS_TAG in Image.open(io.BytesIO(buffer.getvalue())).getexif()  # really has GPS
+
+    r = api.post(MEDIA, files={"file": ("photo.avif", buffer.getvalue(), "image/avif")})
+    assert r.status_code == 201, r.text
+    asset = r.json()
+    assert asset["mime"] == "image/avif" and asset["url"].endswith(".avif")
+    assert (asset["width"], asset["height"]) == (64, 48)
+
+    served = api.get(asset["url"])
+    assert served.headers["content-type"] == "image/avif"
+    stored = Image.open(io.BytesIO(served.content))
+    assert stored.format == "AVIF"
+    assert len(stored.getexif()) == 0  # GPS gone
+
+
 @pytest.mark.parametrize(
     ("data", "name", "code"),
     [

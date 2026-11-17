@@ -12,6 +12,7 @@ from app.schemas.catalogue import GinSummary, ShortText, Slug, _clean_botanicals
 from app.schemas.cocktails import PublicCocktailCard, PublicGinPairing
 from app.schemas.common import Fixed1, MediaSummary
 from app.schemas.editorial import Person, PublicReviewCard
+from app.schemas.quick_reviews import PublicQuickReview
 
 Rating = Annotated[Decimal, Field(ge=0, le=10, max_digits=3, decimal_places=1)]
 
@@ -127,8 +128,11 @@ class PublicTonicCard(BaseModel):
     style: str
     country: str | None
     image: MediaSummary | None
-    rating: Fixed1 | None  # average of published reviews
+    # Out of 10: published reviews and quick reviews (bottles × 2) together.
+    # The website shows it as tonic bottles out of five.
+    rating: Fixed1 | None
     review_count: int
+    quick_review_count: int = 0
 
 
 class PublicTonicReview(BaseModel):
@@ -145,6 +149,7 @@ class PublicTonic(PublicTonicCard):
     reviews: list[PublicTonicReview]
     # Published gin reviews that name this tonic as the perfect serve.
     gin_reviews: list[PublicReviewCard] = []
+    quick_reviews: list[PublicQuickReview] = []  # tonic bottles, 1.0–5.0
     # Gins it suits (public ones only) and published cocktails that use it.
     gins: list[PublicGinPairing] = []
     cocktails: list[PublicCocktailCard] = []

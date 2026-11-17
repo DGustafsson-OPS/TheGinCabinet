@@ -6,6 +6,8 @@
 * ``RecipeStep``: one ordered preparation step.
 * ``CocktailGinRecommendation``: "best with this gin, because ...".
 * ``CocktailTonicRecommendation``: "use this tonic", with an optional note.
+* ``CocktailVariation``: two recipes that are variations of each other
+  (Negroni ↔ Boulevardier). One row per pair, shown on both recipes.
 """
 
 import uuid
@@ -221,3 +223,25 @@ class CocktailTonicRecommendation(Base):
 
     recipe: Mapped[CocktailRecipe] = relationship(back_populates="tonic_recommendations")
     tonic: Mapped[Tonic] = relationship(lazy="joined")
+
+
+class CocktailVariation(Base):
+    """A link between two recipes that are variations of each other.
+
+    The pair is stored once, with the smaller id first, so linking from either
+    recipe gives the same row and the same pair can't be stored twice.
+    """
+
+    __tablename__ = "cocktail_variations"
+    __table_args__ = (
+        UniqueConstraint("recipe_a_id", "recipe_b_id", name="uq_cocktail_variation_pair"),
+        CheckConstraint("recipe_a_id <> recipe_b_id", name="not_itself"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(UUIDType, primary_key=True, default=new_uuid)
+    recipe_a_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("cocktail_recipes.id", ondelete="CASCADE"), index=True
+    )
+    recipe_b_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("cocktail_recipes.id", ondelete="CASCADE"), index=True
+    )

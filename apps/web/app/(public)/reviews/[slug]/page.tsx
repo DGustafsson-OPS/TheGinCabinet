@@ -5,7 +5,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import ReviewArticle from "@/components/ReviewArticle";
-import { DEFAULT_SHARE_IMAGES, SITE_URL, publicGet } from "@/lib/public-api";
+import { SITE_URL, publicGet, shareImages } from "@/lib/public-api";
 import type { PublicReview } from "@/lib/types";
 
 type Params = Promise<{ slug: string }>;
@@ -19,7 +19,6 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   const review = await loadReview((await params).slug);
   if (!review) return { title: "Review not found" };
   const description = review.seo_description ?? review.teaser;
-  const image = review.cover ? `${SITE_URL}${review.cover.url}` : undefined;
   return {
     title: review.seo_title ?? review.title,
     description,
@@ -32,7 +31,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
       publishedTime: review.published_at,
       modifiedTime: review.updated_at,
       authors: [review.author_name],
-      images: image ? [{ url: image, alt: review.cover?.alt ?? "" }] : DEFAULT_SHARE_IMAGES,
+      images: shareImages(review.cover),
     },
   };
 }

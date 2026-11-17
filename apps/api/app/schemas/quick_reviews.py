@@ -1,13 +1,15 @@
-"""JSON shapes for quick reviews: 1–5 juniper berries and a line or two."""
+"""JSON shapes for quick reviews: a gin (juniper berries) or a tonic (tonic
+bottles) rated 1–5, and a line or two."""
 
 import uuid
 from datetime import datetime
 from decimal import Decimal
 from typing import Annotated
 
-from pydantic import AfterValidator, BaseModel, Field
+from pydantic import AfterValidator, BaseModel, Field, model_validator
 
 from app.schemas.catalogue import GinSummary
+from app.schemas.cocktails import TonicSummary
 from app.schemas.common import Fixed1
 from app.schemas.editorial import Person
 
@@ -24,10 +26,18 @@ Note = Annotated[str | None, Field(default=None, max_length=280)]
 
 
 class QuickReviewIn(BaseModel):
-    gin_id: uuid.UUID
+    # Exactly one: the gin or the tonic being rated.
+    gin_id: uuid.UUID | None = None
+    tonic_id: uuid.UUID | None = None
     rating: Berries
     note: Note = None
     author_id: uuid.UUID | None = None  # defaults to the person saving it
+
+    @model_validator(mode="after")
+    def _gin_or_tonic(self):
+        if (self.gin_id is None) == (self.tonic_id is None):
+            raise ValueError("rate either a gin or a tonic")
+        return self
 
 
 class QuickReviewPatch(BaseModel):
@@ -39,8 +49,9 @@ class QuickReviewPatch(BaseModel):
 
 class QuickReviewOut(BaseModel):
     id: uuid.UUID
-    gin: GinSummary
-    gin_public: bool
+    gin: GinSummary | None  # one of these two
+    tonic: TonicSummary | None
+    public: bool  # is the gin or tonic shown on the website?
     author: Person
     rating: Fixed1  # berries, 1.0–5.0
     note: str | None

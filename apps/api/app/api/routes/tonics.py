@@ -22,6 +22,7 @@ from app.models import (
     CocktailTonicRecommendation,
     GinProduct,
     GinTonicPairing,
+    QuickReview,
     Review,
     Tonic,
     TonicReview,
@@ -34,6 +35,7 @@ from app.schemas.catalogue import GinSummary
 from app.schemas.cocktails import PublicGinPairing
 from app.schemas.common import Page, PageParams
 from app.schemas.editorial import Person
+from app.schemas.quick_reviews import PublicQuickReview
 from app.schemas.tonics import (
     GinLinkOut,
     PublicTonic,
@@ -154,8 +156,10 @@ def _published(tonic: Tonic) -> list[TonicReview]:
     return [r for r in tonic.reviews if r.status == TonicReviewStatus.PUBLISHED]
 
 
-def _average(reviews: list[TonicReview]) -> Decimal | None:
+def _average(reviews: list[TonicReview], quick: list | None = None) -> Decimal | None:
+    """Out of 10: full reviews as they are, quick reviews as twice their bottles."""
     ratings = [r.rating for r in reviews if r.rating is not None]
+    ratings += [q.rating * 2 for q in quick or []]
     if not ratings:
         return None
     return (sum(ratings) / len(ratings)).quantize(Decimal("0.1"), rounding=ROUND_HALF_UP)
@@ -283,8 +287,9 @@ def delete_tonic(tonic_id: uuid.UUID, admin: CurrentStaffWrite, db: DbSession):
     # link goes. (PostgreSQL would do this by itself via ON DELETE SET NULL;
     # doing it here makes every database behave the same.)
     db.execute(update(Review).where(Review.tonic_id == tonic.id).values(tonic_id=None))
-    # Cocktails that used it just lose the link. (Its gin links go with the
-    # tonic itself.)
+    # Cocktails that used it just lose the link, and its quick reviews go.
+    # (Its gin links go with the tonic itself.)
+    db.execute(delete(QuickReview).where(QuickReview.tonic_id == tonic.id))
     db.execute(
         delete(CocktailTonicRecommendation).where(CocktailTonicRecommendation.tonic_id == tonic.id)
     )
@@ -403,8 +408,9 @@ def public_card(tonic: Tonic) -> PublicTonicCard:
         style=tonic.style,
         country=tonic.country,
         image=media_summary(tonic.image),
-        rating=_average(published),
+        rating=_average(published, tonic.quick_reviews),
         review_count=len(published),
+        quick_review_count=len(tonic.quick_reviews),
     )
 
 
@@ -466,6 +472,15 @@ def get_public_tonic(slug: str, db: DbSession):
                 .order_by(Review.published_at.desc())
                 .limit(12)
             ).unique()
+        ],
+        quick_reviews=[
+            PublicQuickReview(
+                author_name=q.author.display_name,
+                rating=q.rating,
+                note=q.note,
+                created_at=q.created_at,
+            )
+            for q in tonic.quick_reviews
         ],
         gins=[
             PublicGinPairing(

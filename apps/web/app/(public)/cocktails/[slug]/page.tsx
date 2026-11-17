@@ -9,7 +9,7 @@ import { notFound } from "next/navigation";
 
 import MediaImage from "@/components/MediaImage";
 import { formatAmount, formatStrength, humanize, param } from "@/lib/format";
-import { DEFAULT_SHARE_IMAGES, SITE_URL, getSite, publicGet } from "@/lib/public-api";
+import { SITE_URL, getSite, publicGet, shareImages } from "@/lib/public-api";
 import type { PublicCocktail } from "@/lib/types";
 
 import styles from "../cocktails.module.css";
@@ -39,7 +39,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
       title: recipe.title,
       description,
       url: `${SITE_URL}/cocktails/${recipe.slug}`,
-      images: recipe.cover ? [{ url: `${SITE_URL}${recipe.cover.url}`, alt: recipe.cover.alt ?? "" }] : DEFAULT_SHARE_IMAGES,
+      images: shareImages(recipe.cover),
     },
   };
 }
@@ -235,6 +235,28 @@ export default async function CocktailPage({ params, searchParams }: { params: P
           )}
         </section>
       </div>
+      {/* Only when a linked variation is published (see the editor's Variations tab). */}
+      {recipe.variations.length > 0 && (
+        <section aria-labelledby="variations-title">
+          <h2 id="variations-title" className={styles.sectionTitle}>
+            Variations
+          </h2>
+          <ul className={styles.pairings}>
+            {recipe.variations.map((v) => (
+              <li key={v.slug} className="card">
+                <strong>
+                  <Link href={`/cocktails/${v.slug}`}>{v.title}</Link>
+                </strong>
+                <div className="field-hint">
+                  {humanize(v.method)}
+                  {v.prep_minutes != null && ` · ${v.prep_minutes} min`}
+                </div>
+                {v.teaser && <p style={{ margin: "var(--space-2) 0 0" }}>{v.teaser}</p>}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
       <p>
         <Link href="/cocktails">← All cocktails</Link>
       </p>

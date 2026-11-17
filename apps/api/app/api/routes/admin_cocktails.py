@@ -34,7 +34,7 @@ from app.services.versioning import check_version
 router = APIRouter(prefix="/admin", tags=["admin: cocktails"])
 
 Force = Annotated[bool, Query(description="Overwrite even if the record changed meanwhile")]
-LIST_FIELDS = ("ingredients", "steps", "gins", "tonics")
+LIST_FIELDS = ("ingredients", "steps", "gins", "tonics", "variations")
 
 # draft ⇄ published, and anything can be archived and restored to draft.
 TRANSITIONS = {

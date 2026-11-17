@@ -4,14 +4,16 @@ import uuid
 from decimal import ROUND_HALF_UP, Decimal
 from typing import Any
 
-from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy import delete, or_, select
+from sqlalchemy.orm import Session, object_session
 
 from app.errors import ApiError
 from app.models import (
     CocktailGinRecommendation,
     CocktailRecipe,
+    CocktailStatus,
     CocktailTonicRecommendation,
+    CocktailVariation,
     GinProduct,
     Ingredient,
     RecipeIngredient,
@@ -29,6 +31,7 @@ from app.schemas.cocktails import (
     PublicTonicLink,
     TonicLinkOut,
     TonicSummary,
+    VariationOut,
 )
 from app.schemas.editorial import Person
 from app.services.editorial import media_summary, teaser
@@ -95,6 +98,56 @@ def replace_lists(db: Session, recipe: CocktailRecipe, data: dict[str, Any]) -> 
         recipe.gin_recommendations = rows
     if data.get("tonics") is not None:
         recipe.tonic_recommendations = tonic_rows(db, recipe, data["tonics"])
+    if data.get("variations") is not None:
+        set_variations(db, recipe, data["variations"])
+
+
+def set_variations(db: Session, recipe: CocktailRecipe, other_ids: list[uuid.UUID]) -> None:
+    """Replace the recipe's variations. Each pair is one row, smaller id first,
+    so the link shows on both recipes whichever side it was made from."""
+    if len(set(other_ids)) != len(other_ids):
+        raise ApiError(422, "duplicate_variation", "Each cocktail can be linked only once.")
+    if recipe.id is None:
+        db.flush()  # a new recipe needs its id before it can be linked
+    if recipe.id in other_ids:
+        raise ApiError(422, "variation_of_itself", "A recipe can't be a variation of itself.")
+    for other_id in other_ids:
+        if db.get(CocktailRecipe, other_id) is None:
+            raise ApiError(404, "not_found", "A linked cocktail doesn't exist.")
+    db.execute(
+        delete(CocktailVariation).where(
+            or_(
+                CocktailVariation.recipe_a_id == recipe.id,
+                CocktailVariation.recipe_b_id == recipe.id,
+            )
+        ),
+        execution_options={"synchronize_session": "fetch"},
+    )
+    for other_id in other_ids:
+        a, b = sorted([recipe.id, other_id])
+        db.add(CocktailVariation(recipe_a_id=a, recipe_b_id=b))
+
+
+def variations_of(recipe: CocktailRecipe, published_only: bool = False) -> list[CocktailRecipe]:
+    """The recipes linked to this one as variations, A–Z."""
+    db = object_session(recipe)
+    if db is None or recipe.id is None:
+        return []
+    links = db.execute(
+        select(CocktailVariation.recipe_a_id, CocktailVariation.recipe_b_id).where(
+            or_(
+                CocktailVariation.recipe_a_id == recipe.id,
+                CocktailVariation.recipe_b_id == recipe.id,
+            )
+        )
+    ).all()
+    other_ids = [b if a == recipe.id else a for a, b in links]
+    if not other_ids:
+        return []
+    query = select(CocktailRecipe).where(CocktailRecipe.id.in_(other_ids))
+    if published_only:
+        query = query.where(CocktailRecipe.status == CocktailStatus.PUBLISHED)
+    return list(db.scalars(query.order_by(CocktailRecipe.title)).unique())
 
 
 def tonic_rows(
@@ -211,6 +264,7 @@ def cocktail_out(recipe: CocktailRecipe) -> CocktailOut:
             )
             for rec in recipe.tonic_recommendations
         ],
+        variations=[VariationOut.model_validate(r) for r in variations_of(recipe)],
         published_at=recipe.published_at,
         version=recipe.version,
         created_at=recipe.created_at,
@@ -268,6 +322,7 @@ def public_cocktail(recipe: CocktailRecipe, servings: int | None) -> PublicCockt
             for rec in recipe.tonic_recommendations
             if rec.tonic.public_visible
         ],
+        variations=[public_card(r) for r in variations_of(recipe, published_only=True)],
         seo_title=recipe.seo_title,
         seo_description=recipe.seo_description,
         published_at=recipe.published_at,

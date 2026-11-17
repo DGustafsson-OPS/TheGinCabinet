@@ -57,7 +57,7 @@ def _get_live(db: DbSession, media_id: uuid.UUID) -> MediaAsset:
 def upload(
     admin: CurrentStaffWrite,
     db: DbSession,
-    file: Annotated[UploadFile, File(description="JPEG, PNG or WebP")],
+    file: Annotated[UploadFile, File(description="JPEG, PNG, WebP or AVIF")],
     alt: Annotated[str | None, Form(max_length=500)] = None,
     credit: Annotated[str | None, Form(max_length=200)] = None,
     name: Annotated[str | None, Form(max_length=160)] = None,

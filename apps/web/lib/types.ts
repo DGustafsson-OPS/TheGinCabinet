@@ -402,6 +402,7 @@ export type Cocktail = {
   steps: string[];
   gins: Pairing[];
   tonics: TonicLink[];
+  variations: { id: string; slug: string; title: string; status: CocktailStatus }[];
   published_at: string | null;
   version: number;
   created_at: string;
@@ -431,6 +432,7 @@ export type PublicCocktail = PublicCocktailCard & {
   steps: string[];
   recommended_gins: PublicGinLink[];
   recommended_tonics: PublicTonicLink[];
+  variations: PublicCocktailCard[]; // published ones only
   seo_title: string | null;
   seo_description: string | null;
   published_at: string;
@@ -461,8 +463,9 @@ export type PublicQuickReview = { author_name: string; rating: string; note: str
 /** A quick review in the admin area. */
 export type QuickReview = {
   id: string;
-  gin: GinSummary;
-  gin_public: boolean;
+  gin: GinSummary | null; // a quick review is of a gin or of a tonic
+  tonic: { id: string; slug: string; display_name: string } | null;
+  public: boolean; // is the gin or tonic shown on the website?
   author: { id: string; display_name: string };
   rating: string; // berries, 1.0–5.0
   note: string | null;
@@ -743,6 +746,7 @@ export type PublicTonicCard = {
   image: MediaSummary | null;
   rating: string | null;
   review_count: number;
+  quick_review_count: number;
 };
 
 export type PublicTonic = PublicTonicCard & {
@@ -751,6 +755,7 @@ export type PublicTonic = PublicTonicCard & {
   reviews: { author_name: string; rating: string | null; notes: string | null; pairs_with: string | null; published_at: string | null }[];
   /** Published gin reviews that name this tonic as the perfect serve. */
   gin_reviews: PublicReviewCard[];
+  quick_reviews: PublicQuickReview[]; // tonic bottles, 1.0–5.0
   gins: PublicGinLink[]; // gins it suits
   cocktails: PublicCocktailCard[]; // published cocktails that use it
   updated_at: string;
