@@ -12,12 +12,16 @@
 
 import uuid
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from sqlalchemy import Boolean, ForeignKey, Index, String
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db import Base
 from app.models._types import UTCDateTime, UUIDType, new_uuid, utcnow
+
+if TYPE_CHECKING:
+    from app.models.user import User
 
 
 class AuthSession(Base):
@@ -77,3 +81,30 @@ class TrustedDevice(Base):
     expires_at: Mapped[datetime] = mapped_column(UTCDateTime)
     # Shown in Settings so you can tell your browsers apart ("Firefox on Mac").
     user_agent: Mapped[str | None] = mapped_column(String(255), nullable=True)
+
+
+class ApiKey(Base):
+    """A key that lets a program (such as an AI assistant) use the admin API.
+
+    It acts as the admin who created it, except for accounts, passwords, 2FA
+    and API keys, which always need a person signed in. New content it makes
+    stays a draft until a person publishes it. Only a SHA-256 fingerprint of
+    the key is stored, like trusted browsers: the key itself is shown once.
+    """
+
+    __tablename__ = "api_keys"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUIDType, primary_key=True, default=new_uuid)
+    name: Mapped[str] = mapped_column(String(80))  # "Claude", shown in the audit log
+    key_hash: Mapped[str] = mapped_column(String(64), unique=True)
+    # The first characters ("gck_AbC1…"), so the list can show which key is which.
+    prefix: Mapped[str] = mapped_column(String(16))
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), index=True
+    )
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)
+    expires_at: Mapped[datetime] = mapped_column(UTCDateTime)
+    last_used_at: Mapped[datetime | None] = mapped_column(UTCDateTime, nullable=True)
+    revoked_at: Mapped[datetime | None] = mapped_column(UTCDateTime, nullable=True)
+
+    user: Mapped["User"] = relationship(lazy="joined")

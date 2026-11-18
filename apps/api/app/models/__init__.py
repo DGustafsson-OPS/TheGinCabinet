@@ -5,7 +5,7 @@ Alembic sees every table when it compares models to the database.
 """
 
 from app.models.audit import AuditEvent
-from app.models.auth import AuthSession, LoginAttempt, RecoveryCode, TrustedDevice
+from app.models.auth import ApiKey, AuthSession, LoginAttempt, RecoveryCode, TrustedDevice
 from app.models.blog import (
     POST_CONTENT_FIELDS,
     POST_TRANSITIONS,
@@ -113,6 +113,7 @@ __all__ = [
     "GinStyle",
     "LoginAttempt",
     "TrustedDevice",
+    "ApiKey",
     "PageText",
     "Purchase",
     "PurchaseLine",

@@ -32,7 +32,8 @@ def record(
         entity_type=entity_type,
         entity_id=str(entity_id) if entity_id is not None else None,
         actor_id=actor_id,
-        summary=summary or {},
+        # "via": set when an API key made the change (see deps.require_staff).
+        summary={**(summary or {}), **({"via": db.info["via"]} if db.info.get("via") else {})},
         ip_address=ip_address,
     )
     db.add(event)

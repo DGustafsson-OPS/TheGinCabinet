@@ -6,7 +6,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy import func, select
 
-from app.api.deps import CurrentStaff, CurrentStaffWrite, DbSession
+from app.api.deps import CurrentStaff, CurrentStaffWrite, DbSession, forbid_key_publishing
 from app.errors import ApiError
 from app.models import CocktailRecipe, CocktailStatus, Ingredient
 from app.models._types import utcnow
@@ -170,6 +170,7 @@ def set_cocktail_status(
                 details={"allowed": sorted(TRANSITIONS[old])},
             )
         if body.status == CocktailStatus.PUBLISHED:
+            forbid_key_publishing(admin, "publish a recipe")
             check_can_publish(recipe)
             recipe.published_at = recipe.published_at or utcnow()
         recipe.status = body.status

@@ -6,7 +6,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy import func, or_, select
 
-from app.api.deps import CurrentStaff, CurrentStaffWrite, DbSession
+from app.api.deps import CurrentStaff, CurrentStaffWrite, DbSession, forbid_key_publishing
 from app.errors import ApiError
 from app.models import BlogCategory, BlogPost, BlogPostRevision, PostStatus, User
 from app.schemas.blog import (
@@ -288,6 +288,8 @@ def update_post(
 
 
 def _transition(post_id, version, new, admin, db, scheduled_at=None) -> PostOut:
+    if new in (PostStatus.PUBLISHED, PostStatus.SCHEDULED):
+        forbid_key_publishing(admin, "publish or schedule an article")
     post = get_or_404(db, BlogPost, post_id, "Article")
     check_version(
         current_version=post.version,

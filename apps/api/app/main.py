@@ -9,11 +9,13 @@ Run it locally with::
 
 import asyncio
 import logging
+import re
 from contextlib import asynccontextmanager, suppress
 
 from fastapi import FastAPI
 
 from app.api.routes import (
+    admin_api_keys,
     admin_audit,
     admin_blog,
     admin_catalogue,
@@ -43,6 +45,7 @@ from app.api.routes import (
 from app.config import get_settings
 from app.db import SessionLocal
 from app.errors import register_error_handlers
+from app.mcp_gateway import MCP_PATH, gateway
 from app.services.maintenance import run_jobs
 
 API_PREFIX = "/api/v1"  # spec §8: versioned contracts
@@ -69,6 +72,22 @@ async def _job_loop(interval: int) -> None:
         await asyncio.sleep(interval)
 
 
+class _HideApiKeys(logging.Filter):
+    """Hide API keys in the access log ("/api/v1/mcp/k/gck_…"), so logs never hold one."""
+
+    _key = re.compile(r"gck_[A-Za-z0-9_-]+")
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        if isinstance(record.args, tuple):
+            record.args = tuple(
+                self._key.sub("gck_…", a) if isinstance(a, str) else a for a in record.args
+            )
+        return True
+
+
+logging.getLogger("uvicorn.access").addFilter(_HideApiKeys())
+
+
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     """Code before ``yield`` runs when the server starts; after it, when it stops."""
@@ -76,7 +95,8 @@ async def lifespan(_: FastAPI):
     task = None
     if settings.scheduler_enabled:
         task = asyncio.create_task(_job_loop(settings.scheduler_interval_seconds))
-    yield
+    async with gateway.running():  # the MCP server for AI assistants (app/mcp_gateway.py)
+        yield
     if task:
         task.cancel()
         with suppress(asyncio.CancelledError):
@@ -118,6 +138,13 @@ def create_app() -> FastAPI:
     app.include_router(admin_blog.router, prefix=API_PREFIX)
     app.include_router(public_blog.router, prefix=API_PREFIX)
     app.include_router(admin_settings.router, prefix=API_PREFIX)
+    app.include_router(admin_api_keys.router, prefix=API_PREFIX)
+    # MCP for AI assistants: the key in the header, or in the address for apps
+    # that can only be given an address (see app/mcp_gateway.py).
+    app.add_route(MCP_PATH, gateway, methods=["GET", "POST", "DELETE"], include_in_schema=False)
+    app.add_route(
+        f"{MCP_PATH}/k/{{key}}", gateway, methods=["GET", "POST", "DELETE"], include_in_schema=False
+    )
     app.include_router(public_site.router, prefix=API_PREFIX)
     app.include_router(consent.router, prefix=API_PREFIX)
     app.include_router(guide.router, prefix=API_PREFIX)

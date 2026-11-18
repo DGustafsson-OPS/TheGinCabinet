@@ -22,9 +22,11 @@ from sqlalchemy import func, select, update
 
 from app.api.deps import (
     CurrentAdmin,
+    CurrentAdminPerson,
+    CurrentAdminPersonWrite,
     CurrentAdminWrite,
-    CurrentStaff,
-    CurrentStaffWrite,
+    CurrentPerson,
+    CurrentPersonWrite,
     DbSession,
     client_ip,
 )
@@ -191,12 +193,12 @@ def _profile_out(db, user: User) -> ProfileOut:
 
 
 @router.get("/profile", response_model=ProfileOut)
-def get_profile(admin: CurrentStaff, db: DbSession):
+def get_profile(admin: CurrentPerson, db: DbSession):
     return _profile_out(db, admin.user)
 
 
 @router.patch("/profile", response_model=ProfileOut)
-def update_profile(body: ProfilePatch, admin: CurrentStaffWrite, db: DbSession):
+def update_profile(body: ProfilePatch, admin: CurrentPersonWrite, db: DbSession):
     user = admin.user
     changes = body.model_dump(exclude_unset=True, exclude={"current_password"})
     if changes.get("email") and changes["email"].lower() != user.email.lower():
@@ -226,7 +228,7 @@ def update_profile(body: ProfilePatch, admin: CurrentStaffWrite, db: DbSession):
 
 @router.post("/profile/password", status_code=204)
 def change_password(
-    body: PasswordChange, request: Request, admin: CurrentStaffWrite, db: DbSession
+    body: PasswordChange, request: Request, admin: CurrentPersonWrite, db: DbSession
 ):
     user = admin.user
     _require_password(user, body.current_password)
@@ -245,7 +247,7 @@ def change_password(
 
 
 @router.get("/profile/trusted-browsers", response_model=list[TrustedBrowserOut])
-def list_trusted_browsers(request: Request, admin: CurrentStaff, db: DbSession):
+def list_trusted_browsers(request: Request, admin: CurrentPerson, db: DbSession):
     """Your browsers that may skip the 6-digit code, newest first."""
     cookie = request.cookies.get(get_settings().trusted_device_cookie_name)
     mine = hash_token(cookie) if cookie else None
@@ -268,7 +270,7 @@ def list_trusted_browsers(request: Request, admin: CurrentStaff, db: DbSession):
 
 
 @router.delete("/profile/trusted-browsers", status_code=204)
-def forget_trusted_browsers(request: Request, admin: CurrentStaffWrite, db: DbSession):
+def forget_trusted_browsers(request: Request, admin: CurrentPersonWrite, db: DbSession):
     """Every one of your browsers asks for the 6-digit code again (e.g. after
     losing a laptop). You stay signed in here."""
     sessions.forget_trusted_devices(db, admin.user)
@@ -294,7 +296,7 @@ def forget_trusted_browsers(request: Request, admin: CurrentStaffWrite, db: DbSe
 
 
 @router.post("/profile/recovery-codes", response_model=RecoveryCodesOut)
-def regenerate_recovery_codes(body: PasswordConfirm, admin: CurrentStaffWrite, db: DbSession):
+def regenerate_recovery_codes(body: PasswordConfirm, admin: CurrentPersonWrite, db: DbSession):
     """New recovery codes (the old ones stop working). Shown once."""
     user = admin.user
     _require_password(user, body.current_password)
@@ -307,7 +309,7 @@ def regenerate_recovery_codes(body: PasswordConfirm, admin: CurrentStaffWrite, d
 
 
 @router.post("/profile/mfa/start", response_model=MfaSetupOut)
-def start_mfa_change(body: PasswordConfirm, admin: CurrentStaffWrite, db: DbSession):
+def start_mfa_change(body: PasswordConfirm, admin: CurrentPersonWrite, db: DbSession):
     """Step 1 of moving MFA to a new phone: a new secret, not active yet."""
     user = admin.user
     _require_password(user, body.current_password)
@@ -320,7 +322,7 @@ def start_mfa_change(body: PasswordConfirm, admin: CurrentStaffWrite, db: DbSess
 
 
 @router.post("/profile/mfa/confirm", response_model=RecoveryCodesOut)
-def confirm_mfa_change(body: MfaConfirm, admin: CurrentStaffWrite, db: DbSession):
+def confirm_mfa_change(body: MfaConfirm, admin: CurrentPersonWrite, db: DbSession):
     """Step 2: a code from the new app proves it works; then it replaces the old one."""
     user = admin.user
     if user.totp_pending_encrypted is None:
@@ -341,7 +343,7 @@ def confirm_mfa_change(body: MfaConfirm, admin: CurrentStaffWrite, db: DbSession
 
 
 @router.delete("/profile/mfa/start", status_code=204)
-def cancel_mfa_change(admin: CurrentStaffWrite, db: DbSession):
+def cancel_mfa_change(admin: CurrentPersonWrite, db: DbSession):
     admin.user.totp_pending_encrypted = None
     db.commit()
 
@@ -362,13 +364,13 @@ def _email_free(db, email: str, exclude: User | None = None) -> None:
 
 
 @router.get("/admins", response_model=list[AdminAccount])
-def list_admin_accounts(admin: CurrentAdmin, db: DbSession):
+def list_admin_accounts(admin: CurrentAdminPerson, db: DbSession):
     users = db.scalars(select(User).order_by(User.created_at))
     return [_account_out(u, admin.user) for u in users]
 
 
 @router.post("/admins", response_model=InviteOut, status_code=201)
-def invite_account(body: AccountInvite, admin: CurrentAdminWrite, db: DbSession):
+def invite_account(body: AccountInvite, admin: CurrentAdminPersonWrite, db: DbSession):
     """Invite someone. They get a one-time link to choose their password and
     set up their authenticator; nothing secret passes through the admin."""
     username = body.username.strip().lower()
@@ -403,7 +405,7 @@ def invite_account(body: AccountInvite, admin: CurrentAdminWrite, db: DbSession)
 
 
 @router.post("/admins/{user_id}/invite", response_model=InviteOut)
-def renew_invite(user_id: uuid.UUID, admin: CurrentAdminWrite, db: DbSession):
+def renew_invite(user_id: uuid.UUID, admin: CurrentAdminPersonWrite, db: DbSession):
     """A new invitation link (the old one stops working), e.g. if it expired."""
     user = get_or_404(db, User, user_id, "Account")
     if user.totp_secret_encrypted is not None:
@@ -426,7 +428,7 @@ def renew_invite(user_id: uuid.UUID, admin: CurrentAdminWrite, db: DbSession):
 
 
 @router.delete("/admins/{user_id}", status_code=204)
-def cancel_invite(user_id: uuid.UUID, admin: CurrentAdminWrite, db: DbSession):
+def cancel_invite(user_id: uuid.UUID, admin: CurrentAdminPersonWrite, db: DbSession):
     """Cancel an invitation that hasn't been used yet.
 
     Accounts that are in use are switched off instead (``enabled: false``), so
@@ -454,7 +456,7 @@ def update_account(
     user_id: uuid.UUID,
     body: AccountPatch,
     request: Request,
-    admin: CurrentAdminWrite,
+    admin: CurrentAdminPersonWrite,
     db: DbSession,
 ):
     """Change someone else's display name, email, role or access."""
@@ -499,7 +501,7 @@ def reset_other_password(
     user_id: uuid.UUID,
     body: ResetOtherPassword,
     request: Request,
-    admin: CurrentAdminWrite,
+    admin: CurrentAdminPersonWrite,
     db: DbSession,
 ):
     """Give the other admin a temporary password (spec A10: confirmed and audited).

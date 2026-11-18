@@ -14,7 +14,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy import delete, func, or_, select, update
 from sqlalchemy.orm import Session
 
-from app.api.deps import CurrentStaff, CurrentStaffWrite, DbSession
+from app.api.deps import CurrentStaff, CurrentStaffWrite, DbSession, forbid_key_publishing
 from app.errors import ApiError
 from app.models import (
     CocktailRecipe,
@@ -199,6 +199,8 @@ def list_tonics(
 
 @router.post("/tonics", response_model=TonicOut, status_code=201)
 def create_tonic(body: TonicIn, admin: CurrentStaffWrite, db: DbSession):
+    if body.public_visible:
+        forbid_key_publishing(admin, "add a tonic straight to the website")
     ensure_unique_name(db, body.brand, body.name)
     check_cover(db, body.image_media_id)
     data = body.model_dump()
@@ -252,6 +254,8 @@ def update_tonic(tonic_id: uuid.UUID, body: TonicPatch, admin: CurrentStaffWrite
         check_cover(db, changes["image_media_id"])
     if changes.get("slug"):
         ensure_slug_free(db, Tonic, changes["slug"], exclude_id=tonic.id)
+    if changes.get("public_visible") and not tonic.public_visible:
+        forbid_key_publishing(admin, "make a tonic public")
     if gins is not None:
         set_gins(db, tonic, gins)
     apply_patch(tonic, changes, never_empty={"brand", "name", "slug", "style", "public_visible"})
@@ -359,6 +363,7 @@ def update_review(
     apply_patch(review, changes, never_empty={"author_id"})
     action = "tonic_review.update"
     if new_status == TonicReviewStatus.PUBLISHED and review.status != TonicReviewStatus.PUBLISHED:
+        forbid_key_publishing(admin, "publish a review")
         _check_publishable(review)
         review.status = TonicReviewStatus.PUBLISHED
         review.published_at = review.published_at or utcnow()

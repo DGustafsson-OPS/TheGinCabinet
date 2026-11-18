@@ -10,7 +10,7 @@ from typing import Annotated
 from fastapi import APIRouter, Query
 from sqlalchemy import func, select
 
-from app.api.deps import CurrentStaff, CurrentStaffWrite, DbSession
+from app.api.deps import CurrentStaff, CurrentStaffWrite, DbSession, forbid_key_publishing
 from app.errors import ApiError
 from app.models import GuidePage
 from app.models._types import utcnow
@@ -138,6 +138,7 @@ def update_page(
         ensure_slug_free(db, GuidePage, changes["slug"], exclude_id=page.id)
     publishing = changes.get("published") is True and not page.published
     if publishing:
+        forbid_key_publishing(admin, "publish a guide page")
         if not (changes.get("body_blocks") or page.body_blocks):
             raise ApiError(422, "empty_page", "Write some text before publishing this page.")
         changes["published_at"] = utcnow()
